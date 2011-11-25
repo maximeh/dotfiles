@@ -1,0 +1,243 @@
+servers = (
+  {
+    address = "irc.rezosup.org";
+    chatnet = "UTBM";
+    #port = "6667";
+    use_ssl = "no";
+    ssl_verify = "no";
+    autoconnect = "yes";
+    term_type = "utf-8";
+  },
+  {
+    address = "irc.freenode.net";
+    chatnet = "freenode";
+    port = "6667";
+    use_ssl = "no";
+    ssl_verify = "no";
+    autoconnect = "yes";
+    term_type = "utf-8";
+  }
+);
+
+chatnets = {
+  UTBM = {
+    type = "IRC";
+    nick = "kinji";
+    autosendcmd = "/msg NickServ IDENTIFY PASSWORD;/mode kinji -v";
+
+  };
+  freenode = {
+    type = "IRC";
+    nick = "maxime";
+    autosendcmd = "/msg NickServ IDENTIFY PASSWORD;/mode maxime -v";
+  };
+};
+
+channels = (
+  {
+    name = "#utbm-ae";
+    chatnet = "UTBM";
+    autojoin = "yes";
+    use_ssl = "yes";
+  },
+  { 
+    name = "#geek";
+    chatnet = "UTBM";
+    autojoin = "yes";
+    use_ssl = "yes";
+  },
+  {
+    name = "#photomaton";
+    chatnet = "UTBM";
+    autojoin = "yes";
+    use_ssl = "yes";
+    password = "pasdepass";
+  },
+  { name = "#lacie"; chatnet = "freenode"; autojoin = "yes"; },
+  { name = "#lacie-nas"; chatnet = "freenode"; autojoin = "yes"; },
+  { name = "#maposmatic"; chatnet = "freenode"; autojoin = "yes"; }
+);
+
+aliases = {
+  J = "join";
+  WJOIN = "join -window";
+  WQUERY = "query -window";
+  LEAVE = "part";
+  BYE = "quit";
+  EXIT = "quit";
+  SIGNOFF = "quit";
+  DESCRIBE = "action";
+  DATE = "time";
+  HOST = "userhost";
+  LAST = "lastlog";
+  SAY = "msg *";
+  K = "kick";
+  KB = "kickban";
+  KN = "knockout";
+  BANS = "ban";
+  B = "ban";
+  MUB = "unban *";
+  UB = "unban";
+  IG = "ignore";
+  UNIG = "unignore";
+  SB = "scrollback";
+  UMODE = "mode $N";
+  WC = "window close";
+  WN = "window new hide";
+  SV = "say Irssi $J ($V) - http://irssi.org/";
+  GOTO = "sb goto";
+  CHAT = "dcc chat";
+  RUN = "SCRIPT LOAD";
+  UPTIME = "eval exec - expr `date +%s` - \\$F | awk '{print \"Irssi uptime: \"int(\\\\\\$1/3600/24)\"d \"int(\\\\\\$1/3600%24)\"h \"int(\\\\\\$1/60%60)\"m \"int(\\\\\\$1%60)\"s\" }'";
+  CALC = "exec - if which bc &>/dev/null\\; then echo '$*' | bc | awk '{print \"$*=\"$$1}'\\; else echo bc was not found\\; fi";
+  SBAR = "STATUSBAR";
+  INVITELIST = "mode $C +I";
+  Q = "QUERY";
+  dodo = "nick kinji`dodo; away Away - Dodo";
+  aw = "away Away - Not here";
+  la = "away";
+  brb = "nick kinji`brb; away Away - Be right back";
+  # des trucs inutiles
+  wikipedia = "msg $C ${0}: http://en.wikipedia.org/wiki/${1}";
+  wikipedia_fr = "msg $C ${0}: http://fr.wikipedia.org/wiki/${1}";
+  quit = "echo don't do this at home!";
+};
+
+
+settings = {
+  core = {
+    real_name = "Maxime H.";
+    user_name = "kinji";
+    quit_message = "Saying that Java is nice because it works on all OS's is like saying that anal sex is nice because it works on all genders";
+    recode_autodetect_utf8 = "yes";
+    recode = "yes";
+    server_reconnect_time = "30s";
+    #recode_out_default_charset = "utf-8";
+    hostname = "f00.fr";
+    nick = "kinji";
+  };
+  "fe-text" = {
+    term_force_colors = "yes";
+    indent = "2";
+    actlist_sort = "refnum";
+  };
+  "fe-common/core" = {
+    autocreate_own_query = "no";
+    autocreate_query_level = "MSGS";
+    use_status_window = "no";
+    use_msgs_window = "yes";
+    autoclose_windows = "yes";
+    reuse_unused_windows = "yes";
+    autolog = "yes";
+    term_charset = "utf-8";
+    theme = "lime";
+  };
+  "perl/core/scripts" = {
+    mpd_host = "music.f00.fr";
+    mpd_port = "8000";
+    mpdbar_top = "no";
+    screen_away_active = "yes";
+    screen_away_nick = "kinji`aw";
+  };
+};
+hilights = ( { text = "kinji"; nick = "yes"; word = "yes"; } );
+
+completions = {
+  reg = { value = "/msg NickServ IDENTIFY PASSWORD"; };
+  bn = { value = "bonne nuit"; };
+  bna = { value = "bon apétit"; };
+  "++" = { value = "peluch peluch"; };
+  tg = { value = "ta gueule"; };
+  ts = { value = "tu sors"; };
+};
+logs = { };
+keyboard = (
+  { key = "F1"; id = "command"; data = "nicklist scroll -10"; },
+  { key = "F2"; id = "command"; data = "nicklist scroll +10"; },
+  { key = "meta2-P"; id = "key"; data = "F1"; },
+  { key = "meta2-Q"; id = "key"; data = "F2"; },
+  { key = "meta2-R"; id = "key"; data = "F3"; },
+  { key = "meta2-S"; id = "key"; data = "F4"; },
+  { key = "meta2-15~"; id = "key"; data = "F5"; },
+  { key = "meta2-17~"; id = "key"; data = "F6"; },
+  { key = "meta2-18~"; id = "key"; data = "F7"; },
+  { key = "meta2-19~"; id = "key"; data = "F8"; },
+  { key = "meta2-20~"; id = "key"; data = "F9"; },
+  { key = "meta2-21~"; id = "key"; data = "F10"; },
+  { key = "meta2-24~"; id = "key"; data = "F12"; },
+  { key = "meta2-23~"; id = "key"; data = "F11"; },
+  { key = "meta2-2P"; id = "key"; data = "sF1"; },
+  { key = "meta2-2Q"; id = "key"; data = "sF2"; },
+  { key = "meta2-2R"; id = "key"; data = "sF3"; },
+  { key = "meta2-2S"; id = "key"; data = "sF4"; },
+  { key = "meta2-15;2~"; id = "key"; data = "sF5"; },
+  { key = "meta2-17;2~"; id = "key"; data = "sF6"; },
+  { key = "meta2-18;2~"; id = "key"; data = "sF7"; },
+  { key = "meta2-19;2~"; id = "key"; data = "sF8"; },
+  { key = "meta2-20;2~"; id = "key"; data = "sF9"; },
+  { key = "meta2-21;2~"; id = "key"; data = "sF10"; },
+  { key = "meta2-24;2~"; id = "key"; data = "sF12"; },
+  { key = "meta2-23;2~"; id = "key"; data = "sF11"; }
+);
+ignores = ( { level = "MODES"; channels = ( "&bitlbee" ); } );
+
+conversions = { UTBM = "utf-8"; };
+
+windows = {
+  1 = { 
+    immortal = "yes";
+    name = "(msgs)";
+    level = "MSGS ACTIONS DCCMSGS";
+  };
+  2 = {
+    items = (
+      {
+        type = "CHANNEL";
+        chat_type = "IRC";
+        name = "#utbm-ae";
+        tag = "UTBM";
+      }
+    );
+  };
+  3 = {
+    items = (
+      {
+        type = "CHANNEL";
+        chat_type = "IRC";
+        name = "#geek";
+        tag = "UTBM";
+      }
+    );
+  };
+  4 = {
+    items = (
+      {
+        type = "CHANNEL";
+        chat_type = "IRC";
+        name = "#photomaton";
+        tag = "UTBM";
+      }
+    );
+  };
+  5 = {
+    items = (
+      {
+        type = "CHANNEL";
+        chat_type = "IRC";
+        name = "#lacie-nas";
+        tag = "freenode";
+      }
+    );
+  };
+  6 = {
+    items = (
+      {
+        type = "CHANNEL";
+        chat_type = "IRC";
+        name = "#lacie";
+        tag = "freenode";
+      }
+    );
+  };
+};
+mainwindows = { 1 = { first_line = "1"; lines = "53"; }; };
