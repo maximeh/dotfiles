@@ -13,6 +13,7 @@ if [ -d ${DOTFILES} ]; then
     pushd "${DOTFILES}" > /dev/null
     # Update them    
     ${GIT} pull origin master
+    ${GIT} submodule init
     ${GIT} submodule update
     popd > /dev/null
     exit 0
