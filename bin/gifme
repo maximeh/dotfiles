@@ -23,7 +23,7 @@ TIMESTAMP=$(date +%F_%Hh-%Mm-%Ss)
 OUTPUT="${HOME}/Desktop/animated-${TIMESTAMP}.gif"
 DELAY=20
 WIDTH=500
-DROP=$(which drop 2>&1 > /dev/null) || DROP=""
+DROP=$(which drop 2>/dev/null) || DROP=""
 
 GIFME="/tmp/gifme"
 
