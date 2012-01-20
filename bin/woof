@@ -32,9 +32,10 @@ import ConfigParser
 import shutil, tarfile, zipfile
 import struct
 
+import threading
+
 maxdownloads = 1
 TM = object
-cpid = -1
 compressed = 'gz'
 upload = False
 
@@ -118,6 +119,11 @@ def find_ip ():
 # filename to the client).
 # Currently it is impossible to serve different files with different
 # instances of this class.
+
+
+class HandleFile(threading.Thread):
+    def run(self):
+        pass
 
 class FileServHTTPRequestHandler (BaseHTTPServer.BaseHTTPRequestHandler):
    server_version = "Simons FileServer"
@@ -206,7 +212,7 @@ class FileServHTTPRequestHandler (BaseHTTPServer.BaseHTTPRequestHandler):
       
 
    def do_GET (self):
-      global maxdownloads, cpid, compressed, upload
+      global maxdownloads, compressed, upload
 
       # Form for uploading a file
       if upload:
@@ -263,9 +269,9 @@ class FileServHTTPRequestHandler (BaseHTTPServer.BaseHTTPRequestHandler):
       # let a separate process handle the actual download, so that
       # multiple downloads can happen simultaneously.
 
-      cpid = os.fork ()
+      #cpid = os.fork ()
 
-      if cpid == 0:
+      if True:#cpid == 0:
          # Child process
          child = None
          type = None
@@ -279,11 +285,13 @@ class FileServHTTPRequestHandler (BaseHTTPServer.BaseHTTPRequestHandler):
             print >> sys.stderr, "can only serve files or directories. Aborting."
             sys.exit (1)
 
+         print "SENDING STATUS"
          self.send_response (200)
          self.send_header ("Content-Type", "application/octet-stream")
          if os.path.isfile (self.filename):
             self.send_header ("Content-Length",
                               os.path.getsize (self.filename))
+
          self.end_headers ()
 
          try:
@@ -314,6 +322,12 @@ class FileServHTTPRequestHandler (BaseHTTPServer.BaseHTTPRequestHandler):
             print e
             print >>sys.stderr, "Connection broke. Aborting"
 
+from SocketServer import ThreadingMixIn
+
+class ThreadedHTTPServer(ThreadingMixIn, BaseHTTPServer.HTTPServer):
+    """Handle requests in a separate thread."""
+    timeout = 2
+    pass
 
 def serve_files (filename, maxdown = 1, ip_addr = '', port = 8080):
    global maxdownloads
@@ -326,7 +340,7 @@ def serve_files (filename, maxdown = 1, ip_addr = '', port = 8080):
    FileServHTTPRequestHandler.filename = filename
 
    try:
-      httpd = BaseHTTPServer.HTTPServer ((ip_addr, port),
+      httpd = ThreadedHTTPServer ((ip_addr, port),
                                          FileServHTTPRequestHandler)
    except socket.error:
       print >>sys.stderr, "cannot bind to IP address '%s' port %d" % (ip_addr, port)
@@ -337,7 +351,7 @@ def serve_files (filename, maxdown = 1, ip_addr = '', port = 8080):
    if ip_addr:
       print "Now serving on http://%s:%s/" % (ip_addr, httpd.server_port)
 
-   while cpid != 0 and maxdownloads > 0:
+   while maxdownloads > 0:
       httpd.handle_request ()
 
 
@@ -386,7 +400,7 @@ def usage (defport, defmaxdown, errmsg = None):
 
 
 def main ():
-   global cpid, upload, compressed
+   global upload, compressed
 
    maxdown = 1
    port = 8080
@@ -487,14 +501,6 @@ def main ():
                 "%s: Neither file nor directory" % filenames[0])
 
    serve_files (filename, maxdown, ip_addr, port)
-
-   # wait for child processes to terminate
-   if cpid != 0:
-      try:
-         while 1:
-            os.wait ()
-      except OSError:
-         pass
 
 
 
