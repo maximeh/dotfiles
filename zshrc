@@ -61,6 +61,10 @@ unalias vim 2>/dev/null
 alias vim='vim -p'
 alias rec='ffmpeg -f x11grab -r 25 -s 800x600 -i :0.0' # record desk to a file
 alias intercept='strace -ff -e trace=write -e write=1,2 -p' # intercept stdout,stderr of PID
+alias firefox="/opt/firefox/firefox > /dev/null 2>&1 &"
+alias thunderbird="/opt/thunderbird/thunderbird > /dev/null 2>&1 &"
+alias songbird="/opt/Songbird/songbird > /dev/null 2>&1 &"
+alias sublime="/opt/Sublime\ Text\ 2/sublime_text > /dev/null 2>&1 &"
 
 # Git alias
 alias glog="git log --graph --pretty=format:'%Cred%h%Creset %an: %s - %Creset %C(yellow)%d%Creset %Cgreen(%cr)%Creset' --abbrev-commit --date=relative"
@@ -79,12 +83,12 @@ alias grm="git status | grep deleted | awk '{print \$3}' | xargs git rm"
 # "man zshzle" for the list of available actions
 
 # Correspondance touches-fonction
-bindkey -v 
-bindkey '^[^[[D' backward-word
-bindkey '^[^[[C' forward-word
-bindkey '^[[5D' beginning-of-line
-bindkey '^[[5C' end-of-line
-bindkey '^[[3~' delete-char
+bindkey -v
+bindkey "^[[1;5D" backward-word
+bindkey "^[[1;5C" forward-word
+bindkey "\eOF" end-of-line
+bindkey "\eOH" beginning-of-line
+bindkey "\e[3~" delete-char
 bindkey '^?' backward-delete-char
 bindkey '^R' history-incremental-search-backward
 
@@ -217,6 +221,6 @@ export LOCALE="en_US.UTF-8"
 
 export VISUAL=vim
 export EDITOR=vim
-export PATH=$PATH:$HOME/bin
+export PATH=$PATH:$HOME/bin:/usr/sbin:/sbin
 
 
