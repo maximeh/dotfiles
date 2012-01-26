@@ -27,11 +27,11 @@ ${GIT} submodule init
 ${GIT} submodule update
 
 # Create symlink
-ln -s ${DOTFILES}/vimrc ${HOME}/.vimrc
-ln -s ${DOTFILES}/vim ${HOME}/.vim
-ln -s ${DOTFILES}/zshrc ${HOME}/.zshrc
-ln -s ${DOTFILES}/screenrc ${HOME}/.screenrc
-ln -s ${DOTFILES}/irssi ${HOME}/.irssi
+for file in "vimrc vim zshrc screenrc irssi"; do
+    [ -h "${HOME}/.${file}" ] && rm ${HOME}/.${file}
+    ln -s ${DOTFILES}/${file} ${HOME}/.${file}
+done
+[ -h "${HOME}/bin" ] && rm ${HOME}/bin
 ln -s ${DOTFILES}/bin ${HOME}/bin
 
 popd > /dev/null
