@@ -84,10 +84,17 @@ alias grm="git status | grep deleted | awk '{print \$3}' | xargs git rm"
 
 # Correspondance touches-fonction
 bindkey -v
+
+bindkey "\e[1~" beginning-of-line # Home
+bindkey "\e[4~" end-of-line # End
+bindkey "\e\e[C" forward-word
+bindkey "\e\e[D" backward-word
+#for guake
 bindkey "^[[1;5D" backward-word
 bindkey "^[[1;5C" forward-word
 bindkey "\eOF" end-of-line
 bindkey "\eOH" beginning-of-line
+
 bindkey "\e[3~" delete-char
 bindkey '^?' backward-delete-char
 bindkey '^R' history-incremental-search-backward
