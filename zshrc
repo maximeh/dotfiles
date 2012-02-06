@@ -61,10 +61,29 @@ unalias vim 2>/dev/null
 alias vim='vim -p'
 alias rec='ffmpeg -f x11grab -r 25 -s 800x600 -i :0.0' # record desk to a file
 alias intercept='strace -ff -e trace=write -e write=1,2 -p' # intercept stdout,stderr of PID
-alias firefox="/opt/firefox/firefox > /dev/null 2>&1 &"
-alias thunderbird="/opt/thunderbird/thunderbird > /dev/null 2>&1 &"
-alias songbird="/opt/Songbird/songbird > /dev/null 2>&1 &"
-alias sublime="/opt/Sublime\ Text\ 2/sublime_text > /dev/null 2>&1 &"
+alias firefox="nohup /opt/firefox/firefox > /dev/null 2>&1 &"
+alias thunderbird="nohup /opt/thunderbird/thunderbird > /dev/null 2>&1 &; disown %1"
+alias songbird="nohup /opt/Songbird/songbird > /dev/null 2>&1 &; disown %1"
+alias sublime="nohup /opt/Sublime\ Text\ 2/sublime_text > /dev/null 2>&1 &; disown %1"
+
+# fix_stty: restore terminal settings when they get completely screwed up
+alias fix_stty='stty sane'
+# ff:  to find a file under the current directory
+ff () { find . -name "$@" ; }
+# # ffs: to find a file whose name starts with a given string
+ffs () { find . -name "$@"'*' ; }
+# # ffe: to find a file whose name ends with a given string
+ffe () { find . -name '*'"$@" ; }
+
+# enquote: surround lines with quotes (useful in pipes) - from mervTormel
+enquote () { sed 's/^/"/;s/$/"/' ; }
+
+# Network
+#
+# osock: to display open sockets (the -P option to lsof disables port names)
+alias osock='sudo lsof -i -P'
+# http_headers: get just the HTTP headers from a web page (and its redirects)
+http_headers () { curl -I -L $@ ; }
 
 # Git alias
 alias glog="git log --graph --pretty=format:'%Cred%h%Creset %an: %s - %Creset %C(yellow)%d%Creset %Cgreen(%cr)%Creset' --abbrev-commit --date=relative"
