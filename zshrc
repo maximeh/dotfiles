@@ -66,6 +66,8 @@ alias thunderbird="nohup /opt/thunderbird/thunderbird > /dev/null 2>&1 &; disown
 alias songbird="nohup /opt/Songbird/songbird > /dev/null 2>&1 &; disown %1"
 alias sublime="nohup /opt/Sublime\ Text\ 2/sublime_text > /dev/null 2>&1 &; disown %1"
 
+
+alias gen_pwd="cat /dev/urandom|tr -dc "a-zA-Z0-9-_\$\?\@\!\="|fold -w 8|head -n 10" #Generate password
 # fix_stty: restore terminal settings when they get completely screwed up
 alias fix_stty='stty sane'
 # ff:  to find a file under the current directory
@@ -153,20 +155,20 @@ local dir_bold="%{$FX[bold]$FG[012]%}%2c%{$FX[reset]%}"
 case "$TERM" in 
  screen-*) 
     if [ "`id -u`" -eq 0 ]; then
-       PS1="${name_root_bold} at ${host_bold} in ${dir_bold}
-%# "
+       PS1="┌─${name_root_bold} at ${host_bold} in ${dir_bold}
+└─╼ "
     else
-        PS1="${name_bold} at ${host_bold} in ${dir_bold}
-%# "
+        PS1="┌─${name_bold} at ${host_bold} in ${dir_bold}
+└─╼ "
     fi
  ;; 
  *) 
     if [ "`id -u`" -eq 0 ]; then
-       PS1="${name_root} at ${host} in ${dir}
-%# "
+       PS1="┌─${name_root} at ${host} in ${dir}
+└─╼ "
     else
-       PS1="${name} at ${host} in ${dir}
-%# "
+       PS1="┌─${name} at ${host} in ${dir}
+└─╼ "
     fi
  ;; 
 esac 
@@ -250,3 +252,9 @@ export EDITOR=vim
 export PATH=$PATH:$HOME/bin:/usr/sbin:/sbin
 
 
+
+export PERL_LOCAL_LIB_ROOT="/home/maxime/perl5";
+export PERL_MB_OPT="--install_base /home/maxime/perl5";
+export PERL_MM_OPT="INSTALL_BASE=/home/maxime/perl5";
+export PERL5LIB="/home/maxime/perl5/lib/perl5/i486-linux-gnu-thread-multi-64int:/home/maxime/perl5/lib/perl5";
+export PATH="/home/maxime/perl5/bin:$PATH";
