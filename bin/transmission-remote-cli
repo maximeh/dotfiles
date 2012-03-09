@@ -16,12 +16,12 @@
 # http://www.gnu.org/licenses/gpl-3.0.txt                              #
 ########################################################################
 
-VERSION='0.9.4'
+VERSION = '1.1'
 
 TRNSM_VERSION_MIN = '1.90'
-TRNSM_VERSION_MAX = '2.33'
+TRNSM_VERSION_MAX = '2.50'
 RPC_VERSION_MIN = 8
-RPC_VERSION_MAX = 13
+RPC_VERSION_MAX = 14
 
 # error codes
 CONNECTION_ERROR = 1
@@ -53,6 +53,7 @@ from optparse import OptionParser, SUPPRESS_HELP
 import sys
 import os
 import signal
+import unicodedata
 import locale
 locale.setlocale(locale.LC_ALL, '')
 import curses
@@ -104,12 +105,57 @@ config.set('Connection', 'password', '')
 config.set('Connection', 'username', '')
 config.set('Connection', 'port', '9091')
 config.set('Connection', 'host', 'localhost')
+config.set('Connection', 'path', '/transmission/rpc')
+config.set('Connection', 'ssl', 'False')
 config.add_section('Sorting')
-config.set('Sorting', 'order',   'name')
-config.set('Sorting', 'reverse', 'False')
+config.set('Sorting', 'order', 'name')
 config.add_section('Filtering')
 config.set('Filtering', 'filter', '')
 config.set('Filtering', 'invert', 'False')
+config.add_section('Misc')
+config.set('Misc', 'compact_list', 'False')
+config.set('Misc', 'torrentname_is_progressbar', 'True')
+config.add_section('Colors')
+config.set('Colors', 'title_seed',       'bg:green,fg:black')
+config.set('Colors', 'title_download',   'bg:blue,fg:black')
+config.set('Colors', 'title_idle',       'bg:cyan,fg:black')
+config.set('Colors', 'title_verify',     'bg:magenta,fg:black')
+config.set('Colors', 'title_paused',     'bg:black,fg:white')
+config.set('Colors', 'download_rate',    'bg:black,fg:blue')
+config.set('Colors', 'upload_rate',      'bg:black,fg:red')
+config.set('Colors', 'eta+ratio',        'bg:black,fg:white')
+config.set('Colors', 'filter_status',    'bg:red,fg:black')
+config.set('Colors', 'dialog',           'bg:black,fg:white')
+config.set('Colors', 'dialog_important', 'bg:red,fg:black')
+config.set('Colors', 'button',           'bg:white,fg:black')
+config.set('Colors', 'button_focused',   'bg:black,fg:white')
+config.set('Colors', 'file_prio_high',   'bg:red,fg:black')
+config.set('Colors', 'file_prio_normal', 'bg:white,fg:black')
+config.set('Colors', 'file_prio_low',    'bg:yellow,fg:black')
+config.set('Colors', 'file_prio_off',    'bg:blue,fg:black')
+
+
+class ColorManager:
+    def __init__(self, config):
+        self.config = dict()
+        for name in config.keys():
+            self.config[name] = self._parse_color_pair(config[name])
+
+    def _parse_color_pair(self, pair):
+        # BG and FG are intentionally switched here because colors are always
+        # used with curses.A_REVERSE. (To be honest, I forgot why, probably
+        # has something to do with how highlighting focus works.)
+        bg_name = pair.split(',')[1].split(':')[1].upper()
+        fg_name = pair.split(',')[0].split(':')[1].upper()
+        return { 'id': len(self.config.keys()) + 1,
+                 'bg':eval('curses.COLOR_' + bg_name),
+                 'fg':eval('curses.COLOR_' + fg_name) }
+
+    def get_id(self, name): return self.config[name]['id']
+    def get_bg(self, name): return self.config[name]['bg']
+    def get_fg(self, name): return self.config[name]['fg']
+    def get_names(self): return self.config.keys()
+
 
 
 authhandler = None
@@ -117,8 +163,8 @@ session_id = 0
 
 # Handle communication with Transmission server.
 class TransmissionRequest:
-    def __init__(self, host, port, method=None, tag=None, arguments=None):
-        self.url = 'http://%s:%d/transmission/rpc' % (host, port)
+    def __init__(self, host, port, path, method=None, tag=None, arguments=None):
+        self.url           = create_url(host, port, path)
         self.open_request  = None
         self.last_update   = 0
         if method and tag:
@@ -137,15 +183,10 @@ class TransmissionRequest:
             if session_id:
                 self.http_request.add_header('X-Transmission-Session-Id', session_id)
             self.open_request = urllib2.urlopen(self.http_request)
+            debug(self.http_request.get_data() + "\n\n")
         except AttributeError:
             # request data (http_request) isn't specified yet -- data will be available on next call
             pass
-
-        # do we still need this?
-        # except httplib.BadStatusLine, msg:
-        #     # server sends something httplib doesn't understand.
-        #     # (happens sometimes with high cpu load[?])
-        #     pass
 
         # authentication
         except urllib2.HTTPError, e:
@@ -179,9 +220,10 @@ class TransmissionRequest:
         if authhandler:
             authhandler.retried = 0
         try:
-            data = json.loads(response)
+            data = json.loads(unicode(response))
+            debug(data)
         except ValueError:
-            quit("Cannot not parse response: %s\n" % response, JSON_ERROR)
+            quit("Cannot parse response: %s\n" % response, JSON_ERROR)
         self.open_request = None
         return data
 
@@ -191,11 +233,13 @@ class TransmissionRequest:
 
 # Higher level of data exchange
 class Transmission:
-    STATUS_CHECK_WAIT = 1 << 0
-    STATUS_CHECK      = 1 << 1
-    STATUS_DOWNLOAD   = 1 << 2
-    STATUS_SEED       = 1 << 3
-    STATUS_STOPPED    = 1 << 4
+    STATUS_STOPPED       = 0   # Torrent is stopped
+    STATUS_CHECK_WAIT    = 1   # Queued to check files
+    STATUS_CHECK         = 2   # Checking files
+    STATUS_DOWNLOAD_WAIT = 3   # Queued to download
+    STATUS_DOWNLOAD      = 4   # Downloading
+    STATUS_SEED_WAIT     = 5   # Queued to seed
+    STATUS_SEED          = 6   # Seeding
 
     TAG_TORRENT_LIST    = 7
     TAG_TORRENT_DETAILS = 77
@@ -217,28 +261,24 @@ class Transmission:
                       'hashString', 'pieceCount', 'pieceSize', 'pieces',
                       'downloadedEver', 'corruptEver', 'peersFrom' ] + LIST_FIELDS
 
-    def __init__(self, host, port, username, password):
+    def __init__(self, host, port, path, username, password):
         self.host = host
         self.port = port
+        self.path = path
 
         if username and password:
             password_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
-            url = 'http://%s:%d/transmission/rpc' % (host, port)
-            password_mgr.add_password(None, url, username, password)
+            password_mgr.add_password(None, create_url(host, port, path), username, password)
             global authhandler
             authhandler = urllib2.HTTPBasicAuthHandler(password_mgr)
             opener = urllib2.build_opener(authhandler)
             urllib2.install_opener(opener)
 
-
-        # Version check
-
         # check rpc version
-        request = TransmissionRequest(host, port, 'session-get', self.TAG_SESSION_GET)
+        request = TransmissionRequest(host, port, path, 'session-get', self.TAG_SESSION_GET)
         request.send_request()
         response = request.get_response()
 
-        self.tm_version = float(response['arguments']['version'].split(" ")[0])
         self.rpc_version = response['arguments']['rpc-version']
 
         # rpc version too old?
@@ -256,16 +296,25 @@ class Transmission:
         if response['arguments']['rpc-version'] > RPC_VERSION_MAX:
             quit(version_error + "Please install Transmission version " + TRNSM_VERSION_MAX + " or lower.\n")
 
+        # setup compatibility to Transmission <2.40
+        if self.rpc_version < 14:
+            Transmission.STATUS_CHECK_WAIT    = 1 << 0
+            Transmission.STATUS_CHECK         = 1 << 1
+            Transmission.STATUS_DOWNLOAD_WAIT = 1 << 2
+            Transmission.STATUS_DOWNLOAD      = 1 << 2
+            Transmission.STATUS_SEED_WAIT     = 1 << 3
+            Transmission.STATUS_SEED          = 1 << 3
+            Transmission.STATUS_STOPPED       = 1 << 4
 
         # set up request list
         self.requests = {'torrent-list':
-                             TransmissionRequest(host, port, 'torrent-get', self.TAG_TORRENT_LIST, {'fields': self.LIST_FIELDS}),
+                             TransmissionRequest(host, port, path, 'torrent-get', self.TAG_TORRENT_LIST, {'fields': self.LIST_FIELDS}),
                          'session-stats':
-                             TransmissionRequest(host, port, 'session-stats', self.TAG_SESSION_STATS, 21),
+                             TransmissionRequest(host, port, path, 'session-stats', self.TAG_SESSION_STATS, 21),
                          'session-get':
-                             TransmissionRequest(host, port, 'session-get', self.TAG_SESSION_GET),
+                             TransmissionRequest(host, port, path, 'session-get', self.TAG_SESSION_GET),
                          'torrent-details':
-                             TransmissionRequest(host, port)}
+                             TransmissionRequest(host, port, path)}
 
         self.torrent_cache = []
         self.status_cache  = dict()
@@ -283,7 +332,7 @@ class Transmission:
 
         # make sure there are no undefined values
         self.wait_for_torrentlist_update()
-        self.requests['torrent-details'] = TransmissionRequest(self.host, self.port)
+        self.requests['torrent-details'] = TransmissionRequest(self.host, self.port, self.path)
 
 
     def update(self, delay, tag_waiting_for=0):
@@ -316,15 +365,16 @@ class Transmission:
         if response['tag'] == self.TAG_TORRENT_LIST or response['tag'] == self.TAG_TORRENT_DETAILS:
             for t in response['arguments']['torrents']:
                 t['uploadRatio'] = round(float(t['uploadRatio']), 2)
-                t['percent_done'] = percent(float(t['sizeWhenDone']),
-                                            float(t['haveValid'] + t['haveUnchecked']))
+                t['percentDone'] = percent(float(t['sizeWhenDone']),
+                                           float(t['haveValid'] + t['haveUnchecked']))
+                t['available'] = t['desiredAvailable'] + t['haveValid'] + t['haveUnchecked']
+                if t['downloadDir'][-1] != '/':
+                    t['downloadDir'] += '/'
                 try:
                     t['seeders']  = max(map(lambda x: x['seederCount'],  t['trackerStats']))
                     t['leechers'] = max(map(lambda x: x['leecherCount'], t['trackerStats']))
                 except ValueError:
                     t['seeders']  = t['leechers'] = -1
-
-                t['available'] = t['desiredAvailable'] + t['haveValid'] + t['haveUnchecked']
 
             if response['tag'] == self.TAG_TORRENT_LIST:
                 self.torrent_cache = response['arguments']['torrents']
@@ -393,23 +443,21 @@ class Transmission:
                 if self.geo_ips_cache[ip] == None:
                     self.geo_ips_cache[ip] = '?'
 
-
-    def get_tm_version(self):
-        return self.tm_version
-
     def get_rpc_version(self):
         return self.rpc_version
 
     def get_global_stats(self):
         return self.status_cache
 
-    def get_torrent_list(self, sort_orders, reverse=False):
+    def get_torrent_list(self, sort_orders):
         try:
             for sort_order in sort_orders:
-                if isinstance(self.torrent_cache[0][sort_order], (str, unicode)):
-                    self.torrent_cache.sort(key=lambda x: x[sort_order].lower(), reverse=reverse)
+                if isinstance(self.torrent_cache[0][sort_order['name']], (str, unicode)):
+                    self.torrent_cache.sort(key=lambda x: x[sort_order['name']].lower(),
+                                            reverse=sort_order['reverse'])
                 else:
-                    self.torrent_cache.sort(key=lambda x: x[sort_order], reverse=reverse)
+                    self.torrent_cache.sort(key=lambda x: x[sort_order['name']],
+                                            reverse=sort_order['reverse'])
         except IndexError:
             return []
         return self.torrent_cache
@@ -427,7 +475,7 @@ class Transmission:
         return self.torrent_details_cache
     def set_torrent_details_id(self, id):
         if id < 0:
-            self.requests['torrent-details'] = TransmissionRequest(self.host, self.port)
+            self.requests['torrent-details'] = TransmissionRequest(self.host, self.port, self.path)
         else:
             self.requests['torrent-details'].set_request_data('torrent-get', self.TAG_TORRENT_DETAILS,
                                                               {'ids':id, 'fields': self.DETAIL_FIELDS})
@@ -440,16 +488,14 @@ class Transmission:
 
 
     def set_option(self, option_name, option_value):
-        request = TransmissionRequest(self.host, self.port, 'session-set', 1, {option_name: option_value})
+        request = TransmissionRequest(self.host, self.port, self.path, 'session-set', 1, {option_name: option_value})
         request.send_request()
         self.wait_for_status_update()
 
 
     def set_rate_limit(self, direction, new_limit, torrent_id=-1):
         data = dict()
-        if new_limit < 0:
-            return
-        elif new_limit == 0:
+        if new_limit <= -1:
             new_limit     = None
             limit_enabled = False
         else:
@@ -465,28 +511,28 @@ class Transmission:
             data[direction+'loadLimit']   = new_limit
             data[direction+'loadLimited'] = limit_enabled
 
-        request = TransmissionRequest(self.host, self.port, type, 1, data)
+        request = TransmissionRequest(self.host, self.port, self.path, type, 1, data)
         request.send_request()
         self.wait_for_torrentlist_update()
 
 
-    def set_seed_ratio(self, new_limit, torrent_id=-1):
+    def set_seed_ratio(self, ratio, torrent_id=-1):
         data = dict()
-        if new_limit == -2:
-            new_limit = None
-            mode      = 0
-        elif new_limit == 0:
-            new_limit = None
-            mode      = 2
-        elif new_limit > 0:
-            mode = 1
+        if ratio == -1:
+            ratio = None
+            mode  = 0   # Use global settings
+        elif ratio == 0:
+            ratio = None
+            mode  = 2   # Seed regardless of ratio
+        elif ratio >= 0:
+            mode  = 1   # Stop seeding at seedRatioLimit
         else:
             return
 
         data['ids']            = [torrent_id]
-        data['seedRatioLimit'] = new_limit
+        data['seedRatioLimit'] = ratio
         data['seedRatioMode']  = mode
-        request = TransmissionRequest(self.host, self.port, 'torrent-set', 1, data)
+        request = TransmissionRequest(self.host, self.port, self.path, 'torrent-set', 1, data)
         request.send_request()
         self.wait_for_torrentlist_update()
 
@@ -497,7 +543,7 @@ class Transmission:
             return False
         else:
             new_priority = torrent['bandwidthPriority'] + 1
-            request = TransmissionRequest(self.host, self.port, 'torrent-set', 1,
+            request = TransmissionRequest(self.host, self.port, self.path, 'torrent-set', 1,
                                           {'ids': [torrent_id], 'bandwidthPriority':new_priority})
             request.send_request()
             self.wait_for_torrentlist_update()
@@ -508,7 +554,7 @@ class Transmission:
             return False
         else:
             new_priority = torrent['bandwidthPriority'] - 1
-            request = TransmissionRequest(self.host, self.port, 'torrent-set', 1,
+            request = TransmissionRequest(self.host, self.port, self.path, 'torrent-set', 1,
                                           {'ids': [torrent_id], 'bandwidthPriority':new_priority})
             request.send_request()
             self.wait_for_torrentlist_update()
@@ -519,7 +565,7 @@ class Transmission:
 
 
     def add_torrent(self, location):
-        request = TransmissionRequest(self.host, self.port, 'torrent-add', 1, {'filename': location})
+        request = TransmissionRequest(self.host, self.port, self.path, 'torrent-add', 1, {'filename': location})
         request.send_request()
         response = request.get_response()
         if response['result'] != 'success':
@@ -528,40 +574,57 @@ class Transmission:
             return ''
 
     def stop_torrent(self, id):
-        request = TransmissionRequest(self.host, self.port, 'torrent-stop', 1, {'ids': [id]})
+        request = TransmissionRequest(self.host, self.port, self.path, 'torrent-stop', 1, {'ids': [id]})
         request.send_request()
         self.wait_for_torrentlist_update()
 
     def start_torrent(self, id):
-        request = TransmissionRequest(self.host, self.port, 'torrent-start', 1, {'ids': [id]})
+        request = TransmissionRequest(self.host, self.port, self.path, 'torrent-start', 1, {'ids': [id]})
         request.send_request()
         self.wait_for_torrentlist_update()
 
     def verify_torrent(self, id):
-        request = TransmissionRequest(self.host, self.port, 'torrent-verify', 1, {'ids': [id]})
+        request = TransmissionRequest(self.host, self.port, self.path, 'torrent-verify', 1, {'ids': [id]})
         request.send_request()
         self.wait_for_torrentlist_update()
 
     def reannounce_torrent(self, id):
-        request = TransmissionRequest(self.host, self.port, 'torrent-reannounce', 1, {'ids': [id]})
+        request = TransmissionRequest(self.host, self.port, self.path, 'torrent-reannounce', 1, {'ids': [id]})
         request.send_request()
         self.wait_for_torrentlist_update()
 
     def move_torrent(self, torrent_id, new_location):
-        request = TransmissionRequest(self.host, self.port, 'torrent-set-location', 1,
+        request = TransmissionRequest(self.host, self.port, self.path, 'torrent-set-location', 1,
                                       {'ids': torrent_id, 'location': new_location, 'move': True})
         request.send_request()
         self.wait_for_torrentlist_update()
 
     def remove_torrent(self, id):
-        request = TransmissionRequest(self.host, self.port, 'torrent-remove', 1, {'ids': [id]})
+        request = TransmissionRequest(self.host, self.port, self.path, 'torrent-remove', 1, {'ids': [id]})
         request.send_request()
         self.wait_for_torrentlist_update()
 
     def remove_torrent_local_data(self, id):
-        request = TransmissionRequest(self.host, self.port, 'torrent-remove', 1, {'ids': [id], 'delete-local-data':True})
+        request = TransmissionRequest(self.host, self.port, self.path, 'torrent-remove', 1, {'ids': [id], 'delete-local-data':True})
         request.send_request()
         self.wait_for_torrentlist_update()
+
+    def add_torrent_tracker(self, id, tracker):
+        data = { 'ids' : [id],
+                 'trackerAdd' : [tracker] }
+        request = TransmissionRequest(self.host, self.port, self.path, 'torrent-set', 1, data)
+        request.send_request()
+        response = request.get_response()
+        return response['result'] if response['result'] != 'success' else ''
+
+    def remove_torrent_tracker(self, id, tracker):
+        data = { 'ids' : [id],
+                 'trackerRemove' : [tracker] }
+        request = TransmissionRequest(self.host, self.port, self.path, 'torrent-set', 1, data)
+        request.send_request()
+        response = request.get_response()
+        self.wait_for_torrentlist_update()
+        return response['result'] if response['result'] != 'success' else ''
 
     def increase_file_priority(self, file_nums):
         file_nums = list(file_nums)
@@ -604,7 +667,7 @@ class Transmission:
         else:
             request_data['files-wanted'] = file_nums
             request_data['priority-' + priority] = file_nums
-        request = TransmissionRequest(self.host, self.port, 'torrent-set', 1, request_data)
+        request = TransmissionRequest(self.host, self.port, self.path, 'torrent-set', 1, request_data)
         request.send_request()
         self.wait_for_details_update()
 
@@ -615,7 +678,6 @@ class Transmission:
         elif priority == 0:  return 'normal'
         elif priority >= 1:  return 'high'
         return '?'
-
 
     def wait_for_torrentlist_update(self):
         self.wait_for_update(7)
@@ -629,18 +691,21 @@ class Transmission:
             if self.update(0, update_id): break
             time.sleep(0.1)
 
-
     def get_status(self, torrent):
-        if torrent['status'] == Transmission.STATUS_CHECK_WAIT:
-            status = 'will verify'
+        if torrent['status'] == Transmission.STATUS_STOPPED:
+            status = 'paused'
         elif torrent['status'] == Transmission.STATUS_CHECK:
-            status = "verifying"
-        elif torrent['status'] == Transmission.STATUS_SEED:
-            status = 'seeding'
+            status = 'verifying'
+        elif torrent['status'] == Transmission.STATUS_CHECK_WAIT:
+            status = 'will verify'
         elif torrent['status'] == Transmission.STATUS_DOWNLOAD:
             status = ('idle','downloading')[torrent['rateDownload'] > 0]
-        elif torrent['status'] == Transmission.STATUS_STOPPED:
-            status = 'paused'
+        elif torrent['status'] == Transmission.STATUS_DOWNLOAD_WAIT:
+            status = 'will download'
+        elif torrent['status'] == Transmission.STATUS_SEED:
+            status = 'seeding'
+        elif torrent['status'] == Transmission.STATUS_SEED_WAIT:
+            status = 'will seed'
         else:
             status = 'unknown state'
         return status
@@ -665,24 +730,23 @@ class Transmission:
 class Interface:
     TRACKER_ITEM_HEIGHT = 6
 
-    def __init__(self, server):
-        self.server = server
-
+    def __init__(self):
         self.filter_list    = config.get('Filtering', 'filter')
         self.filter_inverse = config.getboolean('Filtering', 'invert')
+        self.sort_orders    = parse_sort_str(config.get('Sorting', 'order'))
+        self.compact_list   = config.getboolean('Misc', 'compact_list')
+        self.torrentname_is_progressbar = config.getboolean('Misc', 'torrentname_is_progressbar')
 
-        self.sort_orders  = config.get('Sorting', 'order').split(',') #['name']
-        self.sort_reverse = config.getboolean('Sorting', 'reverse')
-
-        self.torrents         = self.server.get_torrent_list(self.sort_orders, self.sort_reverse)
-        self.stats            = self.server.get_global_stats()
+        self.torrents         = server.get_torrent_list(self.sort_orders)
+        self.stats            = server.get_global_stats()
         self.torrent_details  = []
         self.selected_torrent = -1  # changes to >-1 when focus >-1 & user hits return
         self.all_paused       = False
         self.highlight_dialog = False
-        self.search_focus = 0
-        self.focus     = -1  # -1: nothing focused; 0: top of list; <# of torrents>-1: bottom of list
-        self.scrollpos = 0   # start of torrentlist
+        self.search_focus = 0   # like self.focus but for searches in torrent list
+        self.focused_id   = -1  # the id (provided by Transmission) of self.torrents[self.focus]
+        self.focus        = -1  # -1: nothing focused; 0: top of list; <# of torrents>-1: bottom of list
+        self.scrollpos    = 0   # start of torrentlist
         self.torrents_per_page  = 0 # will be set by manage_layout()
         self.rateDownload_width = self.rateUpload_width = 2
 
@@ -690,6 +754,8 @@ class Interface:
         self.focus_detaillist       = -1 # same as focus but for details
         self.selected_files         = [] # marked files in details
         self.scrollpos_detaillist   = 0  # same as scrollpos but for details
+        self.compact_torrentlist    = False # draw only one line for each torrent in compact mode
+        self.exit_now               = False
 
         self.keybindings = {
             ord('?'):               self.call_list_key_bindings,
@@ -717,8 +783,8 @@ class Interface:
             ord('P'):               self.pause_unpause_all_torrent,
             ord('v'):               self.verify_torrent,
             ord('y'):               self.verify_torrent,
-            ord('r'):               self.remove_torrent,
-            curses.KEY_DC:          self.remove_torrent,
+            ord('r'):               self.r_key,
+            curses.KEY_DC:          self.r_key,
             ord('R'):               self.remove_torrent_local_data,
             curses.KEY_SDC:         self.remove_torrent_local_data,
             curses.KEY_UP:          self.movement_keys,
@@ -729,18 +795,35 @@ class Interface:
             curses.KEY_NPAGE:       self.movement_keys,
             curses.KEY_HOME:        self.movement_keys,
             curses.KEY_END:         self.movement_keys,
+            ord('g'):               self.movement_keys,
+            ord('G'):               self.movement_keys,
+            curses.ascii.ctrl(ord('f')): self.movement_keys,
+            curses.ascii.ctrl(ord('b')): self.movement_keys,
+            curses.ascii.ctrl(ord('n')): self.movement_keys,
+            curses.ascii.ctrl(ord('p')): self.movement_keys,
             ord("\t"):              self.move_in_details,
             curses.KEY_BTAB:        self.move_in_details,
             ord('e'):               self.move_in_details,
             ord('c'):               self.move_in_details,
+            ord('C'):               self.toggle_compact_torrentlist,
             ord('h'):               self.file_pritority_or_switch_details,
             curses.KEY_LEFT:        self.file_pritority_or_switch_details,
-            ord(' '):               self.select_unselect_file,
+            ord(' '):               self.space_key,
             ord('a'):               self.a_key,
             ord('m'):               self.move_torrent,
             ord('n'):               self.reannounce_torrent,
             ord('/'):               self.dialog_search_torrentlist
         }
+
+        self.sort_options = [
+            ('name','_Name'), ('addedDate','_Age'), ('percentDone','_Progress'),
+            ('seeders','_Seeds'), ('leechers','Lee_ches'), ('sizeWhenDone', 'Si_ze'),
+            ('status','S_tatus'), ('uploadedEver','Up_loaded'),
+            ('rateUpload','_Upload Speed'), ('rateDownload','_Download Speed'),
+            ('uploadRatio','_Ratio'), ('peersConnected','P_eers'),
+            ('downloadDir', 'L_ocation'), ('reverse','Re_verse')
+        ]
+
 
         try:
             self.init_screen()
@@ -759,26 +842,30 @@ class Interface:
         curses.noecho() ; curses.cbreak() ; self.screen.keypad(1)
         curses.halfdelay(10) # STDIN timeout
 
-        try: curses.curs_set(0)   # hide cursor if possible
-        except curses.error: pass # some terminals seem to have problems with that
+        hide_cursor()
 
         # enable colors if available
         try:
             curses.start_color()
-            curses.init_pair(1,  curses.COLOR_BLACK,    curses.COLOR_BLUE)   # download rate
-            curses.init_pair(2,  curses.COLOR_BLACK,    curses.COLOR_RED)    # upload rate
-            curses.init_pair(3,  curses.COLOR_BLUE,     curses.COLOR_BLACK)  # unfinished progress
-            curses.init_pair(4,  curses.COLOR_GREEN,    curses.COLOR_BLACK)  # finished progress
-            curses.init_pair(5,  curses.COLOR_BLACK,    curses.COLOR_WHITE)  # eta/ratio
-            curses.init_pair(6,  curses.COLOR_CYAN,     curses.COLOR_BLACK)  # idle progress
-            curses.init_pair(7,  curses.COLOR_MAGENTA,  curses.COLOR_BLACK)  # verifying
-            curses.init_pair(8,  curses.COLOR_WHITE,    curses.COLOR_BLACK)  # button
-            curses.init_pair(9,  curses.COLOR_BLACK,    curses.COLOR_WHITE)  # focused button
-            curses.init_pair(10, curses.COLOR_WHITE,    curses.COLOR_RED)    # stats filter
-            curses.init_pair(11, curses.COLOR_RED,      curses.COLOR_BLACK)  # high   file priority
-            curses.init_pair(12, curses.COLOR_WHITE,    curses.COLOR_BLACK)  # normal file priority
-            curses.init_pair(13, curses.COLOR_YELLOW,   curses.COLOR_BLACK)  # low    file priority
-            curses.init_pair(14, curses.COLOR_BLUE,     curses.COLOR_BLACK)  # off    file priority
+            self.colors = ColorManager(dict(config.items('Colors')))
+            for name in sorted(self.colors.get_names()):
+                curses.init_pair(self.colors.get_id(name),
+                                 self.colors.get_fg(name),
+                                 self.colors.get_bg(name))
+        except:
+            pass
+
+        # http://bugs.python.org/issue2675
+        try:
+            del os.environ['LINES']
+            del os.environ['COLUMNS']
+        except:
+            pass
+
+        # http://bugs.python.org/issue2675
+        try:
+            del os.environ['LINES']
+            del os.environ['COLUMNS']
         except:
             pass
 
@@ -787,8 +874,6 @@ class Interface:
 
     def restore_screen(self):
         curses.endwin()
-
-
 
     def get_screen_size(self):
         time.sleep(0.1) # prevents curses.error on rapid resizing
@@ -805,12 +890,12 @@ class Interface:
                 break
         self.manage_layout()
 
-
     def manage_layout(self):
-        self.pad_height = max((len(self.torrents)+1)*3, self.height)
+        self.tlist_item_height = 3 if not self.compact_list else 1
+        self.pad_height = max((len(self.torrents)+1) * self.tlist_item_height, self.height)
         self.pad = curses.newpad(self.pad_height, self.width)
         self.mainview_height = self.height - 2
-        self.torrents_per_page = self.mainview_height/3
+        self.torrents_per_page = self.mainview_height / self.tlist_item_height
         self.detaillistitems_per_page = self.height - 8
 
         if self.selected_torrent > -1:
@@ -822,7 +907,7 @@ class Interface:
                 self.torrent_title_width -= self.rateDownload_width + 2
 
         elif self.torrents:
-            visible_torrents = self.torrents[self.scrollpos/3 : self.scrollpos/3 + self.torrents_per_page + 1]
+            visible_torrents = self.torrents[self.scrollpos/self.tlist_item_height : self.scrollpos/self.tlist_item_height + self.torrents_per_page + 1]
             self.rateDownload_width = self.get_rateDownload_width(visible_torrents)
             self.rateUpload_width   = self.get_rateUpload_width(visible_torrents)
 
@@ -842,7 +927,7 @@ class Interface:
 
     def get_rateUpload_width(self, torrents):
         new_width = max(map(lambda x: len(scale_bytes(x['rateUpload'])), torrents))
-        new_width = max(max(map(lambda x: len(num2str(x['uploadRatio'])), torrents)), new_width)
+        new_width = max(max(map(lambda x: len(num2str(x['uploadRatio'], '%.02f')), torrents)), new_width)
         new_width = max(len(scale_bytes(self.stats['uploadSpeed'])), new_width)
         new_width = max(self.rateUpload_width, new_width) # don't shrink
         return new_width
@@ -854,7 +939,7 @@ class Interface:
         self.draw_torrent_list()
 
         while True:
-            self.server.update(1)
+            server.update(1)
 
             # display torrentlist
             if self.selected_torrent == -1:
@@ -864,12 +949,19 @@ class Interface:
             else:
                 self.draw_details()
 
-            self.stats = self.server.get_global_stats()
+            self.stats = server.get_global_stats()
             self.draw_title_bar()  # show shortcuts and stuff
             self.draw_stats()      # show global states
-
             self.screen.move(0,0)  # in case cursor can't be invisible
-            if self.handle_user_input():
+            self.handle_user_input()
+            if self.exit_now:
+                sort_str = ','.join(map(lambda x: ('','reverse:')[x['reverse']] + x['name'], self.sort_orders))
+                config.set('Sorting', 'order',   sort_str)
+                config.set('Filtering', 'filter', self.filter_list)
+                config.set('Filtering', 'invert', str(self.filter_inverse))
+                config.set('Misc', 'compact_list', str(self.compact_list))
+                config.set('Misc', 'torrentname_is_progressbar', str(self.torrentname_is_progressbar))
+                save_config(cmd_args.configfile)
                 return
 
     def go_back_or_unfocus(self, c):
@@ -890,7 +982,7 @@ class Interface:
 
     def leave_details(self, c):
         if self.selected_torrent > -1:
-            self.server.set_torrent_details_id(-1)
+            server.set_torrent_details_id(-1)
             self.selected_torrent       = -1
             self.details_category_focus = 0
             self.scrollpos_detaillist   = 0
@@ -898,22 +990,34 @@ class Interface:
 
     def go_back_or_quit(self, c):
         if self.selected_torrent == -1:
-            config.set('Sorting', 'order',   ','.join(self.sort_orders))
-            config.set('Sorting', 'reverse', str(self.sort_reverse))
-            config.set('Filtering', 'filter', self.filter_list)
-            config.set('Filtering', 'invert', str(self.filter_inverse))
-            return quit()
+            self.exit_now = True
         else: # return to list view
-            self.server.set_torrent_details_id(-1)
+            server.set_torrent_details_id(-1)
             self.selected_torrent       = -1
             self.details_category_focus = 0
             self.focus_detaillist       = -1
             self.scrollpos_detaillist   = 0
             self.selected_files         = []
 
-    def a_key(self, c):
-        if self.selected_torrent > -1:
+    def space_key(self, c):
+        # File list
+        if self.selected_torrent > -1 and self.details_category_focus == 1:
             self.select_unselect_file(c)
+        # Torrent list
+        elif self.selected_torrent == -1:
+            self.select_torrent_detail_view(c)
+
+    def a_key(self, c):
+        # File list
+        if self.selected_torrent > -1 and self.details_category_focus == 1:
+            self.select_unselect_file(c)
+        # Trackers
+        elif self.selected_torrent > -1 and self.details_category_focus == 3:
+            self.add_tracker()
+
+        # Do nothing in other detail tabs
+        elif self.selected_torrent > -1:
+            pass
         else:
             self.add_torrent()
 
@@ -931,7 +1035,7 @@ class Interface:
 
     def t_key(self, c):
         if self.selected_torrent == -1:
-            self.server.toggle_turtle_mode()
+            server.toggle_turtle_mode()
         elif self.selected_torrent > -1:
             self.details_category_focus = 3
 
@@ -940,6 +1044,14 @@ class Interface:
             self.show_state_filter_menu(c)
         elif self.selected_torrent > -1:
             self.details_category_focus = 1
+
+    def r_key(self, c):
+        # Torrent list
+        if self.selected_torrent == -1:
+            self.remove_torrent(c)
+        # Trackers
+        elif self.selected_torrent > -1 and self.details_category_focus == 3:
+            self.remove_tracker()
 
     def right_key(self, c):
         if self.focus > -1 and self.selected_torrent == -1:
@@ -950,7 +1062,7 @@ class Interface:
     def add_torrent(self):
         location = self.dialog_input_text("Add torrent from file or URL", os.getcwd())
         if location:
-            error = self.server.add_torrent(location)
+            error = server.add_torrent(location)
             if error:
                 msg = wrap("Couldn't add torrent \"%s\":" % location)
                 msg.extend(wrap(error, self.width-4))
@@ -960,25 +1072,20 @@ class Interface:
         if self.focus > -1 and self.selected_torrent == -1:
             self.screen.clear()
             self.selected_torrent = self.focus
-            self.server.set_torrent_details_id(self.torrents[self.focus]['id'])
-            self.server.wait_for_details_update()
+            server.set_torrent_details_id(self.torrents[self.focus]['id'])
+            server.wait_for_details_update()
 
     def show_sort_order_menu(self, c):
         if self.selected_torrent == -1:
-           options = [('name','_Name'), ('addedDate','_Age'), ('percent_done','_Progress'),
-                      ('seeders','_Seeds'), ('leechers','Lee_ches'), ('sizeWhenDone', 'Si_ze'),
-                      ('status','S_tatus'), ('uploadedEver','Up_loaded'),
-                      ('rateUpload','_Upload Speed'), ('rateDownload','_Download Speed'),
-                      ('uploadRatio','_Ratio'), ('peersConnected','P_eers'),
-                      ('downloadDir', 'L_ocation'), ('reverse','Re_verse')]
-           choice = self.dialog_menu('Sort order', options,
-                                     map(lambda x: x[0]==self.sort_orders[-1], options).index(True)+1)
-           if choice == 'reverse':
-               self.sort_reverse = not self.sort_reverse
-           else:
-               self.sort_orders.append(choice)
-               while len(self.sort_orders) > 2:
-                   self.sort_orders.pop(0)
+           choice = self.dialog_menu('Sort order', self.sort_options,
+                                     map(lambda x: x[0]==self.sort_orders[-1]['name'], self.sort_options).index(True)+1)
+           if choice != -128:
+               if choice == 'reverse':
+                   self.sort_orders[-1]['reverse'] = not self.sort_orders[-1]['reverse']
+               else:
+                   self.sort_orders.append({'name':choice, 'reverse':False})
+                   while len(self.sort_orders) > 2:
+                       self.sort_orders.pop(0)
 
     def show_state_filter_menu(self, c):
         if self.selected_torrent == -1:
@@ -988,54 +1095,67 @@ class Interface:
                        ('invert','In_vert'), ('','_All')]
             choice = self.dialog_menu(('Show only','Filter all')[self.filter_inverse], options,
                                       map(lambda x: x[0]==self.filter_list, options).index(True)+1)
-            if choice == 'invert':
-                self.filter_inverse = not self.filter_inverse
-            else:
-                if choice == '': self.filter_inverse = False
-                self.filter_list = choice
+            if choice != -128:
+                if choice == 'invert':
+                    self.filter_inverse = not self.filter_inverse
+                else:
+                    if choice == '':
+                        self.filter_inverse = False
+                    self.filter_list = choice
 
     def global_upload(self, c):
-       current_limit = (0,self.stats['speed-limit-up'])[self.stats['speed-limit-up-enabled']]
+       current_limit = (-1,self.stats['speed-limit-up'])[self.stats['speed-limit-up-enabled']]
        limit = self.dialog_input_number("Global upload limit in kilobytes per second", current_limit)
-       self.server.set_rate_limit('up', limit)
+       if limit == -128:
+           return 
+       server.set_rate_limit('up', limit)
 
     def global_download(self, c):
-       current_limit = (0,self.stats['speed-limit-down'])[self.stats['speed-limit-down-enabled']]
+       current_limit = (-1,self.stats['speed-limit-down'])[self.stats['speed-limit-down-enabled']]
        limit = self.dialog_input_number("Global download limit in kilobytes per second", current_limit)
-       self.server.set_rate_limit('down', limit)
+       if limit == -128:
+           return 
+       server.set_rate_limit('down', limit)
 
     def torrent_upload(self, c):
         if self.focus > -1:
-            current_limit = (0,self.torrents[self.focus]['uploadLimit'])[self.torrents[self.focus]['uploadLimited']]
+            current_limit = (-1,self.torrents[self.focus]['uploadLimit'])[self.torrents[self.focus]['uploadLimited']]
             limit = self.dialog_input_number("Upload limit in kilobytes per second for\n%s" % \
                                                  self.torrents[self.focus]['name'], current_limit)
-            self.server.set_rate_limit('up', limit, self.torrents[self.focus]['id'])
+            if limit == -128:
+                return 
+            server.set_rate_limit('up', limit, self.torrents[self.focus]['id'])
 
     def torrent_download(self, c):
         if self.focus > -1:
-            current_limit = (0,self.torrents[self.focus]['downloadLimit'])[self.torrents[self.focus]['downloadLimited']]
+            current_limit = (-1,self.torrents[self.focus]['downloadLimit'])[self.torrents[self.focus]['downloadLimited']]
             limit = self.dialog_input_number("Download limit in Kilobytes per second for\n%s" % \
                                                  self.torrents[self.focus]['name'], current_limit)
-            self.server.set_rate_limit('down', limit, self.torrents[self.focus]['id'])
+            if limit == -128:
+                return 
+            server.set_rate_limit('down', limit, self.torrents[self.focus]['id'])
 
     def seed_ratio(self, c):
         if self.focus > -1:
-            if self.torrents[self.focus]['seedRatioMode'] == 0:
+            if self.torrents[self.focus]['seedRatioMode'] == 0:   # Use global settings
                 current_limit = ''
-            elif self.torrents[self.focus]['seedRatioMode'] == 1:
+            elif self.torrents[self.focus]['seedRatioMode'] == 1: # Stop seeding at seedRatioLimit
                 current_limit = self.torrents[self.focus]['seedRatioLimit']
-            elif self.torrents[self.focus]['seedRatioMode'] == 2:
-                current_limit = 0
-            limit = self.dialog_input_number("Seed ratio limit for\n%s" % \
-                                                 self.torrents[self.focus]['name'],
+            elif self.torrents[self.focus]['seedRatioMode'] == 2: # Seed regardless of ratio
+                current_limit = -1
+            limit = self.dialog_input_number("Seed ratio limit for\n%s" % self.torrents[self.focus]['name'],
                                              current_limit, floating_point=True, allow_empty=True)
-            self.server.set_seed_ratio(limit, self.torrents[self.focus]['id'])
+            if limit == -1:
+                limit = 0
+            if limit == -2: # -2 means 'empty' in dialog_input_number return codes
+                limit = -1
+            server.set_seed_ratio(float(limit), self.torrents[self.focus]['id'])
 
     def bandwidth_priority(self, c):
         if c == ord('-') and self.focus > -1:
-            self.server.decrease_bandwidth_priority(self.torrents[self.focus]['id'])
+            server.decrease_bandwidth_priority(self.torrents[self.focus]['id'])
         elif c == ord('+') and self.focus > -1:
-            self.server.increase_bandwidth_priority(self.torrents[self.focus]['id'])
+            server.increase_bandwidth_priority(self.torrents[self.focus]['id'])
 
     def pause_unpause_torrent(self, c):
         if self.focus > -1:
@@ -1044,90 +1164,121 @@ class Interface:
             else:
                 t = self.torrents[self.focus]
             if t['status'] == Transmission.STATUS_STOPPED:
-                self.server.start_torrent(t['id'])
+                server.start_torrent(t['id'])
             else:
-                self.server.stop_torrent(t['id'])
+                server.stop_torrent(t['id'])
 
     def pause_unpause_all_torrent(self, c):
         if self.all_paused:
             for t in self.torrents:
-                self.server.start_torrent(t['id'])
+                server.start_torrent(t['id'])
             self.all_paused = False
         else:
             for t in self.torrents:
-                self.server.stop_torrent(t['id'])
+                server.stop_torrent(t['id'])
             self.all_paused = True
 
     def verify_torrent(self, c):
         if self.focus > -1:
-            if self.torrents[self.focus]['status'] != Transmission.STATUS_CHECK:
-                self.server.verify_torrent(self.torrents[self.focus]['id'])
+            if self.torrents[self.focus]['status'] != Transmission.STATUS_CHECK \
+           and self.torrents[self.focus]['status'] != Transmission.STATUS_CHECK_WAIT:
+                server.verify_torrent(self.torrents[self.focus]['id'])
 
     def reannounce_torrent(self, c):
         if self.focus > -1:
-            self.server.reannounce_torrent(self.torrents[self.focus]['id'])
+            server.reannounce_torrent(self.torrents[self.focus]['id'])
 
     def remove_torrent(self, c):
         if self.focus > -1:
             name = self.torrents[self.focus]['name'][0:self.width - 15]
             if self.dialog_yesno("Remove %s?" % name) == True:
                 if self.selected_torrent > -1:  # leave details
-                    self.server.set_torrent_details_id(-1)
+                    server.set_torrent_details_id(-1)
                     self.selected_torrent = -1
                     self.details_category_focus = 0
-                self.server.remove_torrent(self.torrents[self.focus]['id'])
-                self.focus += 1
+                server.remove_torrent(self.torrents[self.focus]['id'])
 
     def remove_torrent_local_data(self, c):
         if self.focus > -1:
             name = self.torrents[self.focus]['name'][0:self.width - 15]
             if self.dialog_yesno("Remove and delete %s?" % name, important=True) == True:
                 if self.selected_torrent > -1:  # leave details
-                    self.server.set_torrent_details_id(-1)
+                    server.set_torrent_details_id(-1)
                     self.selected_torrent = -1
                     self.details_category_focus = 0
-                self.server.remove_torrent_local_data(self.torrents[self.focus]['id'])
-                self.focus += 1
+                server.remove_torrent_local_data(self.torrents[self.focus]['id'])
+
+    def add_tracker(self):
+        if server.get_rpc_version() < 10:
+            self.dialog_ok("You need Transmission v2.10 or higher to add trackers.")
+            return
+
+        tracker = self.dialog_input_text('Add tracker URL:')
+        if tracker:
+            t = self.torrent_details
+            response = server.add_torrent_tracker(t['id'], tracker)
+
+            if response:
+                msg = wrap("Couldn't add tracker: %s" % response)
+                self.dialog_ok("\n".join(msg))
+
+    def remove_tracker(self):
+        if server.get_rpc_version() < 10:
+            self.dialog_ok("You need Transmission v2.10 or higher to remove trackers.")
+            return
+
+        t = self.torrent_details
+        if (self.scrollpos_detaillist >= 0 and \
+            self.scrollpos_detaillist < len(t['trackerStats']) and \
+            self.dialog_yesno("Do you want to remove this tracker?") is True):
+
+            tracker = t['trackerStats'][self.scrollpos_detaillist]
+            response = server.remove_torrent_tracker(t['id'], tracker['id'])
+
+            if response:
+                msg = wrap("Couldn't remove tracker: %s" % response)
+                self.dialog_ok("\n".join(msg))
 
     def movement_keys(self, c):
-        if self.selected_torrent == -1:
-            if   c == curses.KEY_UP or c == ord('k'):
-                self.focus, self.scrollpos = self.move_up(self.focus, self.scrollpos, 3)
-            elif c == curses.KEY_DOWN or c == ord('j'):
-                self.focus, self.scrollpos = self.move_down(self.focus, self.scrollpos, 3,
+        if self.selected_torrent == -1 and len(self.torrents) > 0:
+            if   c == curses.KEY_UP or c == ord('k') or c == curses.ascii.ctrl(ord('p')):
+                self.focus, self.scrollpos = self.move_up(self.focus, self.scrollpos, self.tlist_item_height)
+            elif c == curses.KEY_DOWN or c == ord('j') or c == curses.ascii.ctrl(ord('n')):
+                self.focus, self.scrollpos = self.move_down(self.focus, self.scrollpos, self.tlist_item_height,
                                                             self.torrents_per_page, len(self.torrents))
-            elif c == curses.KEY_PPAGE:
-                self.focus, self.scrollpos = self.move_page_up(self.focus, self.scrollpos, 3,
+            elif c == curses.KEY_PPAGE or c == curses.ascii.ctrl(ord('b')):
+                self.focus, self.scrollpos = self.move_page_up(self.focus, self.scrollpos, self.tlist_item_height,
                                                                self.torrents_per_page)
-            elif c == curses.KEY_NPAGE:
-                self.focus, self.scrollpos = self.move_page_down(self.focus, self.scrollpos, 3,
+            elif c == curses.KEY_NPAGE or c == curses.ascii.ctrl(ord('f')):
+                self.focus, self.scrollpos = self.move_page_down(self.focus, self.scrollpos, self.tlist_item_height,
                                                                  self.torrents_per_page, len(self.torrents))
-            elif c == curses.KEY_HOME:
+            elif c == curses.KEY_HOME or c == ord('g'):
                 self.focus, self.scrollpos = self.move_to_top()
-            elif c == curses.KEY_END:
-                self.focus, self.scrollpos = self.move_to_end(3, self.torrents_per_page, len(self.torrents))
+            elif c == curses.KEY_END or c == ord('G'):
+                self.focus, self.scrollpos = self.move_to_end(self.tlist_item_height, self.torrents_per_page, len(self.torrents))
+            self.focused_id = self.torrents[self.focus]['id']
         elif self.selected_torrent > -1:
             # file list
             if self.details_category_focus == 1:
                 # focus/movement
-                if c == curses.KEY_UP or c == ord('k'):
+                if c == curses.KEY_UP or c == ord('k') or c == curses.ascii.ctrl(ord('p')):
                     self.focus_detaillist, self.scrollpos_detaillist = \
                         self.move_up(self.focus_detaillist, self.scrollpos_detaillist, 1)
-                elif c == curses.KEY_DOWN or c == ord('j'):
+                elif c == curses.KEY_DOWN or c == ord('j') or c == curses.ascii.ctrl(ord('n')):
                     self.focus_detaillist, self.scrollpos_detaillist = \
                         self.move_down(self.focus_detaillist, self.scrollpos_detaillist, 1,
                                        self.detaillistitems_per_page, len(self.torrent_details['files']))
-                elif c == curses.KEY_PPAGE:
+                elif c == curses.KEY_PPAGE or c == curses.ascii.ctrl(ord('b')):
                     self.focus_detaillist, self.scrollpos_detaillist = \
                         self.move_page_up(self.focus_detaillist, self.scrollpos_detaillist, 1,
                                           self.detaillistitems_per_page)
-                elif c == curses.KEY_NPAGE:
+                elif c == curses.KEY_NPAGE or c == curses.ascii.ctrl(ord('f')):
                     self.focus_detaillist, self.scrollpos_detaillist = \
                         self.move_page_down(self.focus_detaillist, self.scrollpos_detaillist, 1,
                                             self.detaillistitems_per_page, len(self.torrent_details['files']))
-                elif c == curses.KEY_HOME:
+                elif c == curses.KEY_HOME or c == ord('g'):
                     self.focus_detaillist, self.scrollpos_detaillist = self.move_to_top()
-                elif c == curses.KEY_END:
+                elif c == curses.KEY_END or c == ord('G'):
                     self.focus_detaillist, self.scrollpos_detaillist = \
                         self.move_to_end(1, self.detaillistitems_per_page, len(self.torrent_details['files']))
             list_len = 0
@@ -1138,7 +1289,7 @@ class Interface:
 
             # tracker list movement
             elif self.details_category_focus == 3:
-                list_len = len(self.torrent_details['trackerStats']) * self.TRACKER_ITEM_HEIGHT - 1
+                list_len = len(self.torrent_details['trackerStats'])
 
             # pieces list movement
             elif self.details_category_focus == 4:
@@ -1148,27 +1299,30 @@ class Interface:
                 list_len = int(piece_count / map_width) + 1
 
             if list_len:
-                if c == curses.KEY_UP or c == ord('k'):
+                if c == curses.KEY_UP or c == ord('k') or c == curses.ascii.ctrl(ord('p')):
                     if self.scrollpos_detaillist > 0:
                         self.scrollpos_detaillist -= 1
-                elif c == curses.KEY_DOWN or c == ord('j'):
-                    if self.scrollpos_detaillist < list_len - self.detaillistitems_per_page:
+                elif c == curses.KEY_DOWN or c == ord('j') or c == curses.ascii.ctrl(ord('n')):
+                    if self.scrollpos_detaillist < list_len - 1:
                         self.scrollpos_detaillist += 1
-                elif c == curses.KEY_PPAGE:
-                    if self.scrollpos_detaillist > self.detaillistitems_per_page - 1:
-                        self.scrollpos_detaillist -= self.detaillistitems_per_page - 1
+                elif c == curses.KEY_PPAGE or c == curses.ascii.ctrl(ord('b')):
+                    self.scrollpos_detaillist = \
+                        max(self.scrollpos_detaillist - self.detaillistitems_per_page - 1, 0)
+                elif c == curses.KEY_NPAGE or c == curses.ascii.ctrl(ord('f')):
+                    if self.scrollpos_detaillist + self.detaillistitems_per_page >= list_len:
+                        self.scrollpos_detaillist = list_len - 1
                     else:
-                        self.scrollpos_detaillist = 0
-                elif c == curses.KEY_NPAGE:
-                    if self.scrollpos_detaillist < list_len - self.detaillistitems_per_page * 2 + 1:
-                        self.scrollpos_detaillist += self.detaillistitems_per_page - 1
-                    elif list_len > self.detaillistitems_per_page:
-                        self.scrollpos_detaillist = list_len - self.detaillistitems_per_page
-                elif c == curses.KEY_HOME:
+                        self.scrollpos_detaillist += self.detaillistitems_per_page
+                elif c == curses.KEY_HOME or c == ord('g'):
                     self.scrollpos_detaillist = 0
-                elif c == curses.KEY_END:
-                    if list_len > self.detaillistitems_per_page:
-                        self.scrollpos_detaillist = list_len - self.detaillistitems_per_page
+                elif c == curses.KEY_END or c == ord('G'):
+                    self.scrollpos_detaillist = list_len - 1
+
+            # Disallow scrolling past the last item that would cause blank
+            # space to be displayed in pieces and peer lists.
+            if self.details_category_focus in (2, 4):
+                self.scrollpos_detaillist = min(self.scrollpos_detaillist,
+                    max(0, list_len - self.detaillistitems_per_page))
 
     def file_pritority_or_switch_details(self, c):
         if self.selected_torrent > -1:
@@ -1178,9 +1332,9 @@ class Interface:
                         (self.selected_files or self.focus_detaillist > -1):
                     if self.selected_files:
                         files = set(self.selected_files)
-                        self.server.increase_file_priority(files)
+                        server.increase_file_priority(files)
                     elif self.focus_detaillist > -1:
-                        self.server.increase_file_priority([self.focus_detaillist])
+                        server.increase_file_priority([self.focus_detaillist])
                 else:
                     self.scrollpos_detaillist = 0
                     self.next_details()
@@ -1189,15 +1343,15 @@ class Interface:
                         (self.selected_files or self.focus_detaillist > -1):
                     if self.selected_files:
                         files = set(self.selected_files)
-                        self.server.decrease_file_priority(files)
+                        server.decrease_file_priority(files)
                     elif self.focus_detaillist > -1:
-                        self.server.decrease_file_priority([self.focus_detaillist])
+                        server.decrease_file_priority([self.focus_detaillist])
                 else:
                     self.scrollpos_detaillist = 0
                     self.prev_details()
 
     def select_unselect_file(self, c):
-        if self.selected_torrent > -1 and self.details_category_focus == 1:
+        if self.selected_torrent > -1 and self.details_category_focus == 1 and self.focus_detaillist >= 0:
             # file selection with space
             if c == ord(' '):
                 try:
@@ -1226,13 +1380,16 @@ class Interface:
     def call_list_key_bindings(self, c):
         self.list_key_bindings()
 
+    def toggle_compact_torrentlist(self, c):
+        self.compact_list = not self.compact_list
+
     def move_torrent(self, c):
         if self.focus > -1:
             location = homedir2tilde(self.torrents[self.focus]['downloadDir'])
             msg = 'Move "%s" from\n%s to' % (self.torrents[self.focus]['name'], location)
             path = self.dialog_input_text(msg, location)
             if path:
-                self.server.move_torrent(self.torrents[self.focus]['id'], tilde2homedir(path))
+                server.move_torrent(self.torrents[self.focus]['id'], tilde2homedir(path))
 
     def handle_user_input(self):
         c = self.screen.getch()
@@ -1258,13 +1415,14 @@ class Interface:
         elif self.filter_list == 'paused':
             self.torrents = [t for t in self.torrents if t['status'] == Transmission.STATUS_STOPPED]
         elif self.filter_list == 'seeding':
-            self.torrents = [t for t in self.torrents if t['status'] == Transmission.STATUS_SEED]
+            self.torrents = [t for t in self.torrents if t['status'] == Transmission.STATUS_SEED \
+                                 or t['status'] == Transmission.STATUS_SEED_WAIT]
         elif self.filter_list == 'incomplete':
-            self.torrents = [t for t in self.torrents if t['percent_done'] < 100]
+            self.torrents = [t for t in self.torrents if t['percentDone'] < 100]
         elif self.filter_list == 'active':
             self.torrents = [t for t in self.torrents if t['peersGettingFromUs'] > 0 \
-                                 or t['peersSendingToUs'] > 0 or t['status'] == Transmission.STATUS_CHECK]
-            #self.torrents = [t for t in self.torrents if t['peersConnected'] > 0]
+                                 or t['peersSendingToUs'] > 0 \
+                                 or t['status'] == Transmission.STATUS_CHECK]
         elif self.filter_list == 'verifying':
             self.torrents = [t for t in self.torrents if t['status'] == Transmission.STATUS_CHECK \
                                  or t['status'] == Transmission.STATUS_CHECK_WAIT]
@@ -1272,68 +1430,67 @@ class Interface:
         if self.filter_inverse:
             self.torrents = [t for t in unfiltered if t not in self.torrents]
 
-    def follow_list_focus(self, id):
+    def follow_list_focus(self):
         if self.focus == -1:
             return
-        elif len(self.torrents) == 0:
+
+        # check if list is empty or id to look for isn't in list
+        ids = [t['id'] for t in self.torrents]
+        if len(self.torrents) == 0 or self.focused_id not in ids:
             self.focus, self.scrollpos = -1, 0
             return
 
+        # find focused_id
         self.focus = min(self.focus, len(self.torrents)-1)
-        if self.torrents[self.focus]['id'] != id:
+        if self.torrents[self.focus]['id'] != self.focused_id:
             for i,t in enumerate(self.torrents):
-                if id == t['id']:
-                    new_focus = i
+                if t['id'] == self.focused_id:
+                    self.focus = i
                     break
-            try:
-                self.focus = new_focus
-            except UnboundLocalError:
-                self.focus, self.scrollpos = -1, 0
-                return
 
         # make sure the focus is not above the visible area
-        while self.focus < (self.scrollpos/3):
-            self.scrollpos -= 3
+        while self.focus < (self.scrollpos/self.tlist_item_height):
+            self.scrollpos -= self.tlist_item_height
         # make sure the focus is not below the visible area
-        while self.focus > (self.scrollpos/3) + self.torrents_per_page-1:
-            self.scrollpos += 3
+        while self.focus > (self.scrollpos/self.tlist_item_height) + self.torrents_per_page-1:
+            self.scrollpos += self.tlist_item_height
         # keep min and max bounds
-        self.scrollpos = min(self.scrollpos, (len(self.torrents) - self.torrents_per_page) * 3)
+        self.scrollpos = min(self.scrollpos, (len(self.torrents) - self.torrents_per_page) * self.tlist_item_height)
         self.scrollpos = max(0, self.scrollpos)
 
     def draw_torrent_list(self, search_keyword=''):
-        self.torrents = self.server.get_torrent_list(self.sort_orders, self.sort_reverse)
+        self.torrents = server.get_torrent_list(self.sort_orders)
         self.filter_torrent_list()
-        try:
-            focused_id = self.torrents[self.focus]['id']
-        except IndexError:
-            focused_id = -1
+
         if search_keyword:
             matched_torrents = [t for t in self.torrents if search_keyword.lower() in t['name'].lower()]
             if matched_torrents:
                 self.focus = 0
                 if self.search_focus >= len(matched_torrents):
                     self.search_focus = 0
-                focused_id = matched_torrents[self.search_focus]['id']
+                self.focused_id = matched_torrents[self.search_focus]['id']
                 self.highlight_dialog = False
             else:
                 self.highlight_dialog = True
                 curses.beep()
         else:
             self.search_focus = 0
-        self.follow_list_focus(focused_id)
+
+        self.follow_list_focus()
         self.manage_layout()
 
         ypos = 0
         for i in range(len(self.torrents)):
-            self.draw_torrentlist_item(self.torrents[i], (i == self.focus), ypos)
-            ypos += 3
+            ypos += self.draw_torrentlist_item(self.torrents[i],
+                                               (i == self.focus),
+                                               self.compact_list,
+                                               ypos)
 
         self.pad.refresh(self.scrollpos,0, 1,0, self.mainview_height,self.width-1)
         self.screen.refresh()
 
 
-    def draw_torrentlist_item(self, torrent, focused, y):
+    def draw_torrentlist_item(self, torrent, focused, compact, y):
         # the torrent name is also a progress bar
         self.draw_torrentlist_title(torrent, focused, self.torrent_title_width, y)
 
@@ -1342,69 +1499,76 @@ class Interface:
             self.draw_downloadrate(torrent, y)
         if torrent['status'] == Transmission.STATUS_DOWNLOAD or torrent['status'] == Transmission.STATUS_SEED:
             self.draw_uploadrate(torrent, y)
-        if torrent['percent_done'] < 100 and torrent['status'] == Transmission.STATUS_DOWNLOAD:
-            self.draw_eta(torrent, y)
 
-        self.draw_ratio(torrent, y)
+        if not compact:
+            # the line below the title/progress
+            if torrent['percentDone'] < 100 and torrent['status'] == Transmission.STATUS_DOWNLOAD:
+                self.draw_eta(torrent, y)
 
-        # the line below the title/progress
-        self.draw_torrentlist_status(torrent, focused, y)
+            self.draw_ratio(torrent, y)
+            self.draw_torrentlist_status(torrent, focused, y)
 
+            return 3 # number of lines that were used for drawing the list item
+        else:
+            # Draw ratio in place of upload rate if upload rate = 0
+            if not torrent['rateUpload']:
+                self.draw_ratio(torrent, y - 1)
 
+            return 1
 
     def draw_downloadrate(self, torrent, ypos):
         self.pad.move(ypos, self.width-self.rateDownload_width-self.rateUpload_width-3)
         self.pad.addch(curses.ACS_DARROW, (0,curses.A_BOLD)[torrent['downloadLimited']])
         rate = ('',scale_bytes(torrent['rateDownload']))[torrent['rateDownload']>0]
         self.pad.addstr(rate.rjust(self.rateDownload_width),
-                        curses.color_pair(1) + curses.A_BOLD + curses.A_REVERSE)
+                        curses.color_pair(self.colors.get_id('download_rate')) + curses.A_BOLD + curses.A_REVERSE)
     def draw_uploadrate(self, torrent, ypos):
         self.pad.move(ypos, self.width-self.rateUpload_width-1)
         self.pad.addch(curses.ACS_UARROW, (0,curses.A_BOLD)[torrent['uploadLimited']])
         rate = ('',scale_bytes(torrent['rateUpload']))[torrent['rateUpload']>0]
         self.pad.addstr(rate.rjust(self.rateUpload_width),
-                        curses.color_pair(2) + curses.A_BOLD + curses.A_REVERSE)
+                        curses.color_pair(self.colors.get_id('upload_rate')) + curses.A_BOLD + curses.A_REVERSE)
     def draw_ratio(self, torrent, ypos):
         self.pad.addch(ypos+1, self.width-self.rateUpload_width-1, curses.ACS_DIAMOND,
                        (0,curses.A_BOLD)[torrent['uploadRatio'] < 1 and torrent['uploadRatio'] >= 0])
         self.pad.addstr(ypos+1, self.width-self.rateUpload_width,
-                        num2str(torrent['uploadRatio']).rjust(self.rateUpload_width),
-                        curses.color_pair(5) + curses.A_BOLD + curses.A_REVERSE)
+                        num2str(torrent['uploadRatio'], '%.02f').rjust(self.rateUpload_width),
+                        curses.color_pair(self.colors.get_id('eta+ratio')) + curses.A_BOLD + curses.A_REVERSE)
     def draw_eta(self, torrent, ypos):
         self.pad.addch(ypos+1, self.width-self.rateDownload_width-self.rateUpload_width-3, curses.ACS_PLMINUS)
         self.pad.addstr(ypos+1, self.width-self.rateDownload_width-self.rateUpload_width-2,
                         scale_time(torrent['eta']).rjust(self.rateDownload_width),
-                        curses.color_pair(5) + curses.A_BOLD + curses.A_REVERSE)
+                        curses.color_pair(self.colors.get_id('eta+ratio')) + curses.A_BOLD + curses.A_REVERSE)
 
 
     def draw_torrentlist_title(self, torrent, focused, width, ypos):
         if torrent['status'] == Transmission.STATUS_CHECK:
-            percent_done = float(torrent['recheckProgress']) * 100
+            percentDone = float(torrent['recheckProgress']) * 100
         else:
-            percent_done = torrent['percent_done']
+            percentDone = torrent['percentDone']
 
-        bar_width = int(float(width) * (float(percent_done)/100))
-        title = torrent['name'][0:width].ljust(width)
+        bar_width = int(float(width) * (float(percentDone)/100))
 
-        size = "%5s" % scale_bytes(torrent['sizeWhenDone'])
-        if torrent['percent_done'] < 100:
+        size = "%6s" % scale_bytes(torrent['sizeWhenDone'])
+        if torrent['percentDone'] < 100:
             if torrent['seeders'] <= 0 and torrent['status'] != Transmission.STATUS_CHECK:
-                size = "%5s / " % scale_bytes(torrent['available']) + size
-            size = "%5s / " % scale_bytes(torrent['haveValid'] + torrent['haveUnchecked']) + size
+                size = "%6s / " % scale_bytes(torrent['available']) + size
+            size = "%6s / " % scale_bytes(torrent['haveValid'] + torrent['haveUnchecked']) + size
         size = '| ' + size
-        title = title[:-len(size)] + size
+        title = ljust_columns(torrent['name'], width - len(size)) + size
 
-        if torrent['status'] == Transmission.STATUS_SEED:
-            color = curses.color_pair(4)
+        if torrent['status'] == Transmission.STATUS_SEED \
+        or torrent['status'] == Transmission.STATUS_SEED_WAIT:
+            color = curses.color_pair(self.colors.get_id('title_seed'))
         elif torrent['status'] == Transmission.STATUS_STOPPED:
-            color = curses.color_pair(5) + curses.A_UNDERLINE
-        elif torrent['status'] == Transmission.STATUS_CHECK or \
-                torrent['status'] == Transmission.STATUS_CHECK_WAIT:
-            color = curses.color_pair(7)
+            color = curses.color_pair(self.colors.get_id('title_paused'))
+        elif torrent['status'] == Transmission.STATUS_CHECK \
+          or torrent['status'] == Transmission.STATUS_CHECK_WAIT:
+            color = curses.color_pair(self.colors.get_id('title_verify'))
         elif torrent['rateDownload'] == 0:
-            color = curses.color_pair(6)
-        elif torrent['percent_done'] < 100:
-            color = curses.color_pair(3)
+            color = curses.color_pair(self.colors.get_id('title_idle'))
+        elif torrent['percentDone'] < 100:
+            color = curses.color_pair(self.colors.get_id('title_download'))
         else:
             color = 0
 
@@ -1414,30 +1578,33 @@ class Interface:
             tag += curses.A_BOLD
             tag_done += curses.A_BOLD
 
-        # addstr() dies when you tell it to draw on the last column of the
-        # terminal, so we have to catch this exception.
-        try:
-            self.pad.addstr(ypos, 0, title[0:bar_width].encode('utf-8'), tag_done)
-            self.pad.addstr(ypos, bar_width, title[bar_width:].encode('utf-8'), tag)
-        except:
-            pass
+        if self.torrentname_is_progressbar:
+            # addstr() dies when you tell it to draw on the last column of the
+            # terminal, so we have to catch this exception.
+            try:
+                self.pad.addstr(ypos, 0, title[0:bar_width].encode('utf-8'), tag_done)
+                self.pad.addstr(ypos, bar_width, title[bar_width:].encode('utf-8'), tag)
+            except:
+                pass
+        else:
+            self.pad.addstr(ypos, 0, title.encode('utf-8'), tag_done)
 
 
     def draw_torrentlist_status(self, torrent, focused, ypos):
         peers = ''
-        parts = [self.server.get_status(torrent)]
+        parts = [server.get_status(torrent)]
 
         # show tracker error if appropriate
         if torrent['errorString'] and \
                 not torrent['seeders'] and not torrent['leechers'] and \
                 not torrent['status'] == Transmission.STATUS_STOPPED:
-            parts[0] = torrent['errorString']
+            parts[0] = torrent['errorString'].encode('utf-8')
 
         else:
             if torrent['status'] == Transmission.STATUS_CHECK:
                 parts[0] += " (%d%%)" % int(float(torrent['recheckProgress']) * 100)
             elif torrent['status'] == Transmission.STATUS_DOWNLOAD:
-                parts[0] += " (%d%%)" % torrent['percent_done']
+                parts[0] += " (%d%%)" % torrent['percentDone']
             parts[0] = parts[0].ljust(20)
 
             # seeds and leeches will be appended right justified later
@@ -1453,24 +1620,21 @@ class Interface:
                 parts.append("%4s peer%s connected" % (torrent['peersConnected'],
                                                        ('s',' ')[torrent['peersConnected'] == 1]))
 
-
         if focused: tags = curses.A_REVERSE + curses.A_BOLD
         else:       tags = 0
 
         remaining_space = self.torrent_title_width - sum(map(lambda x: len(x), parts), len(peers)) - 2
         delimiter = ' ' * int(remaining_space / (len(parts)))
 
-        line = self.server.get_bandwidth_priority(torrent) + ' ' + delimiter.join(parts)
+        line = server.get_bandwidth_priority(torrent) + ' ' + delimiter.join(parts)
 
         # make sure the peers element is always right justified
         line += ' ' * int(self.torrent_title_width - len(line) - len(peers)) + peers
         self.pad.addstr(ypos+1, 0, line, tags)
 
 
-
-
     def draw_details(self):
-        self.torrent_details = self.server.get_torrent_details()
+        self.torrent_details = server.get_torrent_details()
         self.manage_layout()
 
         # details could need more space than the torrent list
@@ -1478,7 +1642,7 @@ class Interface:
         self.pad = curses.newpad(self.pad_height, self.width)
 
         # torrent name + progress bar
-        self.draw_torrentlist_item(self.torrent_details, False, 0)
+        self.draw_torrentlist_item(self.torrent_details, False, False, 0)
 
         # divider + menu
         menu_items = ['_Overview', "_Files", 'P_eers', '_Trackers', 'Pie_ces' ]
@@ -1546,7 +1710,7 @@ class Interface:
         info[-1].append("%s" % scale_bytes(t['haveValid'], 'long') + \
                         " (%d%%) verified;  " % int(percent(t['sizeWhenDone'], t['haveValid'])))
         info[-1].append("%s corrupt"  % scale_bytes(t['corruptEver'], 'long'))
-        if t['percent_done'] < 100:
+        if t['percentDone'] < 100:
             info[-1][-1] += ';  '
             if t['rateDownload']:
                 info[-1].append("receiving %s per second" % scale_bytes(t['rateDownload'], 'long'))
@@ -1623,7 +1787,7 @@ class Interface:
         self.pad.addstr(ypos+2, 1, '  Started: ' + timestamp(t['startDate']))
         self.pad.addstr(ypos+3, 1, ' Activity: ' + timestamp(t['activityDate']))
 
-        if t['percent_done'] < 100 and t['eta'] > 0:
+        if t['percentDone'] < 100 and t['eta'] > 0:
             self.pad.addstr(ypos+4, 1, 'Finishing: ' + timestamp(time.time() + t['eta']))
         elif t['doneDate'] <= 0:
             self.pad.addstr(ypos+4, 1, 'Finishing: sometime')
@@ -1667,13 +1831,17 @@ class Interface:
             xpos = 0
             for part in re.split('(high|normal|low|off)', line[0:30], 1):
                 if part == 'high':
-                    self.pad.addstr(ypos, xpos, part, curses_tags + curses.color_pair(11))
+                    self.pad.addstr(ypos, xpos, part,
+                                    curses_tags + curses.color_pair(self.colors.get_id('file_prio_high')))
                 elif part == 'normal':
-                    self.pad.addstr(ypos, xpos, part, curses_tags + curses.color_pair(12))
+                    self.pad.addstr(ypos, xpos, part,
+                                    curses_tags + curses.color_pair(self.colors.get_id('file_prio_normal')))
                 elif part == 'low':
-                    self.pad.addstr(ypos, xpos, part, curses_tags + curses.color_pair(13))
+                    self.pad.addstr(ypos, xpos, part,
+                                    curses_tags + curses.color_pair(self.colors.get_id('file_prio_low')))
                 elif part == 'off':
-                    self.pad.addstr(ypos, xpos, part, curses_tags + curses.color_pair(14))
+                    self.pad.addstr(ypos, xpos, part,
+                                    curses_tags + curses.color_pair(self.colors.get_id('file_prio_off')))
                 else:
                     self.pad.addstr(ypos, xpos, part.encode('utf-8'), curses_tags)
                 xpos += len(part)
@@ -1731,7 +1899,7 @@ class Interface:
     def create_filelist_line(self, name, index, percent, length, current_depth):
         line = "%s  %6.1f%%" % (str(index+1).rjust(3), percent) + \
             '  '+scale_bytes(length).rjust(5) + \
-            '  '+self.server.get_file_priority(self.torrent_details['id'], index).center(8) + \
+            '  '+server.get_file_priority(self.torrent_details['id'], index).center(8) + \
             " %s| %s" % ('  '*current_depth, name[0:self.width-31-current_depth])
         if index == self.focus_detaillist:
             line = '_F' + line
@@ -1740,8 +1908,11 @@ class Interface:
         return line
 
     def draw_peerlist(self, ypos):
-        start = self.scrollpos_detaillist
-        end   = self.scrollpos_detaillist + self.detaillistitems_per_page
+        # Start drawing list either at the "selected" index, or at the index
+        # that is required to display all remaining items without further scrolling.
+        last_possible_index = max(0, len(self.torrent_details['peers']) - self.detaillistitems_per_page)
+        start = min(self.scrollpos_detaillist, last_possible_index)
+        end = start + self.detaillistitems_per_page
         peers = self.torrent_details['peers'][start:end]
 
         # Find width of columns
@@ -1763,8 +1934,8 @@ class Interface:
         ypos += 1
 
         # Peers
-        hosts = self.server.get_hosts()
-        geo_ips = self.server.get_geo_ips()
+        hosts = server.get_hosts()
+        geo_ips = server.get_geo_ips()
         for index, peer in enumerate(peers):
             if features['dns']:
                 try:
@@ -1820,18 +1991,36 @@ class Interface:
         def addstr(ypos, xpos, *args):
             if ypos > top and ypos < self.height - 2:
                 self.pad.addstr(ypos, xpos, *args)
-        tlist = self.torrent_details['trackerStats']
-        ypos -= self.scrollpos_detaillist % self.TRACKER_ITEM_HEIGHT
-        start = self.scrollpos_detaillist / self.TRACKER_ITEM_HEIGHT
-        tlist = tlist[start:]
+
+        tracker_per_page = self.detaillistitems_per_page // self.TRACKER_ITEM_HEIGHT
+        page = self.scrollpos_detaillist // tracker_per_page
+        start = tracker_per_page * page
+        end = tracker_per_page * (page + 1)
+        tlist = self.torrent_details['trackerStats'][start:end]
+
+        # keep position in range when last tracker gets deleted
+        self.scrollpos_detaillist = min(self.scrollpos_detaillist,
+                                        len(self.torrent_details['trackerStats'])-1)
+        # show newly added tracker when list was empty before
+        if self.torrent_details['trackerStats']:
+            self.scrollpos_detaillist = max(0, self.scrollpos_detaillist)
+
         current_tier = -1
-        for t in tlist:
+        for index, t in enumerate(tlist):
             announce_msg_size = scrape_msg_size = 0
+            selected = t == self.torrent_details['trackerStats'][self.scrollpos_detaillist]
 
             if current_tier != t['tier']:
                 current_tier = t['tier']
-                addstr(ypos, 0, ("Tier %d" % (current_tier+1)).ljust(self.width), curses.A_REVERSE)
+
+                tiercolor = curses.A_BOLD + curses.A_REVERSE \
+                            if selected else curses.A_REVERSE
+                addstr(ypos, 0, ("Tier %d" % (current_tier+1)).ljust(self.width), tiercolor)
                 ypos += 1
+
+            if selected:
+                for i in range(4):
+                    addstr(ypos+i, 0, ' ', curses.A_BOLD + curses.A_REVERSE)
 
             addstr(ypos+1, 4,  "Last announce: %s" % timestamp(t['lastAnnounceTime']))
             addstr(ypos+1, 57, "  Last scrape: %s" % timestamp(t['lastScrapeTime']))
@@ -1844,7 +2033,7 @@ class Interface:
             else:
                 addstr(ypos,   2, t['announce'], curses.A_UNDERLINE)
                 addstr(ypos+2, 9, "Response:")
-                announce_msg_size = self.wrap_and_draw_result(top, ypos+2, 19, t['lastAnnounceResult'])
+                announce_msg_size = self.wrap_and_draw_result(top, ypos+2, 19, t['lastAnnounceResult'].encode('utf-8'))
 
             if t['lastScrapeSucceeded']:
                 seeds   = "%s seed%s" % (num2str(t['seederCount']), ('s', '')[t['seederCount']==1])
@@ -1896,8 +2085,8 @@ class Interface:
             if counter & 7 == 0:
                 block = ord(pieces[counter >> 3])
             piece = block & 0x80
-            if piece: self.pad.addch(ypos, xpos, ' ', curses.A_REVERSE)
-            else:     self.pad.addch(ypos, xpos, '_')
+            if piece: self.pad.addch(ypos, xpos, curses.ACS_CKBOARD)
+            else:     self.pad.addch(ypos, xpos, curses.ACS_BULLET)
             block <<= 1
 
         missing_pieces = piece_count - counter - 1
@@ -1989,17 +2178,17 @@ class Interface:
     def draw_torrents_stats(self):
         if self.selected_torrent > -1 and self.details_category_focus == 2:
             self.screen.insstr((self.height-1), 0,
-                               "%d peer%s connected:" % (self.torrent_details['peersConnected'],
+                               "%d peer%s connected (" % (self.torrent_details['peersConnected'],
                                                          ('s','')[self.torrent_details['peersConnected'] == 1]) + \
-                                   " Trackers: %-3d" % self.torrent_details['peersFrom']['fromTracker'] + \
-                                   " DHT: %-3d" % self.torrent_details['peersFrom']['fromDht'] + \
-                                   " LTEP: %-3d" % self.torrent_details['peersFrom']['fromLtep'] + \
-                                   " PEX: %-3d" % self.torrent_details['peersFrom']['fromPex'] + \
-                                   " Incoming: %-3d" % self.torrent_details['peersFrom']['fromIncoming'] + \
-                                   " Cache: %-3d" % self.torrent_details['peersFrom']['fromCache'],
+                                   "Trackers:%d " % self.torrent_details['peersFrom']['fromTracker'] + \
+                                   "DHT:%d " % self.torrent_details['peersFrom']['fromDht'] + \
+                                   "LTEP:%d " % self.torrent_details['peersFrom']['fromLtep'] + \
+                                   "PEX:%d " % self.torrent_details['peersFrom']['fromPex'] + \
+                                   "Incoming:%d " % self.torrent_details['peersFrom']['fromIncoming'] + \
+                                   "Cache:%d)" % self.torrent_details['peersFrom']['fromCache'],
                                curses.A_REVERSE)
         else:
-            self.screen.addstr((self.height-1), 0, "Torrent%s: " % ('s','')[len(self.torrents) == 1],
+            self.screen.addstr((self.height-1), 0, "Torrent%s:" % ('s','')[len(self.torrents) == 1],
                                    curses.A_REVERSE)
             self.screen.addstr("%d (" % len(self.torrents), curses.A_REVERSE)
 
@@ -2007,17 +2196,34 @@ class Interface:
             seeding = len(filter(lambda x: x['status']==Transmission.STATUS_SEED, self.torrents))
             paused = self.stats['pausedTorrentCount']
 
-            self.screen.addstr("Downloading: ", curses.A_REVERSE)
+            self.screen.addstr("Downloading:", curses.A_REVERSE)
             self.screen.addstr("%d " % downloading, curses.A_REVERSE)
-            self.screen.addstr("Seeding: ", curses.A_REVERSE)
+            self.screen.addstr("Seeding:", curses.A_REVERSE)
             self.screen.addstr("%d " % seeding, curses.A_REVERSE)
-            self.screen.addstr("Paused: ", curses.A_REVERSE)
+            self.screen.addstr("Paused:", curses.A_REVERSE)
             self.screen.addstr("%d) " % paused, curses.A_REVERSE)
 
             if self.filter_list:
-                self.screen.addstr("Showing only: ", curses.A_REVERSE)
+                self.screen.addstr("Filter:", curses.A_REVERSE)
                 self.screen.addstr("%s%s" % (('','not ')[self.filter_inverse], self.filter_list),
-                                   curses.color_pair(10))
+                                   curses.color_pair(self.colors.get_id('filter_status'))
+                                   + curses.A_REVERSE)
+
+            # show last sort order (if terminal size permits it)
+            curpos_y, curpos_x = self.screen.getyx()
+            if self.sort_orders and self.width - curpos_x > 20:
+                self.screen.addstr(" Sort by:", curses.A_REVERSE)
+                name = [name[1] for name in self.sort_options if name[0] == self.sort_orders[-1]['name']][0]
+                name = name.replace('_', '').lower()
+                curses_tags = curses.color_pair(self.colors.get_id('filter_status')) + curses.A_REVERSE
+                if self.sort_orders[-1]['reverse']:
+                    self.screen.addch(curses.ACS_DARROW, curses_tags)
+                else:
+                    self.screen.addch(curses.ACS_UARROW, curses_tags)
+                try:  # 'name' may be too long
+                    self.screen.addstr(name, curses_tags)
+                except curses.error:
+                    pass
 
     def draw_global_rates(self):
         rates_width = self.rateDownload_width + self.rateUpload_width + 3
@@ -2040,13 +2246,16 @@ class Interface:
         self.screen.move(self.height - 1, self.width - rates_width - limits_width)
         self.screen.addch(curses.ACS_DARROW, curses.A_REVERSE)
         self.screen.addstr(scale_bytes(self.stats['downloadSpeed']).rjust(self.rateDownload_width),
-                           curses.A_REVERSE + curses.A_BOLD + curses.color_pair(1))
+                           curses.color_pair(self.colors.get_id('download_rate'))
+                           + curses.A_REVERSE + curses.A_BOLD)
         self.screen.addstr(limits['dn_limit'], curses.A_REVERSE)
         self.screen.addch(' ', curses.A_REVERSE)
         self.screen.addch(curses.ACS_UARROW, curses.A_REVERSE)
         self.screen.insstr(limits['up_limit'], curses.A_REVERSE)
         self.screen.insstr(scale_bytes(self.stats['uploadSpeed']).rjust(self.rateUpload_width),
-                           curses.A_REVERSE + curses.A_BOLD + curses.color_pair(2))
+                           curses.color_pair(self.colors.get_id('upload_rate'))
+                           + curses.A_REVERSE + curses.A_BOLD)
+
 
 
     def draw_title_bar(self):
@@ -2054,7 +2263,7 @@ class Interface:
         self.draw_connection_status()
         self.draw_quick_help()
     def draw_connection_status(self):
-        status = "Transmission @ %s:%s" % (self.server.host, self.server.port)
+        status = "Transmission @ %s:%s" % (server.host, server.port)
         if cmd_args.DEBUG:
             status = "%d x %d " % (self.width, self.height) + status
         self.screen.addstr(0, 0, status.encode('utf-8'), curses.A_REVERSE)
@@ -2075,6 +2284,8 @@ class Interface:
                         ('escape','Unfocus/-select')] + help
             elif self.details_category_focus == 2:
                 help = [('F1/?','Explain flags')] + help
+            elif self.details_category_focus == 3:
+                help = [('a','Add Tracker'),('r','Remove Tracker')] + help
 
         line = ' | '.join(map(lambda x: "%s %s" % (x[0], x[1]), help))
         line = line[0:self.width]
@@ -2104,6 +2315,7 @@ class Interface:
                        "    Enter/Right  View torrent's details\n" + \
                        "              o  Configuration options\n" + \
                        "              t  Toggle turtle mode\n" + \
+                       "              C  Toggle compact list mode\n" + \
                        "            Esc  Unfocus\n" + \
                        "              q  Quit"
         else:
@@ -2120,10 +2332,8 @@ class Interface:
                           " E  Encrypted Connection\n" + \
                           " H  Peer was discovered through DHT\n" + \
                           " X  Peer was discovered through Peer Exchange (PEX)\n" + \
-                          " I  Peer is an incoming connection"
-                # uTP support was added in Transmission v2.3
-                if self.server.get_tm_version() >= 2.3:
-                    message += "\n T  Peer is connected via uTP"
+                          " I  Peer is an incoming connection\n" + \
+                          " T  Peer is connected via uTP"
             else:
                 # Viewing torrent details
                 message += "              o  Jump to overview\n" + \
@@ -2186,7 +2396,6 @@ class Interface:
         while True:
             if win.getch() >= 0: return
 
-
     def dialog_yesno(self, message, important=False):
         height = 5 + message.count("\n")
         width  = max(len(message), 8) + 4
@@ -2194,9 +2403,10 @@ class Interface:
         win.keypad(True)
 
         if important:
-            win.bkgd(' ', curses.color_pair(11) + curses.A_REVERSE)
+            win.bkgd(' ', curses.color_pair(self.colors.get_id('dialog_important'))
+                          + curses.A_REVERSE)
 
-        focus_tags   = curses.color_pair(9)
+        focus_tags   = curses.color_pair(self.colors.get_id('button_focused'))
         unfocus_tags = 0
 
         input = False
@@ -2233,19 +2443,27 @@ class Interface:
 
     def dialog_input_text(self, message, input='', on_change=None, on_enter=None):
         width  = self.width - 4
+        textwidth = self.width - 8
         height = message.count("\n") + 4
 
         win = self.window(height, width, message=message)
         win.keypad(True)
-        curses.curs_set(1)  # make cursor visible
+        show_cursor()
         index = len(input)
         while True:
-            color = (curses.color_pair(11) if self.highlight_dialog else curses.color_pair(5))
-            win.addstr(height - 2, 2, input.ljust(width - 4), color)
-            win.move(height - 2, index + 2)
+            # Cut the text into pages, each as long as the text field
+            # The current page is determined by index position
+            page = index // textwidth
+            displaytext = input[textwidth*page:textwidth*(page + 1)]
+            displayindex = index - textwidth*page
+
+            color = (curses.color_pair(self.colors.get_id('dialog_important')) if self.highlight_dialog
+                     else curses.color_pair(self.colors.get_id('dialog')))
+            win.addstr(height - 2, 2, displaytext.ljust(textwidth), color)
+            win.move(height - 2, displayindex + 2)
             c = win.getch()
             if c == 27 or c == curses.KEY_BREAK:
-                curses.curs_set(0)
+                hide_cursor()
                 return ''
             elif index < len(input) and ( c == curses.KEY_RIGHT or c == curses.ascii.ctrl(ord('f')) ):
                 index += 1
@@ -2269,9 +2487,9 @@ class Interface:
                 if on_enter:
                     on_enter(input)
                 else:
-                    curses.curs_set(0)
+                    hide_cursor()
                     return input
-            elif c >= 32 and c < 127 and len(input) + 1 < self.width - 7:
+            elif c >= 32 and c < 127:
                 input = input[:index] + chr(c) + (index < len(input) and input[index:] or '')
                 index += 1
                 if on_change: on_change(input)
@@ -2283,19 +2501,21 @@ class Interface:
                                on_enter=self.increment_search)
 
     def increment_search(self, input):
-        debug(self.search_focus)
         self.search_focus += 1
         self.draw_torrent_list(input)
-        debug(self.search_focus)
 
 
     def dialog_input_number(self, message, current_value,
-                            cursorkeys=True, floating_point=False, allow_empty=False):
+                            cursorkeys=True, floating_point=False, allow_empty=False,
+                            allow_zero=True, allow_negative_one=True):
+        if not allow_zero:
+            allow_negative_one = False
+
         width  = max(max(map(lambda x: len(x), message.split("\n"))), 40) + 4
         width  = min(self.width, width)
         height = message.count("\n") + (4,6)[cursorkeys]
 
-        curses.curs_set(1)  # make cursor visible
+        show_cursor()
         win = self.window(height, width, message=message)
         win.keypad(True)
         input = str(current_value)
@@ -2308,51 +2528,61 @@ class Interface:
                 smallstep = 10
             win.addstr(height-4, 2, ("   up/down +/- %-3s" % bigstep).rjust(width-4))
             win.addstr(height-3, 2, ("left/right +/- %3s" % smallstep).rjust(width-4))
-            win.addstr(height-3, 2, "0 means unlimited")
+            if allow_negative_one:
+                win.addstr(height-3, 2, "-1 means unlimited")
             if allow_empty:
                 win.addstr(height-4, 2, "leave empty for default")
 
         while True:
-            win.addstr(height-2, 2, input.ljust(width-4), curses.color_pair(5))
+            win.addstr(height-2, 2, input.ljust(width-4), curses.color_pair(self.colors.get_id('dialog')))
             win.move(height - 2, len(input) + 2)
             c = win.getch()
             if c == 27 or c == ord('q') or c == curses.KEY_BREAK:
-                curses.curs_set(0)
-                return -1
+                hide_cursor()
+                return -128
             elif c == ord("\n"):
                 try:
                     if allow_empty and len(input) <= 0:
-                        curses.curs_set(0)
+                        hide_cursor()
                         return -2
                     elif floating_point:
-                        curses.curs_set(0)
+                        hide_cursor()
                         return float(input)
                     else:
-                        curses.curs_set(0)
+                        hide_cursor()
                         return int(input)
                 except ValueError:
-                    curses.curs_set(0)
+                    hide_cursor()
                     return -1
 
             elif c == curses.KEY_BACKSPACE or c == curses.KEY_DC or c == 127 or c == 8:
                 input = input[:-1]
             elif len(input) >= width-5:
                 curses.beep()
-            elif c >= ord('0') and c <= ord('9'):
+            elif c >= ord('1') and c <= ord('9'):
                 input += chr(c)
-            elif c == ord('.') and floating_point:
+            elif allow_zero and c == ord('0') and input != '-' and not input.startswith('0'):
+                input += chr(c)
+            elif allow_negative_one and c == ord('-') and len(input) == 0:
+                input += chr(c)
+            elif floating_point and c == ord('.') and not '.' in input:
                 input += chr(c)
 
             elif cursorkeys and c != -1:
                 try:
+                    if input == '': input = 0                        
                     if floating_point: number = float(input)
                     else:              number = int(input)
-                    if number <= 0: number = 0
                     if c == curses.KEY_LEFT or c == ord('h'):    number -= smallstep
                     elif c == curses.KEY_RIGHT or c == ord('l'): number += smallstep
                     elif c == curses.KEY_DOWN or c == ord('j'):  number -= bigstep
                     elif c == curses.KEY_UP or c == ord('k'):    number += bigstep
-                    if number <= 0: number = 0
+                    if not allow_zero and number <= 0:
+                        number = 1
+                    elif not allow_negative_one and number < 0:
+                        number = 0
+                    elif number < 0:  # input like -0.6 isn't useful
+                        number = -1
                     input = str(number)
                 except ValueError:
                     pass
@@ -2373,18 +2603,18 @@ class Interface:
             if c > 96 and c < 123 and chr(c) in keymap:
                 return options[keymap[chr(c)]][0]
             elif c == 27 or c == ord('q'):
-                return options[old_focus-1][0]
+                return -128
             elif c == ord("\n"):
                 return options[focus-1][0]
-            elif c == curses.KEY_DOWN or c == ord('j'):
+            elif c == curses.KEY_DOWN or c == ord('j') or c == curses.ascii.ctrl(ord('n')):
                 focus += 1
                 if focus > len(options): focus = 1
-            elif c == curses.KEY_UP or c == ord('k'):
+            elif c == curses.KEY_UP or c == ord('k') or c == curses.ascii.ctrl(ord('p')):
                 focus -= 1
                 if focus < 1: focus = len(options)
-            elif c == curses.KEY_HOME:
+            elif c == curses.KEY_HOME or c == ord('g'):
                 focus = 1
-            elif c == curses.KEY_END:
+            elif c == curses.KEY_END or c == ord('G'):
                 focus = len(options)
 
     def dialog_list_menu_options(self, win, width, options, focus):
@@ -2392,7 +2622,7 @@ class Interface:
         i = 1
         for option in options:
             title = option[1].split('_')
-            if i == focus: tag = curses.color_pair(5)
+            if i == focus: tag = curses.color_pair(self.colors.get_id('dialog'))
             else:          tag = 0
             win.addstr(i,2, title[0], tag)
             win.addstr(title[1][0], tag + curses.A_UNDERLINE)
@@ -2405,21 +2635,24 @@ class Interface:
 
     def draw_options_dialog(self):
         enc_options = [('required','_required'), ('preferred','_preferred'), ('tolerated','_tolerated')]
-
+        seed_ratio = self.stats['seedRatioLimit']
         while True:
-            options = [('Peer _Port', "%d" % self.stats['peer-port']),
-                       ('UP_nP/NAT-PMP', ('disabled','enabled ')[self.stats['port-forwarding-enabled']]),
-                       ('Peer E_xchange', ('disabled','enabled ')[self.stats['pex-enabled']]),
-                       ('_Distributed Hash Table', ('disabled','enabled ')[self.stats['dht-enabled']]),
-                       ('_Local Peer Discovery', ('disabled','enabled ')[self.stats['lpd-enabled']]),
-                       ('_Global Peer Limit', "%d" % self.stats['peer-limit-global']),
-                       ('Peer Limit per _Torrent', "%d" % self.stats['peer-limit-per-torrent']),
-                       ('Protocol En_cryption', "%s" % self.stats['encryption']),
-                       ('_Seed Ratio Limit', "%s" % ('unlimited',self.stats['seedRatioLimit'])[self.stats['seedRatioLimited']])]
-
+            options = []
+            options.append(('Peer _Port', "%d" % self.stats['peer-port']))
+            options.append(('UP_nP/NAT-PMP', ('disabled','enabled ')[self.stats['port-forwarding-enabled']]))
+            options.append(('Peer E_xchange', ('disabled','enabled ')[self.stats['pex-enabled']]))
+            options.append(('_Distributed Hash Table', ('disabled','enabled ')[self.stats['dht-enabled']]))
+            options.append(('_Local Peer Discovery', ('disabled','enabled ')[self.stats['lpd-enabled']]))
+            options.append(('Protocol En_cryption', "%s" % self.stats['encryption']))
             # uTP support was added in Transmission v2.3
-            if self.server.get_tm_version() >= 2.3:
-                options.append(('_uTP', ('disabled','enabled')[self.stats['utp-enabled']]))
+            if server.get_rpc_version() >= 13:
+                options.append(('_Micro Transport Protocol', ('disabled','enabled')[self.stats['utp-enabled']]))
+            options.append(('_Global Peer Limit', "%d" % self.stats['peer-limit-global']))
+            options.append(('Peer Limit per _Torrent', "%d" % self.stats['peer-limit-per-torrent']))
+            options.append(('_Seed Ratio Limit', "%s" % ('unlimited',self.stats['seedRatioLimit'])[self.stats['seedRatioLimited']]))
+            options.append(('T_urtle Mode UL Limit', "%dK" % self.stats['alt-speed-up']))
+            options.append(('Tu_rtle Mode DL Limit', "%dK" % self.stats['alt-speed-down']))
+            options.append(('Title is Progress _Bar', ('no','yes')[self.torrentname_is_progressbar]))
 
             max_len = max([sum([len(re.sub('_', '', x)) for x in y[0]]) for y in options])
             win = self.window(len(options)+2, max_len+15, '', "Global Options")
@@ -2440,41 +2673,62 @@ class Interface:
                 return
             elif c == ord('p'):
                 port = self.dialog_input_number("Port for incoming connections",
-                                                self.stats['peer-port'], cursorkeys=False)
-                if port >= 0: self.server.set_option('peer-port', port)
+                                                self.stats['peer-port'],
+                                                cursorkeys=False)
+                if port >= 0 and port <= 65535:
+                    server.set_option('peer-port', port)
+                elif port != -128:  # user hit ESC
+                    self.dialog_ok('Port must be in the range of 0 - 65535')
             elif c == ord('n'):
-                self.server.set_option('port-forwarding-enabled',
+                server.set_option('port-forwarding-enabled',
                                        (1,0)[self.stats['port-forwarding-enabled']])
             elif c == ord('x'):
-                self.server.set_option('pex-enabled', (1,0)[self.stats['pex-enabled']])
+                server.set_option('pex-enabled', (1,0)[self.stats['pex-enabled']])
             elif c == ord('d'):
-                self.server.set_option('dht-enabled', (1,0)[self.stats['dht-enabled']])
+                server.set_option('dht-enabled', (1,0)[self.stats['dht-enabled']])
             elif c == ord('l'):
-                self.server.set_option('lpd-enabled', (1,0)[self.stats['lpd-enabled']])
+                server.set_option('lpd-enabled', (1,0)[self.stats['lpd-enabled']])
             # uTP support was added in Transmission v2.3
-            elif c == ord('u') and self.server.get_tm_version() >= 2.3:
-                self.server.set_option('utp-enabled', (1,0)[self.stats['utp-enabled']])
+            elif c == ord('m') and server.get_rpc_version() >= 13:
+                server.set_option('utp-enabled', (1,0)[self.stats['utp-enabled']])
             elif c == ord('g'):
                 limit = self.dialog_input_number("Maximum number of connected peers",
-                                                 self.stats['peer-limit-global'])
-                if limit >= 0: self.server.set_option('peer-limit-global', limit)
+                                                 self.stats['peer-limit-global'],
+                                                 allow_negative_one=False)
+                if limit >= 0:
+                    server.set_option('peer-limit-global', limit)
             elif c == ord('t'):
                 limit = self.dialog_input_number("Maximum number of connected peers per torrent",
-                                                 self.stats['peer-limit-per-torrent'])
-                if limit >= 0: self.server.set_option('peer-limit-per-torrent', limit)
+                                                 self.stats['peer-limit-per-torrent'],
+                                                 allow_negative_one=False)
+                if limit >= 0:
+                    server.set_option('peer-limit-per-torrent', limit)
             elif c == ord('s'):
                 limit = self.dialog_input_number('Stop seeding with upload/download ratio',
-                                                 (0,self.stats['seedRatioLimit'])[self.stats['seedRatioLimited']],
+                                                 (-1,self.stats['seedRatioLimit'])[self.stats['seedRatioLimited']],
                                                  floating_point=True)
-                if limit > 0:
-                    self.server.set_option('seedRatioLimit', limit)
-                    self.server.set_option('seedRatioLimited', True)
-                elif limit == 0:
-                    self.server.set_option('seedRatioLimited', False)
+                if limit >= 0:
+                    server.set_option('seedRatioLimit', limit)
+                    server.set_option('seedRatioLimited', True)
+                elif limit < 0 and limit != -128:
+                    server.set_option('seedRatioLimited', False)
             elif c == ord('c'):
                 choice = self.dialog_menu('Encryption', enc_options,
                                           map(lambda x: x[0]==self.stats['encryption'], enc_options).index(True)+1)
-                self.server.set_option('encryption', choice)
+                if choice != -128:
+                    server.set_option('encryption', choice)
+            elif c == ord('u'):
+                limit = self.dialog_input_number('Upload limit for Turtle Mode in kilobytes per second',
+                                                 self.stats['alt-speed-up'],
+                                                 allow_negative_one=False)
+                server.set_option('alt-speed-up', limit)
+            elif c == ord('r'):
+                limit = self.dialog_input_number('Download limit for Turtle Mode in kilobytes per second',
+                                                 self.stats['alt-speed-down'],
+                                                 allow_negative_one=False)
+                server.set_option('alt-speed-down', limit)
+            elif c == ord('b'):
+                self.torrentname_is_progressbar = not self.torrentname_is_progressbar
 
             self.draw_torrent_list()
 
@@ -2603,6 +2857,13 @@ def html2text(str):
     str = re.sub(r'<[^>]*?>', '', str)
     return str
 
+def hide_cursor():
+    try: curses.curs_set(0)   # hide cursor if possible
+    except curses.error: pass # some terminals seem to have problems with that
+def show_cursor():
+    try: curses.curs_set(1)
+    except curses.error: pass
+
 def wrap_multiline(text, width, initial_indent='', subsequent_indent=None):
     if subsequent_indent is None:
         subsequent_indent = ' ' * len(initial_indent)
@@ -2616,14 +2877,48 @@ def wrap_multiline(text, width, initial_indent='', subsequent_indent=None):
             yield line
         initial_indent = subsequent_indent
 
-def num2str(num):
+def ljust_columns(text, max_width, padchar=' '):
+    """ Returns a string that is exactly <max_width> display columns wide,
+    padded with <padchar> if necessary. Accounts for characters that are
+    displayed two columns wide, i.e. kanji. """
+
+    chars = []
+    columns = 0
+    max_width = max(0, max_width)
+    for character in text:
+        width = len_columns(character)
+        if columns + width <= max_width:
+            chars.append(character)
+            columns += width
+        else:
+            break
+
+    # Fill up any remaining space
+    while columns < max_width:
+        assert len(padchar) == 1
+        chars.append(padchar)
+        columns += 1
+    return ''.join(chars)
+
+def len_columns(text):
+    """ Returns the amount of columns that <text> would occupy. """
+    columns = 0
+    for character in text:
+        columns += 2 if unicodedata.east_asian_width(character) in ('W', 'F') else 1
+    return columns
+
+
+def num2str(num, format='%s'):
     if int(num) == -1:
         return '?'
     elif int(num) == -2:
         return 'oo'
     else:
-        string = re.sub(r'(\d{3})', '\g<1>,', str(num)[::-1])[::-1]
-        return string.lstrip(',')
+        if num > 999:
+            return (re.sub(r'(\d{3})', '\g<1>,', str(num)[::-1])[::-1]).lstrip(',')
+        else:
+            return format % num
+
 
 def debug(data):
     if cmd_args.DEBUG:
@@ -2643,20 +2938,21 @@ def quit(msg='', exitcode=0):
         pass
 
     # if this is a graceful exit and config file is present
-    if not msg and not exitcode and os.path.isfile(cmd_args.configfile):
-        try:
-            config.write(open(cmd_args.configfile, 'w'))
-            os.chmod(cmd_args.configfile, 0600)
-        except IOError, msg:
-            print >> sys.stderr, "Cannot write config file %s:\n%s" % (cmd_args.configfile, msg)
+    if not msg and not exitcode:
+        save_config(cmd_args.configfile)
     else:
         print >> sys.stderr, msg,
     os._exit(exitcode)
 
 
 def explode_connection_string(connection):
-    host, port = config.get('Connection', 'host'), config.getint('Connection', 'port')
-    username, password = config.get('Connection', 'username'), config.get('Connection', 'password')
+    host, port, path = \
+        config.get('Connection', 'host'), \
+        config.getint('Connection', 'port'),  \
+        config.get('Connection', 'path')
+    username, password = \
+        config.get('Connection', 'username'), \
+        config.get('Connection', 'password')
     try:
         if connection.count('@') == 1:
             auth, connection = connection.split('@')
@@ -2664,13 +2960,22 @@ def explode_connection_string(connection):
                 username, password = auth.split(':')
         if connection.count(':') == 1:
             host, port = connection.split(':')
+            if port.count('/') >= 1:
+                port, path = port.split('/', 1)
             port = int(port)
         else:
             host = connection
     except ValueError:
         quit("Wrong connection pattern: %s\n" % connection)
-    return host, port, username, password
+    return host, port, path, username, password
 
+def create_url(host, port, path):
+    url = '%s:%d/%s' % (host, port, path)
+    url = url.replace('//', '/')   # double-/ doesn't work for some reason
+    if config.getboolean('Connection', 'ssl'):
+        return 'https://%s' % url
+    else:
+        return 'http://%s' % url
 
 def read_netrc(file=os.environ['HOME'] + '/.netrc', hostname=None):
     try:
@@ -2700,13 +3005,14 @@ def create_config(option, opt_str, value, parser):
     configfile = parser.values.configfile
     config.read(configfile)
     if parser.values.connection:
-        host, port, username, password = explode_connection_string(parser.values.connection)
+        host, port, path, username, password = explode_connection_string(parser.values.connection)
         config.set('Connection', 'host', host)
         config.set('Connection', 'port', str(port))
+        config.set('Connection', 'path', path)
         config.set('Connection', 'username', username)
         config.set('Connection', 'password', password)
 
-    # create directory
+    # create directory if necessary
     dir = os.path.dirname(configfile)
     if dir != '' and not os.path.isdir(dir):
         try:
@@ -2715,31 +3021,51 @@ def create_config(option, opt_str, value, parser):
             print msg
             exit(CONFIGFILE_ERROR)
 
-    # create config file
-    try:
-        config.write(open(configfile, 'w'))
-        os.chmod(configfile, 0600)
-    except IOError, msg:
-        print msg
+    # write file
+    if not save_config(configfile, force=True):
         exit(CONFIGFILE_ERROR)
-
-    print "Wrote config file %s" % configfile
+    print "Wrote config file: %s" % configfile
     exit(0)
+
+def save_config(filepath, force=False):
+    if force or os.path.isfile(filepath):
+        try:
+            config.write(open(filepath, 'w'))
+            os.chmod(filepath, 0600)  # config may contain password
+            return 1
+        except IOError, msg:
+            print >> sys.stderr, "Cannot write config file %s:\n%s" % (filepath, msg)
+            return 0
+    return -1
+
+def parse_sort_str(sort_str):
+    sort_orders = []
+    for i in sort_str.split(','):
+        x = i.split(':') 
+        if len(x) > 1:
+            sort_orders.append( { 'name':x[1], 'reverse':True } )
+        else:
+            sort_orders.append( { 'name':x[0], 'reverse':False } )
+    return sort_orders
+
 
 # command line parameters
 default_config_path = os.environ['HOME'] + '/.config/transmission-remote-cli/settings.cfg'
 parser = OptionParser(usage="%prog [options] [-- transmission-remote options]",
                       version="%%prog %s" % VERSION,
                       description="%%prog %s" % VERSION)
-parser.add_option("--debug", action="store_true", dest="DEBUG", default=False, help=SUPPRESS_HELP)
 parser.add_option("-c", "--connect", action="store", dest="connection", default="",
-                  help="Point to the server using pattern [username:password@]host[:port]")
+                  help="Point to the server using pattern [username:password@]host[:port]/[path]")
+parser.add_option("-s", "--ssl", action="store_true", dest="ssl", default=False,
+                  help="Connect to transmission using SSL.")
 parser.add_option("-f", "--config", action="store", dest="configfile", default=default_config_path,
                   help="Path to configuration file.")
 parser.add_option("--create-config", action="callback", callback=create_config,
                   help="Create configuration file CONFIGFILE with default values.")
 parser.add_option("-n", "--netrc", action="store_true", dest="use_netrc", default=False,
                   help="Get authentication info from your ~/.netrc file.")
+parser.add_option("--debug", action="store_true", dest="DEBUG", default=False,
+                  help="Everything passed to the debug() function will be added to the file debug.log.")
 (cmd_args, transmissionremote_args) = parser.parse_args()
 
 
@@ -2748,15 +3074,18 @@ config.read(cmd_args.configfile)
 
 # command line connection data can override config file
 if cmd_args.connection:
-    host, port, username, password = explode_connection_string(cmd_args.connection)
+    host, port, path, username, password = explode_connection_string(cmd_args.connection)
     config.set('Connection', 'host', host)
     config.set('Connection', 'port', str(port))
+    config.set('Connection', 'path', path)
     config.set('Connection', 'username', username)
     config.set('Connection', 'password', password)
 if cmd_args.use_netrc:
     username, password = read_netrc(hostname=config.get('Connection','host'))
     config.set('Connection', 'username', username)
     config.set('Connection', 'password', password)
+if cmd_args.ssl:
+    config.set('Connection', 'ssl', 'True')
 
 
 
@@ -2785,9 +3114,10 @@ if transmissionremote_args:
     quit('', retcode)
 
 
-# run interface
-ui = Interface(Transmission(config.get('Connection', 'host'),
-                            config.getint('Connection', 'port'),
-                            config.get('Connection', 'username'),
-                            config.get('Connection', 'password')))
+server = Transmission(config.get('Connection', 'host'),
+                      config.getint('Connection', 'port'),
+                      config.get('Connection', 'path'),
+                      config.get('Connection', 'username'),
+                      config.get('Connection', 'password'))
+Interface()
 
