@@ -12,19 +12,13 @@ DOTFILES="$HOME/.dotfiles"
 if [ -d ${DOTFILES} ]; then
     pushd "${DOTFILES}" > /dev/null
     # Update them    
-    ${GIT} pull origin master
-    ${GIT} submodule init
-    ${GIT} submodule update
+    ${GIT} pull --recurse-submodules origin master
     popd > /dev/null
     exit 0
 fi
 
-${GIT} clone git://github.com/maximeh/dotfiles.git ${DOTFILES}
+${GIT} clone --recursive git://github.com/maximeh/dotfiles.git ${DOTFILES}
 pushd "${DOTFILES}" > /dev/null
-
-#Init submodule
-${GIT} submodule init
-${GIT} submodule update
 
 # Create symlink
 for file in vimrc vim zshrc screenrc irssi; do
