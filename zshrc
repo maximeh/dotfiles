@@ -12,7 +12,6 @@ bindkey -M vicmd v edit-command-line
 zstyle ':completion:*' use-cache on
 zstyle ':completion:*' cache-path ~/.zsh_cache
 zmodload zsh/complist
-setopt extendedglob
 zstyle ':completion:*:*:kill:*:processes' list-colors "=(#b) #([0-9]#)*=36=31"
 
 uname_str=`uname`
@@ -197,6 +196,21 @@ setopt rmstarwait
 
 # Traite les liens symboliques comme il faut
 setopt chase_links
+
+# automatically pushd
+setopt auto_pushd
+export dirstacksize=5
+
+# awesome cd movements from zshkit
+setopt autocd
+setopt autopushd pushdminus pushdsilent pushdtohome
+setopt cdablevars
+
+# Try to correct command line spelling
+setopt correct correct_all
+
+# Enable extended globbing
+setopt extended_glob
 
 unsetopt list_ambiguous
 unsetopt beep 
