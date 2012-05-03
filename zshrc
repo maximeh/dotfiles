@@ -60,6 +60,7 @@ unalias vim 2>/dev/null
 alias vim='vim -p'
 alias rec='ffmpeg -f x11grab -r 25 -s 800x600 -i :0.0' # record desk to a file
 alias intercept='strace -ff -e trace=write -e write=1,2 -p' # intercept stdout,stderr of PID
+alias duh="du "${@--xd1}" -h | sort -h" # sort dir in . based on their size
 alias firefox="nohup /opt/firefox/firefox > /dev/null 2>&1 &"
 alias thunderbird="nohup /opt/thunderbird/thunderbird > /dev/null 2>&1 &; disown %1"
 alias songbird="nohup /opt/Songbird/songbird > /dev/null 2>&1 &; disown %1"
