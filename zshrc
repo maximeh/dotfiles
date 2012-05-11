@@ -116,6 +116,10 @@ bindkey "^[[1;5C" forward-word
 bindkey "\eOF" end-of-line
 bindkey "\eOH" beginning-of-line
 
+#for tmux
+bindkey "^[OF" end-of-line
+bindkey "^[OH" beginning-of-line
+
 bindkey "\e[3~" delete-char
 bindkey '^?' backward-delete-char
 bindkey '^R' history-incremental-search-backward
@@ -223,8 +227,8 @@ unsetopt list_beep
 ###############################################
 
 # Nombre d'entrées dans l'historique
-HISTSIZE=1000
-SAVEHIST=1000
+HISTSIZE=10000
+SAVEHIST=10000
 
 # Fichier où est stocké l'historique
 HISTFILE=~/.histfile
@@ -266,10 +270,3 @@ export VISUAL=vim
 export EDITOR=vim
 export PATH=$PATH:$HOME/bin:/usr/sbin:/sbin
 
-
-
-export PERL_LOCAL_LIB_ROOT="/home/maxime/perl5";
-export PERL_MB_OPT="--install_base /home/maxime/perl5";
-export PERL_MM_OPT="INSTALL_BASE=/home/maxime/perl5";
-export PERL5LIB="/home/maxime/perl5/lib/perl5/i486-linux-gnu-thread-multi-64int:/home/maxime/perl5/lib/perl5";
-export PATH="/home/maxime/perl5/bin:$PATH";
