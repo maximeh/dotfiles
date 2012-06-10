@@ -67,6 +67,7 @@ set hlsearch
 set incsearch "Make search act like search in modern browsers
 set gdefault
 set showmatch "Show matching bracets when text indicator is over them
+" stop highlighting
 nnoremap <leader><space> :noh<cr>
 nnoremap <tab> %
 vnoremap <tab> %
@@ -166,17 +167,20 @@ au FileType help setlocal textwidth=78
 au FocusLost * :wa
 
 "----- Raccourcis Claviers " 
- 
 " tab' a la firefox " 
-map    <C-n>                           :tabnext        <cr> 
-map    <C-p>                           :tabprev        <cr> 
-map    <C-t>                           :tabnew         <cr>
+map    <C-n>                           :tabnext<cr> 
+map    <C-p>                           :tabprev<cr> 
+map    <C-t>                           :tabnew<cr>
 
-map    <C-d>                           :q         <cr>
-map    <C-e>                           :tabnew\|:Explore         <cr>
+map    <C-d>                           :q<cr>
+map    <C-e>                           :tabnew\|:Explore<cr>
 
 " vertical split
-nnoremap <leader>w <C-w>v<C-w>l
+" split screen vertically
+nnoremap <leader>\| <C-w>v\|<C-w>l\|:enew<cr>
+" split screen horizontally
+nnoremap <leader>- <C-w>n<C-w>k
+" move around buffer
 nnoremap <C-h> <C-w>h
 nnoremap <C-j> <C-w>j
 nnoremap <C-k> <C-w>k
