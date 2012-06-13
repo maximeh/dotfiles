@@ -22,6 +22,3 @@
 [submodule "vim/bundle/vim-commentary"]
 	path = vim/bundle/vim-commentary
 	url = https://github.com/tpope/vim-commentary.git
-[submodule "vim/bundle/pyflakes-vim"]
-	path = vim/bundle/pyflakes-vim
-	url = https://github.com/kevinw/pyflakes-vim.git
