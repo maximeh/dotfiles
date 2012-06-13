@@ -29,7 +29,7 @@ done
 ln -s ${DOTFILES}/bin ${HOME}/bin
 
 # If we're on a Mac execute hack.sh
-[ "$(uname)" = "Darwin" ] && ${DOTFILES}/hack.sh
+[ "$(uname)" = "Darwin" ] && ${DOTFILES}/osx.sh
 
 popd > /dev/null
 exit 0
