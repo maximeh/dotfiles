@@ -1,7 +1,7 @@
 call pathogen#infect()
 
-"ranafoot de la compatibilité vi.." 
-set nocompatible 
+"ranafoot de la compatibilité vi.."
+set nocompatible
 
 " wrap at 80c
 set wrap
@@ -15,11 +15,21 @@ set history=1000
 " Shell
 set shell=/bin/zsh
 
+" I like to stick to lines under 80 columns
+au BufWinEnter * let w:m2=matchadd('ErrorMsg', '\%>80v.\+', -1)
+
 "Set mapleader
 let mapleader = ","
 
-"voir les caractères invisibles" 
+"voir les caractères invisibles"
 set list
+
+" Show tabs and trailing spaces.
+" Ctrl-K >> for »
+" Ctrl-K .M for ·
+" Ctrk-K 0M for ●
+" Ctrk-K sB for ▪
+" (use :dig for list of digraphs)
 set listchars=tab:▸\ ,eol:¬,trail:.
 set showbreak=↪
 " No sound on errors
@@ -34,20 +44,20 @@ set nobackup
 set nowb
 set noswapfile
 
-"----- Parametres affichage VIM " 
+"----- Parametres affichage VIM "
 
-" scroll lines au dessus et en dessous " 
+" scroll lines au dessus et en dessous "
 set so=7
 
-" activation wildmenu " 
-set wildmenu 
+" activation wildmenu "
+set wildmenu
 set wildmode=list:longest
 set wildignore+=*.pyc,.svn,.git
 
-" affichage des commandes, du mode actuel et de la position du curseur" 
-set showcmd 
-set showmode 
-set ruler 
+" affichage des commandes, du mode actuel et de la position du curseur"
+set showcmd
+set showmode
+set ruler
 set cursorline
 set ttyfast
 
@@ -59,7 +69,7 @@ nnoremap / /\v
 vnoremap / /\v
 set ignorecase "Ignore case when searching
 set smartcase
-set hlsearch 
+set hlsearch
 set incsearch "Make search act like search in modern browsers
 set gdefault
 set showmatch "Show matching bracets when text indicator is over them
@@ -72,7 +82,7 @@ syntax on " syntax hilight on
 syntax sync fromstart
 filetype plugin indent on
 
-" joli theme toussa " 
+" joli theme toussa "
 set bg=dark
 let g:zenburn_high_Contrast = 1
 let g:liquidcarbon_high_contrast = 1
@@ -80,26 +90,26 @@ let g:molokai_original = 0
 set t_Co=256 "use 256 colors
 colorscheme molokai
 
-"----- Parametres affichage des fichiers " 
- 
-" numerotation des lignes " 
-set nu 
- 
+"----- Parametres affichage des fichiers "
+
+" numerotation des lignes "
+set nu
+
 " largeur des tabulations "
 set tabstop=4
 set softtabstop=4
 set expandtab " Always use spaces instead of tabs.
 set smarttab " Automatically detect if you want to delete a <Tab>'s worth of spaces.
 
-" largeur des indentations " 
+" largeur des indentations "
 set shiftwidth=4
 
-" indentation automatique " 
-set autoindent 
-set smartindent 
-set cindent 
- 
-set nolazyredraw "Don't redraw while executing macros 
+" indentation automatique "
+set autoindent
+set smartindent
+set cindent
+
+set nolazyredraw "Don't redraw while executing macros
 set magic "Set magic on, for regular expressions
 set matchtime=5 "How many tenths of a second to blink
 
@@ -121,7 +131,7 @@ filetype on            " enables filetype detection
 filetype plugin on     " enables filetype specific plugins
 if has("gui_running")
     highlight SpellBad term=underline gui=undercurl guisp=Orange
-endif 
+endif
 
 " Auto completion via ctrl-space (instead of the nasty ctrl-x ctrl-o)
 autocmd FileType python set omnifunc=pythoncomplete#Complete
@@ -129,13 +139,13 @@ inoremap <Nul> <C-x><C-o>
 let python_highlight_all = 1
 au FileType python syn keyword pythonDecorator True None False self
 
-"Delete trailing white space, useful for Python ;)
+"Delete trailing white space.
 func! DeleteTrailingWS()
   exe "normal mz"
   %s/\s\+$//ge
   exe "normal `z"
 endfunc
-autocmd BufWrite *.py :call DeleteTrailingWS()
+autocmd BufWrite * :call DeleteTrailingWS()
 
 " ----- JavaScript section
 au FileType javascript setl fen
@@ -162,10 +172,10 @@ au Filetype markdown nnoremap <buffer> <leader>3 I### <ESC>
 au FileType help setlocal textwidth=78
 au FocusLost * :wa
 
-"----- Raccourcis Claviers " 
-" tab' a la firefox " 
-map    <C-n>                           :tabnext<cr> 
-map    <C-p>                           :tabprev<cr> 
+"----- Raccourcis Claviers "
+" tab' a la firefox "
+map    <C-n>                           :tabnext<cr>
+map    <C-p>                           :tabprev<cr>
 map    <C-t>                           :tabnew<cr>
 
 map    <C-d>                           :q<cr>
@@ -200,10 +210,10 @@ nnoremap K <nop>
 inoremap # X<BS>#
 
 " ----- eclipse like
-map     <F10>                          :make           <cr> 
-imap    <F10> <ESC>                    :make           <cr> 
-map     <F11>                          :make   clean   <cr> 
-imap    <F11> <ESC>                    :make   clean   <cr> 
+map     <F10>                          :make           <cr>
+imap    <F10> <ESC>                    :make           <cr>
+map     <F11>                          :make   clean   <cr>
+imap    <F11> <ESC>                    :make   clean   <cr>
 
 " ---- toggle :paste mode (to retain indent when pasting code)
 nnoremap <F2> :set invpaste paste?<CR>
