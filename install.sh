@@ -11,7 +11,7 @@ DOTFILES="$HOME/.dotfiles"
 
 if [ -d "$DOTFILES" ]; then
     pushd "$DOTFILES" > /dev/null
-    # Update them    
+    # Update them
     $GIT pull --recurse-submodules origin master
     popd > /dev/null
     exit 0
@@ -34,6 +34,11 @@ ln -s "$DOTFILES/bin" "$HOME/bin"
 
 # If we're on a Mac execute hack.sh
 [ "$(uname)" = "Darwin" ] && "$DOTFILES/osx.sh"
+
+# Update the font cache for Linux
+# Mac OS users should double click on the font to install it.
+[ "$(uname)" = "Linux" ] && fc-cache -vf
+[ "$(uname)" = "Darwin" ] && echo "Please install fonts in the .fonts directory"
 
 popd > /dev/null
 exit 0
