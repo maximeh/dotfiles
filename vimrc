@@ -257,6 +257,11 @@ let g:rbpt_colorpairs = [
     \ ]
 let g:rbpt_max = 16
 
+" powerline
+let g:Powerline_symbols = 'fancy'
+set laststatus=2
+set fillchars+=stl:\ ,stlnc:\
+
 " sane movement with wrap turned on
 nnoremap j gj
 nnoremap k gk
