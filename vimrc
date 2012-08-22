@@ -267,6 +267,7 @@ set fillchars+=stl:\ ,stlnc:\
 nnoremap t j
 nnoremap n k
 nnoremap s l
+vmap     s l
 nnoremap t gj
 nnoremap n gk
 vnoremap t gj
