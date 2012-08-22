@@ -188,12 +188,13 @@ nnoremap <leader>\| <C-w>v\|<C-w>l\|:enew<cr>
 nnoremap <leader>- <C-w>n<C-w>k
 " move around buffer
 nnoremap <C-h> <C-w>h
-nnoremap <C-j> <C-w>j
-nnoremap <C-k> <C-w>k
-nnoremap <C-l> <C-w>l
+nnoremap <C-t> <C-w>j
+nnoremap <C-n> <C-w>k
+nnoremap <C-s> <C-w>l
+nnoremap <S-D> <C-w><C-r>
 
-" Return to normal mode, easier than ESC
-inoremap jj <ESC>
+" Map alt to control, much easier with a typematrix
+inoremap <A> <C>
 
 " Highlight word at cursor without changing position
 nnoremap <leader>h *<C-O>
@@ -221,11 +222,11 @@ set pastetoggle=<F2>
 set showmode
 
 " Bubble single lines
-nmap <S-K> ddkP
-nmap <S-J> ddp
+nmap <S-N> ddkP
+nmap <S-T> ddp
 " Bubble multiple lines
-vmap <S-K> xkP`[V`]
-vmap <S-J> xp`[V`]
+vmap <S-N> xkP`[V`]
+vmap <S-T> xp`[V`]
 
 " Sudo to write
 cmap w!! w !sudo tee % >/dev/null
@@ -262,17 +263,32 @@ let g:Powerline_symbols = 'fancy'
 set laststatus=2
 set fillchars+=stl:\ ,stlnc:\
 
-" sane movement with wrap turned on
-nnoremap j gj
-nnoremap k gk
-vnoremap j gj
-vnoremap k gk
-nnoremap <Down> gj
-nnoremap <Up> gk
-vnoremap <Down> gj
-vnoremap <Up> gk
-inoremap <Down> <C-o>gj
-inoremap <Up> <C-o>gk
+" Dvorak the keymap
+nnoremap t j
+nnoremap n k
+nnoremap s l
+nnoremap t gj
+nnoremap n gk
+vnoremap t gj
+vnoremap n gk
+nnoremap j :
+nnoremap J :
+nnoremap L N
+
+nnoremap - $
+nnoremap _ ^
+
+"map up/down arrow keys to unimpaired commands
+nmap <Up> [e
+nmap <Down> ]e
+vmap <Up> [egv
+vmap <Down> ]egv
+
+"map left/right arrow keys to indendation
+nmap <Left> <<
+nmap <Right> >>
+vmap <Left> <gv
+vmap <Right> >gv
 
 """"""""""""""
 " tmux fixes "
