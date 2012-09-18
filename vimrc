@@ -221,6 +221,10 @@ nnoremap <F2> :set invpaste paste?<CR>
 set pastetoggle=<F2>
 set showmode
 
+" Comment code
+nnoremap // :TComment<CR>
+vnoremap // :TComment<CR>
+
 " Bubble single lines
 nmap <S-N> ddkP
 nmap <S-T> ddp
@@ -274,7 +278,7 @@ vnoremap t gj
 vnoremap n gk
 nnoremap j :
 nnoremap J :
-nnoremap L N
+nnoremap L n
 
 nnoremap - $
 nnoremap _ ^
