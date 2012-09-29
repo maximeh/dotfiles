@@ -232,12 +232,25 @@ export dirstacksize=5
 setopt autocd
 setopt autopushd pushdminus pushdsilent pushdtohome
 setopt cdablevars
+# Allow multiple terminal sessions to all append to one zsh command history
+setopt APPEND_HISTORY
+# Do not write events to history that are duplicates of previous events
+setopt HIST_IGNORE_DUPS
+# When searching history don't display results already cycled through twice
+setopt HIST_FIND_NO_DUPS
+# Remove extra blanks from each command line being added to history
+setopt HIST_REDUCE_BLANKS
+# Include more information about when the command was executed, etc
+setopt EXTENDED_HISTORY
 
 # Try to correct command line spelling
 setopt correct correct_all
 
 # Enable extended globbing
 setopt extended_glob
+
+# Allow completion from within a word/phrase
+setopt COMPLETE_IN_WORD
 
 unsetopt list_ambiguous
 unsetopt beep
