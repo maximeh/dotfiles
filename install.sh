@@ -12,6 +12,8 @@ DOTFILES="$HOME/.dotfiles"
 if [ -d "$DOTFILES" ]; then
     pushd "$DOTFILES" > /dev/null
     # Update them
+    $GIT submodule init
+    $GIT submodule update
     $GIT pull --recurse-submodules origin master
     popd > /dev/null
     exit 0
