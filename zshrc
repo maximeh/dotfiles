@@ -61,11 +61,8 @@ alias vim='vim -p'
 alias rec='ffmpeg -f x11grab -r 25 -s 800x600 -i :0.0' # record desk to a file
 alias intercept='strace -ff -e trace=write -e write=1,2 -p' # intercept stdout,stderr of PID
 alias duh="du "${@--xd1}" -h | sort -h" # sort dir in . based on their size
-alias firefox="nohup /opt/firefox/firefox > /dev/null 2>&1 &"
+alias firefox="nohup /opt/firefox/firefox &> /dev/null &"
 alias thunderbird="nohup /opt/thunderbird/thunderbird > /dev/null 2>&1 &; disown %1"
-alias songbird="nohup /opt/Songbird/songbird > /dev/null 2>&1 &; disown %1"
-alias sublime="nohup /opt/Sublime\ Text\ 2/sublime_text > /dev/null 2>&1 &; disown %1"
-
 
 alias gen_pwd="cat /dev/urandom|tr -dc "a-zA-Z0-9-_\$\?\@\!\="|fold -w 8|head -n 10" #Generate password
 # fix_stty: restore terminal settings when they get completely screwed up
