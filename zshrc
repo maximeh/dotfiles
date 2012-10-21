@@ -1,8 +1,8 @@
 # /etc/zsh/zshrc ou ~/.zshrc
 # Fichier de configuration principal de zsh
 
-autoload -Uz compinit 
-compinit 
+autoload -Uz compinit
+compinit
 
 autoload -U edit-command-line
 zle -N edit-command-line
@@ -156,8 +156,8 @@ local host_bold="%{$FX[bold]$FG[208]%}%m%{$FX[reset]%}"
 local dir="%{$FX[reset]$FG[012]%}%2c%{$FX[reset]%}"
 local dir_bold="%{$FX[bold]$FG[012]%}%2c%{$FX[reset]%}"
 
-case "$TERM" in 
- screen-*) 
+case "$TERM" in
+ screen-*)
     if [ "`id -u`" -eq 0 ]; then
        PS1="┌─${name_root_bold} at ${host_bold} in ${dir_bold}
 └─╼ "
@@ -165,8 +165,8 @@ case "$TERM" in
         PS1="┌─${name_bold} at ${host_bold} in ${dir_bold}
 └─╼ "
     fi
- ;; 
- *) 
+ ;;
+ *)
     if [ "`id -u`" -eq 0 ]; then
        PS1="┌─${name_root} at ${host} in ${dir}
 └─╼ "
@@ -174,9 +174,9 @@ case "$TERM" in
        PS1="┌─${name} at ${host} in ${dir}
 └─╼ "
     fi
- ;; 
-esac 
-RPS1="(%D{%m-%d %H:%M})%{$FX[reset]%}" 
+ ;;
+esac
+#RPS1="(%D{%m-%d %H:%M})%{$FX[reset]%}"
 
 # Titre de la fenêtre d'un xterm
 case $TERM in
@@ -218,9 +218,9 @@ setopt correct correct_all
 setopt extended_glob
 
 unsetopt list_ambiguous
-unsetopt beep 
-unsetopt hist_beep 
-unsetopt list_beep 
+unsetopt beep
+unsetopt hist_beep
+unsetopt list_beep
 
 ###############################################
 # 4. Paramètres de l'historique des commandes #
