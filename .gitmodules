@@ -31,3 +31,6 @@
 [submodule "vim/bundle/tcomment"]
 	path = vim/bundle/tcomment
 	url = git://github.com/tomtom/tcomment_vim.git
+[submodule "tmux-powerline"]
+	path = tmux-powerline
+	url = git://github.com/erikw/tmux-powerline.git
