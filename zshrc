@@ -295,6 +295,7 @@ export LC_IDENTIFICATION="en_US.UTF-8"
 export LC_ALL="en_US.UTF-8"
 export EDITOR="/usr/bin/vim"
 export LOCALE="en_US.UTF-8"
+export TZ=/usr/share/zoneinfo/Europe/Paris
 
 export VISUAL=vim
 export EDITOR=vim
