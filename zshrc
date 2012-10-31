@@ -69,11 +69,12 @@ alias gen_pwd="cat /dev/urandom|tr -dc "a-zA-Z0-9-_\$\?\@\!\="|fold -w 8|head -n
 alias fix_stty='stty sane'
 # ff:  to find a file under the current directory
 ff () { find . -name "$@" ; }
-# # ffs: to find a file whose name starts with a given string
+# ffs: to find a file whose name starts with a given string
 ffs () { find . -name "$@"'*' ; }
-# # ffe: to find a file whose name ends with a given string
+# ffe: to find a file whose name ends with a given string
 ffe () { find . -name '*'"$@" ; }
-
+# list available package listed by size in human forms
+fatty () { dpkg-query -Wf '${Installed-Size}\t${Package}\n' | sort -n | awk '{printf "%.3f MB ==> %s\n", $1/(1024), $2}' }
 # enquote: surround lines with quotes (useful in pipes) - from mervTormel
 enquote () { sed 's/^/"/;s/$/"/' ; }
 
