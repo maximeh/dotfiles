@@ -34,6 +34,9 @@ cp "$DOTFILES/ssh/config" "$HOME/.ssh"
 [ -h "$HOME/bin" ] && rm "$HOME/bin"
 ln -s "$DOTFILES/bin" "$HOME/bin"
 
+[ -h "$HOME/.fonts" ] && rm "$HOME/.fonts"
+ln -s "$DOTFILES/.fonts" "$HOME/.fonts"
+
 # If we're on a Mac execute hack.sh
 [ "$(uname)" = "Darwin" ] && "$DOTFILES/osx.sh"
 
