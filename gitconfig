@@ -3,7 +3,7 @@
   status = auto
   branch = auto
   interactive = auto
-  ui = auto
+  ui = 1
 [gc]
   auto=1
 [merge]
@@ -11,3 +11,6 @@
 [alias]
   unstage = reset HEAD
   uncommit = reset --soft HEAD^
+  count = shortlog -sn
+[help]
+    autocorrect = 1
