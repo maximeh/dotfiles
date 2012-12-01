@@ -23,7 +23,7 @@ $GIT clone --recursive git://github.com/maximeh/dotfiles.git "$DOTFILES"
 pushd "$DOTFILES" > /dev/null
 
 # Create symlink
-for file in vimrc vim zshrc screenrc irssi; do
+for file in gitconfig vimrc vim zshrc screenrc irssi; do
     [ -h "$HOME/.$file" ] && rm "$HOME/.$file"
     ln -s "$DOTFILES/$file" "$HOME/.$file"
 done
