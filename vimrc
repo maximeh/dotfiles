@@ -187,10 +187,10 @@ nnoremap <leader>\| <C-w>v\|<C-w>l\|:enew<cr>
 " split screen horizontally
 nnoremap <leader>- <C-w>n<C-w>k
 " move around buffer
-nnoremap <C-Left> <C-w>h
-nnoremap <C-Down> <C-w>j
-nnoremap <C-Up> <C-w>k
-nnoremap <C-Right> <C-w>l
+nnoremap <leader><Left> <C-w>h
+nnoremap <leader><Down> <C-w>j
+nnoremap <leader><Up> <C-w>k
+nnoremap <leader><Right> <C-w>l
 nnoremap <S-D> <C-w><C-r>
 
 " Map alt to control, much easier with a typematrix
@@ -341,8 +341,8 @@ endif
 let g:neocomplcache_keyword_patterns['default'] = '\h\w*'
 
 " Plugin key-mappings.
-imap <C-k>     <Plug>(neocomplcache_snippets_expand)
-smap <C-k>     <Plug>(neocomplcache_snippets_expand)
+imap <C-j>     <Plug>(neocomplcache_snippets_expand)
+smap <C-j>     <Plug>(neocomplcache_snippets_expand)
 inoremap <expr><C-g>     neocomplcache#undo_completion()
 inoremap <expr><C-l>     neocomplcache#complete_common_string()
 
