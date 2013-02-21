@@ -1,0 +1,44 @@
+#!/bin/bash
+
+# You must have root rights
+if [[ $EUID -ne 0 ]]; then
+    echo "This script must be run as root" 1>&2
+    exit 1
+fi
+
+img_file="$1"
+mountpoint=$(realpath "$2")
+
+check_bin(){
+    local bin="$1"
+    if ! which $bin &> /dev/null; then
+        echo "Error: $bin not found"
+        echo "You need to install the $bin package on your system."
+        echo "sudo apt-get install $bin"
+        exit 1
+    fi
+}
+
+# Check that losetup and kpartx are here
+check_bin "losetup"
+check_bin "kpartx"
+check_bin "realpath"
+
+[ ! -f "$img_file" ] && echo "$img_file does not exists." && exit 1
+[ ! -d "$mountpoint" ] && echo "$mountpoint does not exists." && exit 1
+
+loop_device=$(losetup -f)
+loop_name=$(basename $loop_device)
+losetup $loop_device $img_file
+kpartx -av $loop_device 1> /dev/null
+
+for part in /dev/mapper/${loop_name}p*; do
+    part_name=$(basename $part)
+    mkdir -p $mountpoint/$part_name
+    error=$(mount -t ext2,ext3,ext4 $part $mountpoint/$part_name 2>&1 >/dev/null)
+    if [ $? -ne 0 ]; then
+        echo "Unable to mount $part."
+        echo "$error"
+    fi
+done
+
