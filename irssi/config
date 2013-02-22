@@ -16,46 +16,59 @@ servers = (
     ssl_verify = "no";
     autoconnect = "yes";
     term_type = "utf-8";
+  },
+  {
+    address = "f00.fr";
+    chatnet = "bitlbee";
+    port = "6668";
+    use_ssl = "no";
+    ssl_verify = "no";
+    autoconnect = "yes";
+    term_type = "utf-8";
+  },
+  {
+    address = "irc.oftc.net";
+    chatnet = "oftc";
+    port = "6667";
+    use_ssl = "no";
+    ssl_verify = "no";
+    autoconnect = "yes";
+    term_type = "utf-8";
   }
+
 );
 
 chatnets = {
   UTBM = {
     type = "IRC";
     nick = "kinji";
-    autosendcmd = "/msg NickServ IDENTIFY PASSWORD;/mode kinji -v";
+    autosendcmd = "/msg NickServ IDENTIFY **PASSWORD**;/mode kinji -v";
 
   };
   freenode = {
     type = "IRC";
     nick = "maxime";
-    autosendcmd = "/msg NickServ IDENTIFY PASSWORD;/mode maxime -v";
+    autosendcmd = "/msg NickServ IDENTIFY **PASSWORD**;/mode maxime -v";
   };
+  bitlbee = { type = "IRC"; };
 };
 
 channels = (
-  {
-    name = "#utbm-ae";
-    chatnet = "UTBM";
-    autojoin = "yes";
-    use_ssl = "yes";
-  },
-  { 
-    name = "#geek";
-    chatnet = "UTBM";
-    autojoin = "yes";
-    use_ssl = "yes";
-  },
-  {
-    name = "#photomaton";
-    chatnet = "UTBM";
-    autojoin = "yes";
-    use_ssl = "yes";
-    password = "pasdepass";
-  },
-  { name = "#lacie"; chatnet = "freenode"; autojoin = "yes"; },
+  { name = "#utbm-ae"; chatnet = "UTBM"; autojoin = "yes"; use_ssl = "yes"; },
+  { name = "#geek"; chatnet = "UTBM"; autojoin = "yes"; use_ssl = "yes"; },
   { name = "#lacie-nas"; chatnet = "freenode"; autojoin = "yes"; },
-  { name = "#maposmatic"; chatnet = "freenode"; autojoin = "yes"; }
+  { name = "#lacie"; chatnet = "freenode"; autojoin = "yes"; },
+  { name = "#maposmatic"; chatnet = "freenode"; autojoin = "yes"; },
+  { name = "#apbteam"; chatnet = "freenode"; autojoin = "yes"; },
+  { name = "#debian-mentors"; chatnet = "oftc"; autojoin = "yes"; },
+  { name = "#buildroot"; chatnet = "freenode"; autojoin = "yes"; },
+  { name = "#uclibc"; chatnet = "freenode"; autojoin = "yes"; },
+  { name = "#crosstool-ng"; chatnet = "freenode"; autojoin = "yes"; },
+);
+
+ignores = (
+  { level = "NICKS JOINS PARTS MODES QUITS"; network = "FreeNode"; },
+  { level = "MODES NICKS"; channels = ( "&bitlbee" ); network = "BitlBee"; },
 );
 
 aliases = {
@@ -93,11 +106,9 @@ aliases = {
   SBAR = "STATUSBAR";
   INVITELIST = "mode $C +I";
   Q = "QUERY";
-  dodo = "nick kinji`dodo; away Away - Dodo";
   aw = "away Away - Not here";
   la = "away";
   brb = "nick kinji`brb; away Away - Be right back";
-  # des trucs inutiles
   wikipedia = "msg $C ${0}: http://en.wikipedia.org/wiki/${1}";
   wikipedia_fr = "msg $C ${0}: http://fr.wikipedia.org/wiki/${1}";
   quit = "echo don't do this at home!";
@@ -130,61 +141,22 @@ settings = {
     reuse_unused_windows = "yes";
     autolog = "yes";
     term_charset = "utf-8";
-    theme = "lime";
-  };
-  "perl/core/scripts" = {
-    mpd_host = "music.f00.fr";
-    mpd_port = "8000";
-    mpdbar_top = "no";
-    screen_away_active = "yes";
-    screen_away_nick = "kinji`aw";
+    theme = "mine";
   };
 };
 hilights = ( { text = "kinji"; nick = "yes"; word = "yes"; } );
 
 completions = {
-  reg = { value = "/msg NickServ IDENTIFY PASSWORD"; };
+  reg = { value = "/msg NickServ IDENTIFY **PASSWORD**"; };
+  ghost = { value = "/msg NickServ GHOST maxime **PASSWORD**"; };
   bn = { value = "bonne nuit"; };
   bna = { value = "bon apétit"; };
-  "++" = { value = "peluch peluch"; };
   tg = { value = "ta gueule"; };
   ts = { value = "tu sors"; };
 };
 logs = { };
-keyboard = (
-  { key = "F1"; id = "command"; data = "nicklist scroll -10"; },
-  { key = "F2"; id = "command"; data = "nicklist scroll +10"; },
-  { key = "meta2-P"; id = "key"; data = "F1"; },
-  { key = "meta2-Q"; id = "key"; data = "F2"; },
-  { key = "meta2-R"; id = "key"; data = "F3"; },
-  { key = "meta2-S"; id = "key"; data = "F4"; },
-  { key = "meta2-15~"; id = "key"; data = "F5"; },
-  { key = "meta2-17~"; id = "key"; data = "F6"; },
-  { key = "meta2-18~"; id = "key"; data = "F7"; },
-  { key = "meta2-19~"; id = "key"; data = "F8"; },
-  { key = "meta2-20~"; id = "key"; data = "F9"; },
-  { key = "meta2-21~"; id = "key"; data = "F10"; },
-  { key = "meta2-24~"; id = "key"; data = "F12"; },
-  { key = "meta2-23~"; id = "key"; data = "F11"; },
-  { key = "meta2-2P"; id = "key"; data = "sF1"; },
-  { key = "meta2-2Q"; id = "key"; data = "sF2"; },
-  { key = "meta2-2R"; id = "key"; data = "sF3"; },
-  { key = "meta2-2S"; id = "key"; data = "sF4"; },
-  { key = "meta2-15;2~"; id = "key"; data = "sF5"; },
-  { key = "meta2-17;2~"; id = "key"; data = "sF6"; },
-  { key = "meta2-18;2~"; id = "key"; data = "sF7"; },
-  { key = "meta2-19;2~"; id = "key"; data = "sF8"; },
-  { key = "meta2-20;2~"; id = "key"; data = "sF9"; },
-  { key = "meta2-21;2~"; id = "key"; data = "sF10"; },
-  { key = "meta2-24;2~"; id = "key"; data = "sF12"; },
-  { key = "meta2-23;2~"; id = "key"; data = "sF11"; }
-);
-ignores = ( { level = "MODES"; channels = ( "&bitlbee" ); } );
-
-conversions = { UTBM = "utf-8"; };
-
 windows = {
-  1 = { 
+  1 = {
     immortal = "yes";
     name = "(msgs)";
     level = "MSGS ACTIONS DCCMSGS";
@@ -214,22 +186,12 @@ windows = {
       {
         type = "CHANNEL";
         chat_type = "IRC";
-        name = "#photomaton";
-        tag = "UTBM";
-      }
-    );
-  };
-  5 = {
-    items = (
-      {
-        type = "CHANNEL";
-        chat_type = "IRC";
         name = "#lacie-nas";
         tag = "freenode";
       }
     );
   };
-  6 = {
+  5 = {
     items = (
       {
         type = "CHANNEL";
@@ -239,5 +201,75 @@ windows = {
       }
     );
   };
+  6 = {
+    items = (
+      {
+        type = "CHANNEL";
+        chat_type = "IRC";
+        name = "#maposmatic";
+        tag = "freenode";
+      }
+    );
+  };
+  7 = {
+    items = (
+      {
+        type = "CHANNEL";
+        chat_type = "IRC";
+        name = "#apbteam";
+        tag = "freenode";
+      }
+    );
+  };
+  8 = {
+    items = (
+      {
+        type = "CHANNEL";
+        chat_type = "IRC";
+        name = "#debian-mentors";
+        tag = "oftc";
+      }
+    );
+  };
+  9 = {
+    items = (
+      {
+        type = "CHANNEL";
+        chat_type = "IRC";
+        name = "#buildroot";
+        tag = "freenode";
+      }
+    );
+  };
+  10 = {
+    items = (
+      {
+        type = "CHANNEL";
+        chat_type = "IRC";
+        name = "#uclibc";
+        tag = "freenode";
+      }
+    );
+  };
+  11 = {
+    items = (
+      {
+        type = "CHANNEL";
+        chat_type = "IRC";
+        name = "#crosstool-ng";
+        tag = "freenode";
+      }
+    );
+  };
+  12 = {
+    items = (
+      {
+        type = "CHANNEL";
+        chat_type = "IRC";
+        name = "&bitlbee";
+        tag = "bitlbee";
+      }
+    );
+  };
 };
-mainwindows = { 1 = { first_line = "1"; lines = "53"; }; };
+mainwindows = { 1 = { first_line = "1"; lines = "35"; }; };
