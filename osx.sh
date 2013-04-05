@@ -8,11 +8,42 @@
 #   curl -sL https://raw.github.com/gist/2108403/hack.sh | sh
 #
 
+# Ask for the administrator password upfront
+sudo -v
+
+# Keep-alive: update existing `sudo` time stamp until `.osx` has finished
+while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
+
+# Set computer name (as done via System Preferences → Sharing)
+name="cerise"
+echo "Set computer name to $name"
+scutil --set ComputerName $name
+scutil --set HostName $name
+scutil --set LocalHostName $name
+defaults write /Library/Preferences/SystemConfiguration/com.apple.smb.server NetBIOSName -string $name
+
+echo "Menu bar: hide the useless menu icons"
+defaults write com.apple.systemuiserver menuExtras -array "/System/Library/CoreServices/Menu Extras/Bluetooth.menu"
+echo "Always open everything in Finder's list view."
+defaults write com.apple.Finder FXPreferredViewStyle Nlsv
+
+echo "Disable the crash reporter"
+defaults write com.apple.CrashReporter DialogType -string "none"
+
 echo "Enable full keyboard access for all controls (e.g. enable Tab in modal dialogs)"
 defaults write NSGlobalDomain AppleKeyboardUIMode -int 3
 
+echo "Automatically illuminate built-in MacBook keyboard in low light"
+defaults write com.apple.BezelServices kDim -bool true
+
+echo "Turn off keyboard illumination when computer is not used for 5 minutes"
+defaults write com.apple.BezelServices kDimTime -int 300
+
 echo "Enable subpixel font rendering on non-Apple LCDs"
 defaults write NSGlobalDomain AppleFontSmoothing -int 2
+
+echo "Enable HiDPI display modes (requires restart)"
+defaults write /Library/Preferences/com.apple.windowserver DisplayResolutionEnabled -bool true
 
 echo "Enable the 2D Dock"
 defaults write com.apple.dock no-glass -bool true
@@ -33,8 +64,15 @@ defaults write NSGlobalDomain AppleEnableMenuBarTransparency -bool false
 # defaults write com.apple.menuextra.battery ShowPercent -string "NO"
 # defaults write com.apple.menuextra.battery ShowTime -string "YES"
 
-# echo "Always show scrollbars"
-# defaults write NSGlobalDomain AppleShowScrollBars -string "Auto"
+# Set the timezone; see `systemsetup -listtimezones` for other values
+echo "Setup timezone"
+systemsetup -settimezone "Europe/Paris" > /dev/null
+
+echo "Disable auto-correct"
+defaults write NSGlobalDomain NSAutomaticSpellingCorrectionEnabled -bool false
+
+echo "Always show scrollbars"
+defaults write NSGlobalDomain AppleShowScrollBars -string "Auto"
 
 echo "Allow quitting Finder via ⌘ + Q; doing so will also hide desktop icons"
 defaults write com.apple.finder QuitMenuItem -bool true
@@ -44,6 +82,15 @@ defaults write com.apple.finder QuitMenuItem -bool true
 
 echo "Show all filename extensions in Finder"
 defaults write NSGlobalDomain AppleShowAllExtensions -bool true
+
+echo "Enable spring loading for all Dock items"
+defaults write enable-spring-load-actions-on-all-items -bool true
+
+echo "Enable spring loading for directories"
+defaults write NSGlobalDomain com.apple.springing.enabled -bool true
+
+echo "Remove the spring loading delay for directories"
+defaults write NSGlobalDomain com.apple.springing.delay -float 0
 
 echo "Use current directory as default search scope in Finder"
 defaults write com.apple.finder FXDefaultSearchScope -string "SCcf"
@@ -60,17 +107,27 @@ defaults write NSGlobalDomain NSNavPanelExpandedStateForSaveMode -bool true
 echo "Expand print panel by default"
 defaults write NSGlobalDomain PMPrintingExpandedStateForPrint -bool true
 
-echo "Disable the “Are you sure you want to open this application?” dialog"
+echo "Automatically quit printer app once the print jobs complete"
+defaults write com.apple.print.PrintingPrefs "Quit When Finished" -bool true
+
+echo "Disable the "Are you sure you want to open this application?" dialog"
 defaults write com.apple.LaunchServices LSQuarantine -bool false
+
+echo "Disable disk image verification"
+defaults write com.apple.frameworks.diskimages skip-verify -bool true
+defaults write com.apple.frameworks.diskimages skip-verify-locked -bool true
+defaults write com.apple.frameworks.diskimages skip-verify-remote -bool true
+
+echo "Automatically open a new Finder window when a volume is mounted"
+defaults write com.apple.frameworks.diskimages auto-open-ro-root -bool true
+defaults write com.apple.frameworks.diskimages auto-open-rw-root -bool true
+defaults write com.apple.finder OpenWindowForNewRemovableDisk -bool true
 
 # echo "Disable shadow in screenshots"
 # defaults write com.apple.screencapture disable-shadow -bool true
 
 echo "Enable highlight hover effect for the grid view of a stack (Dock)"
 defaults write com.apple.dock mouse-over-hilte-stack -bool true
-
-echo "Enable spring loading for all Dock items"
-defaults write enable-spring-load-actions-on-all-items -bool true
 
 echo "Show indicator lights for open applications in the Dock"
 defaults write com.apple.dock show-process-indicators -bool true
@@ -113,6 +170,9 @@ defaults write com.apple.finder OpenWindowForNewRemovableDisk -bool true
 echo "Display full POSIX path as Finder window title"
 defaults write com.apple.finder _FXShowPosixPathInTitle -bool true
 
+echo "Finder: allow text selection in Quick Look"
+defaults write com.apple.finder QLEnableTextSelection -bool true
+
 echo "Increase window resize speed for Cocoa applications"
 defaults write NSGlobalDomain NSWindowResizeTime -float 0.001
 
@@ -130,6 +190,9 @@ echo "Enable snap-to-grid for desktop icons"
 
 echo "Disable the warning before emptying the Trash"
 defaults write com.apple.finder WarnOnEmptyTrash -bool false
+
+echo "Disable 'natural' (Lion-style) scrolling"
+defaults write NSGlobalDomain com.apple.swipescrolldirection -bool false
 
 # Empty Trash securely by default
 # defaults write com.apple.finder EmptyTrashSecurely -bool true
@@ -194,16 +257,25 @@ echo "Show the ~/Library folder"
 chflags nohidden ~/Library
 
 echo "Disable local Time Machine backups"
-hash tmutil &> /dev/null && sudo tmutil disablelocal
+hash tmutil &> /dev/null && tmutil disablelocal
 
-# echo "Remove Dropbox’s green checkmark icons in Finder"
-# file=/Applications/Dropbox.app/Contents/Resources/check.icns
-# [ -e "$file" ] && mv -f "$file" "$file.bak"
-# unset file
+echo "Prevent Time Machine from prompting to use new hard drives as backup volume"
+defaults write com.apple.TimeMachine DoNotOfferNewDisksForBackup -bool true
 
-#Fix for the ancient UTF-8 bug in QuickLook (http://mths.be/bbo)
-# Commented out, as this is known to cause problems when saving files in Adobe Illustrator CS5 :(
-#echo "0x08000100:0" > ~/.CFUserTextEncoding
+echo "When performing a search, search the current folder by default"
+defaults write com.apple.finder FXDefaultSearchScope -string "SCcf"
+
+echo "Transmission: Don’t prompt for confirmation before downloading"
+defaults write org.m0k.transmission DownloadAsk -bool false
+
+echo "Transmission: Trash original torrent files"
+defaults write org.m0k.transmission DeleteOriginalTorrent -bool true
+
+echo "Transmission: Hide the donate message"
+defaults write org.m0k.transmission WarningDonate -bool false
+
+echo "Transmission: Hide the legal disclaimer"
+defaults write org.m0k.transmission WarningLegal -bool false
 
 echo "Kill affected applications"
 for app in Safari Finder Dock Mail SystemUIServer; do killall "$app" >/dev/null 2>&1; done

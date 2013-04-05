@@ -8,9 +8,23 @@
   auto=1
 [merge]
   summary=true
+[apply]
+  whitespace = fix
 [alias]
   unstage = reset HEAD
   uncommit = reset --soft HEAD^
   count = shortlog -sn
+  # Switch to a branch, creating it if necessary
+  go = checkout -B
+  # Show verbose output about tags, branches or remotes
+  tags = tag -l
+  branches = branch -a
+  remotes = remote -v
+  # Clone a repository including all submodules
+  c = clone --recursive
+  # Commit all changes
+  ca = !git add -A && git commit -av
+  # Show the diff between the latest commit and the current state
+  d = !"git diff-index --quiet HEAD -- || clear; git diff --patch-with-stat"
 [help]
     autocorrect = 1

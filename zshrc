@@ -15,6 +15,7 @@ zmodload zsh/complist
 zstyle ':completion:*:*:kill:*:processes' list-colors "=(#b) #([0-9]#)*=36=31"
 
 uname_str=`uname`
+machine_name=`uname -n`
 
 LS_COLORS='no=00;32:fi=00:di=00;34:ln=01;36:pi=04;33:so=01;35:bd=33;04:cd=33;04:or=31;01:ex=00;32:*.rtf=00;33:*.txt=00;33:*.html=00;33:*.doc=00;33:*.pdf=00;33:*.ps=00;33:*.sit=00;31:*.hqx=00;31:*.bin=00;31:*.tar=00;31:*.tgz=00;31:*.arj=00;31:*.taz=00;31:*.lzh=00;31:*.zip=00;31:*.z=00;31:*.Z=00;31:*.gz=00;31:*.deb=00;31:*.dmg=00;36:*.jpg=00;35:*.gif=00;35:*.bmp=00;35:*.ppm=00;35:*.tga=00;35:*.xbm=00;35:*.xpm=00;35:*.tif=00;35:*.mpg=00;37:*.avi=00;37:*.gl=00;37:*.dl=00;37:*.mov=00;37:*.mp3=00;35:'
 export LS_COLORS;
@@ -22,8 +23,16 @@ export LS_COLORS;
 ################
 # 1. Les alias #
 ################
-co() { echo "$*" | bc -l; } #define the co function to calculate
+calc() { echo "$*" | bc -l; } #define the co function to calculate
 type() { echo "$*" | pv -qL 10; } #Simulate type char by char
+digga() { dig +nocmd "$1" any +multiline +noall +answer }
+
+# Manually remove a downloaded app or file from the quarantine
+function unquarantine() {
+    for attribute in com.apple.metadata:kMDItemDownloadedDate com.apple.metadata:kMDItemWhereFroms com.apple.quarantine; do
+        xattr -r -d "$attribute" "$@"
+    done
+}
 
 case $uname_str in
     Linux)
@@ -61,9 +70,6 @@ alias vim='vim -p'
 alias rec='ffmpeg -f x11grab -r 25 -s 800x600 -i :0.0' # record desk to a file
 alias intercept='strace -ff -e trace=write -e write=1,2 -p' # intercept stdout,stderr of PID
 alias duh="du "${@--xd1}" -h | sort -h" # sort dir in . based on their size
-alias firefox="nohup /opt/firefox/firefox &> /dev/null &"
-alias thunderbird="nohup /opt/thunderbird/thunderbird > /dev/null 2>&1 &; disown %1"
-
 alias gen_pwd="cat /dev/urandom|tr -dc "a-zA-Z0-9-_\$\?\@\!\="|fold -w 8|head -n 10" #Generate password
 # fix_stty: restore terminal settings when they get completely screwed up
 alias fix_stty='stty sane'
@@ -249,19 +255,23 @@ unsetopt list_beep
 # 4. Paramètres de l'historique des commandes #
 ###############################################
 
-# Nombre d'entrées dans l'historique
-HISTSIZE=10000
-SAVEHIST=10000
+# Larger bash history (allow 32³ entries; default is 500)
+export HISTSIZE=32768
+export SAVEHIST=32768
+export HISTFILESIZE=$HISTSIZE
+
+# Make some commands not show up in history
+export HISTIGNORE="ls:cd:cd -:pwd:exit:date:* --help"
 
 # Fichier où est stocké l'historique
-HISTFILE=~/.histfile
+export HISTFILE=~/.histfile
 
 #ajoute l'historique à la fin de l'ancien fichier
-setopt append_history
+setopt append_history share_history
 
 # Ne stocke pas  une ligne dans l'historique si elle  est identique à la
 # précèdente
-setopt hist_ignore_dups
+setopt hist_ignore_dups histignorealldups
 
 # When searching history don't display results already cycled through twice
 setopt HIST_FIND_NO_DUPS
@@ -275,9 +285,9 @@ setopt EXTENDED_HISTORY
 # 5. Exports                                  #
 ###############################################
 
-# Show time a command took if over 2 sec
+# Show time a command took if over 5 sec
 # https://github.com/bjeanes/dot-files/commit/1ae5bc72dac6d5f2cdfbf5a48fdf140c5d085986
-export REPORTTIME=2
+export REPORTTIME=5
 export TIMEFMT="%*Es total, %U user, %S system, %P cpu"
 
 export LANG="en_US.UTF-8"
@@ -298,7 +308,12 @@ export EDITOR="/usr/bin/vim"
 export LOCALE="en_US.UTF-8"
 export TZ=/usr/share/zoneinfo/Europe/Paris
 
+# Highlight section titles in manual pages
+export LESS_TERMCAP_md="$ORANGE"
+
 export VISUAL=vim
 export EDITOR=vim
 export PATH=$PATH:$HOME/bin:/usr/sbin:/sbin
 
+# Source machine file for specific stuff
+source $HOME/.$machine_name
