@@ -30,6 +30,9 @@ defaults write com.apple.Finder FXPreferredViewStyle Nlsv
 echo "Disable the crash reporter"
 defaults write com.apple.CrashReporter DialogType -string "none"
 
+echo "Disable Notification Center"
+launchctl unload -w /System/Library/LaunchAgents/com.apple.notificationcenterui.plist
+
 echo "Enable full keyboard access for all controls (e.g. enable Tab in modal dialogs)"
 defaults write NSGlobalDomain AppleKeyboardUIMode -int 3
 
