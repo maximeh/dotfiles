@@ -1,143 +1,60 @@
+" Vim configuration file
 call pathogen#infect()
 
-"ranafoot de la compatibilité vi.."
-set nocompatible
-
-" wrap at 80c
-set wrap
-set tw=80
-set formatoptions=qrn1
-set colorcolumn=81
-
-" Sets how many lines of history VIM has to remember
-set history=1000
-
-" Shell
-set shell=/bin/zsh
-
-" I like to stick to lines under 80 columns
-au BufWinEnter * let w:m2=matchadd('ErrorMsg', '\%>80v.\+', -1)
-
-"Set mapleader
-let mapleader = ","
-
-"voir les caractères invisibles"
-set list
-
-" Show tabs and trailing spaces.
-" Ctrl-K >> for »
-" Ctrl-K .M for ·
-" Ctrk-K 0M for ●
-" Ctrk-K sB for ▪
-" (use :dig for list of digraphs)
-set listchars=tab:▸\ ,eol:¬,trail:.
-set showbreak=↪
-" No sound on errors
-set noerrorbells
-set novisualbell
-set t_vb=
-set tm=500
-"----- Parametres fichiers "
-
-" Turn backup off, since most stuff is in SVN, git anyway...
-set nobackup
-set nowb
-set noswapfile
-
-"----- Parametres affichage VIM "
-
-" scroll lines au dessus et en dessous "
-set so=7
-
-" activation wildmenu "
-set wildmenu
-set wildmode=list:longest
-set wildignore+=*.pyc,.svn,.git
-
-" affichage des commandes, du mode actuel et de la position du curseur"
-set showcmd
-set showmode
-set ruler
-set cursorline
-set ttyfast
-
-" Set backspace config
-set backspace=eol,start,indent
-set whichwrap+=<,>,h,l
-
-nnoremap / /\v
-vnoremap / /\v
-set ignorecase "Ignore case when searching
-set smartcase
-set hlsearch
-set incsearch "Make search act like search in modern browsers
-set gdefault
-set showmatch "Show matching bracets when text indicator is over them
-" stop highlighting
-nnoremap <leader><space> :noh<cr>
-nnoremap <tab> %
-vnoremap <tab> %
-
-syntax on " syntax hilight on
-syntax sync fromstart
-filetype plugin indent on
-
-" joli theme toussa "
-set bg=dark
-let g:zenburn_high_Contrast = 1
-let g:liquidcarbon_high_contrast = 1
-let g:molokai_original = 0
-set t_Co=256 "use 256 colors
-colorscheme molokai
-
-"----- Parametres affichage des fichiers "
-
-" numerotation des lignes "
-set nu
-
-" largeur des tabulations "
-set tabstop=4
-set softtabstop=4
-set expandtab " Always use spaces instead of tabs.
-set smarttab " Automatically detect if you want to delete a <Tab>'s worth of spaces.
-
-" largeur des indentations "
-set shiftwidth=4
-
-" indentation automatique "
+" Global settings
 set autoindent
+set autoread
+set backspace=eol,start,indent
+set expandtab
+set hidden
+set hlsearch
+set incsearch
+set infercase
+set iskeyword=@,48-57,_,192-255,-
+set lazyredraw
+set ls=2
+set modelines=0
+set nocompatible
+set nocp
+set nostartofline
+set novisualbell
+set nrformats-=octal
+set pastetoggle=<F2>
+set ruler
+set scrolloff=3
+set shell=sh
+set showcmd
+set showfulltag
+set showmatch
+set showmode
+set sidescrolloff=2
+set smartcase
 set smartindent
-set cindent
+set sts=2
+set suffixes=.bak,~,.swp,.o,.info,.aux,.log,.dvi,.bbl,.blg,.brf,.cb,.out,.toc
+set sw=2
+set tabstop=2
+set t_Co=256
+set textwidth=0
+set ttyfast
+set wildignore=*.o,*~,*.swp,*.class
+set wildmenu
+set wildmode=full
 
-set nolazyredraw "Don't redraw while executing macros
-set magic "Set magic on, for regular expressions
-set matchtime=5 "How many tenths of a second to blink
+filetype plugin indent on
+syntax on
+set t_Co=16
+let g:solarized_termcolors=256
+colorscheme solarized
 
-set cot=menu,preview
+highlight Normal ctermbg=none
+highlight ExtraWhitespace ctermbg=darkred guibg=darkgreen
 
-" encodage et font"
-set encoding=utf8
-try
-    lang en_US
-catch
-endtry
+highlight SignColumn ctermbg=black
+let g:gitgutter_highlights = 1
 
-set ffs=unix,dos,mac "Default file types
-" Set font according to system
-set gfn=Monospace\ 10
-
-" ----- Python section
-filetype on            " enables filetype detection
-filetype plugin on     " enables filetype specific plugins
-if has("gui_running")
-    highlight SpellBad term=underline gui=undercurl guisp=Orange
-endif
-
-" Auto completion via ctrl-space (instead of the nasty ctrl-x ctrl-o)
-autocmd FileType python set omnifunc=pythoncomplete#Complete
-inoremap <Nul> <C-x><C-o>
-let python_highlight_all = 1
-au FileType python syn keyword pythonDecorator True None False self
+match Special /\%80v.\+/
+autocmd Syntax * syn match ExtraWhitespace /\s\+$\| \+\ze\t/
 
 "Delete trailing white space.
 func! DeleteTrailingWS()
@@ -147,79 +64,51 @@ func! DeleteTrailingWS()
 endfunc
 autocmd BufWrite * :call DeleteTrailingWS()
 
-" ----- JavaScript section
-au FileType javascript setl fen
-au FileType javascript setl nocindent
+let mapleader = ","
+let g:mapleader = ","
 
-" Autocompletion pour C
-autocmd FileType c set omnifunc=ccomplete#Complete
+au filetype c,cpp map <F9> :make<CR>
+au filetype java map <F10> :Java %<CR>
 
-" Autocompletion pour CSS
-autocmd FileType css set omnifunc=csscomplete#CompleteCSS
+" Nice statusbar
+set laststatus=2
 
-" Autocompletion pour HTML
-autocmd FileType html set omnifunc=htmlcomplete#CompleteTags
-set ofu=syntaxcomplete#Complete
+" Spelling settings
+set dictionary=/usr/share/dict/words
+map <F6> <ESC>:setlocal spell! spelllang=fr<CR>
+map <F7> <ESC>:setlocal spell! spelllang=en<CR>
 
-" Markdown
-au BufNewFile,BufRead *.m*down setlocal filetype=markdown
-" Use <leader>1/2/3 to add headings.
-au Filetype markdown nnoremap <buffer> <leader>1 yypVr=
-au Filetype markdown nnoremap <buffer> <leader>2 yypVr-
-au Filetype markdown nnoremap <buffer> <leader>3 I### <ESC>
+" Git Gutter
+au VimEnter * GitGutterDisable
+map <F3> <ESC>:GitGutterToggle<CR>
 
-" Vim
-au FileType help setlocal textwidth=78
-au FocusLost * :wa
-
-"----- Raccourcis Claviers "
-" tab' a la firefox "
-map    <C-n>                           :tabnext<cr>
-map    <C-p>                           :tabprev<cr>
-map    <C-t>                           :tabnew<cr>
-
-map    <C-d>                           :q<cr>
-map    <C-e>                           :tabnew\|:Explore<cr>
-
-" vertical split
-" split screen vertically
-nnoremap <leader>\| <C-w>v\|<C-w>l\|:enew<cr>
-" split screen horizontally
-nnoremap <leader>- <C-w>n<C-w>k
-" move around buffer
-nnoremap <leader><Left> <C-w>h
-nnoremap <leader><Down> <C-w>j
-nnoremap <leader><Up> <C-w>k
-nnoremap <leader><Right> <C-w>l
-nnoremap <S-D> <C-w><C-r>
-
-" Map alt to control, much easier with a typematrix
-inoremap <A> <C>
-
-" Highlight word at cursor without changing position
-nnoremap <leader>h *<C-O>
-
-" Destroy infuriating keys
-
-" Fuck you, help key.
-inoremap <F1> <ESC>
-nnoremap <F1> <ESC>
-vnoremap <F1> <ESC>
-" Fuck you too, manual key.
-nnoremap K <nop>
-" Stop it, hash key.
-inoremap # X<BS>#
-
-" ----- eclipse like
-map     <F10>                          :make           <cr>
-imap    <F10> <ESC>                    :make           <cr>
-map     <F11>                          :make   clean   <cr>
-imap    <F11> <ESC>                    :make   clean   <cr>
-
-" ---- toggle :paste mode (to retain indent when pasting code)
-nnoremap <F2> :set invpaste paste?<CR>
-set pastetoggle=<F2>
-set showmode
+" Shortcuts
+map <Tab> :bn<CR>
+map <S-Tab> :bp<CR>
+nmap <leader>d :bd<CR>
+nmap <leader>w :w!<CR>
+nmap :W :w
+nmap <leader><space> :noh<CR>
+nmap <leader>r iReviewed-by Maxime Hadjinlian <maxime.hadjinlian@gmail.com><ESC>
+nmap <leader>s iSigned-off-by Maxime Hadjinlian <maxime.hadjinlia@gmail.com><ESC>
+nmap <leader>m mmHmt:%s/<C-V><cr>//ge<cr>'tzt'm
+" Allow saving of files as sudo when I forgot to start vim using sudo.
+cmap w!! w !sudo tee > /dev/null %
+nnoremap - $
+nnoremap _ ^
+" Dvorak the keymap
+nnoremap t j
+nnoremap n k
+nnoremap s l
+vmap     s l
+nnoremap t gj
+nnoremap n gk
+vnoremap t gj
+vnoremap n gk
+nnoremap j :
+nnoremap J :
+nnoremap l n
+nnoremap L N
 
 " Comment code
 nnoremap // :TComment<CR>
@@ -232,16 +121,40 @@ nmap <S-T> ddp
 vmap <S-N> xkP`[V`]
 vmap <S-T> xp`[V`]
 
-" Sudo to write
-cmap w!! w !sudo tee % >/dev/null
+" Vimrc editing and autoreload on save
+nmap <leader>e :e! ~/.vimrc<CR>
+autocmd! bufwritepost ~/.vimrc source ~/.vimrc
 
-" ----- Abbrevs
-iab xdate <c-r>=strftime("%d/%m/%y %H:%M:%S")<cr>
+au FileType make setlocal noexpandtab
+au FileType c,cpp setlocal formatoptions=croql cindent comments=sr:/*,mb:*,el:*/,:// noexpandtab
+au FileType python setlocal ts=4 sts=4 sw=4 expandtab autoindent
+au FileType java setlocal ts=4 sts=4 sw=4 noexpandtab
+au FileType gitconfig setlocal noexpandtab
+au FileType gitcommit setlocal tw=72
 
-" Remove the Windows ^M - when the encodings gets messed up
-nnoremap <leader>m mmHmt:%s/<C-V><cr>//ge<cr>'tzt'm
+au BufRead *.tex setlocal tw=80
+au BufRead .letter,/tmp/mutt*,*.txt,.signature*,signature* setlocal tw=72 foldmethod=manual
 
-nnoremap <leader>R :RainbowParenthesesToggle<cr>
+" Powerline options
+let g:Powerline_symbols = 'fancy'
+
+" Ctrl-P options
+" http://kien.github.com/ctrlp.vim/
+let g:ctrlp_map = '<c-p>'
+let g:ctrlp_cmd = 'CtrlPMRU'
+let g:ctrlp_working_path_mode = 0
+let g:ctrlp_dotfiles = 0
+let g:ctrlp_by_filename = 1
+let g:ctrlp_clear_cache_on_exit = 0
+let g:ctrlp_dotfiles = 0
+let g:ctrlp_max_files = 50000
+let g:ctrlp_user_command = 'find %s -type f'
+
+" Rainbow parentheses
+au VimEnter * RainbowParenthesesToggle
+au Syntax * RainbowParenthesesLoadRound
+au Syntax * RainbowParenthesesLoadSquare
+au Syntax * RainbowParenthesesLoadBraces
 let g:rbpt_colorpairs = [
     \ ['brown',       'RoyalBlue3'],
     \ ['Darkblue',    'SeaGreen3'],
@@ -260,108 +173,3 @@ let g:rbpt_colorpairs = [
     \ ['darkred',     'DarkOrchid3'],
     \ ['red',         'firebrick3'],
     \ ]
-let g:rbpt_max = 16
-
-" powerline
-let g:Powerline_symbols = 'fancy'
-set laststatus=2
-set fillchars+=stl:\ ,stlnc:\
-
-" Dvorak the keymap
-nnoremap t j
-nnoremap n k
-nnoremap s l
-vmap     s l
-nnoremap t gj
-nnoremap n gk
-vnoremap t gj
-vnoremap n gk
-nnoremap j :
-nnoremap J :
-nnoremap l n
-nnoremap L N
-
-nnoremap - $
-nnoremap _ ^
-
-" fast escaping
-imap jj <ESC>
-
-"map up/down arrow keys to unimpaired commands
-nmap <Up> [e
-nmap <Down> ]e
-vmap <Up> [egv
-vmap <Down> ]egv
-
-"map left/right arrow keys to indendation
-nmap <Left> <<
-nmap <Right> >>
-vmap <Left> <gv
-vmap <Right> >gv
-
-""""""""""""""
-" tmux fixes "
-""""""""""""""
-" Handle tmux $TERM quirks in vim
-if $TERM =~ '^screen-256color'
-    map <Esc>OH <Home>
-    map! <Esc>OH <Home>
-    map <Esc>OF <End>
-    map! <Esc>OF <End>
-endif
-
-
-" Autocompletion
-
-" Disable AutoComplPop.
-let g:acp_enableAtStartup = 0
-" Use neocomplcache.
-let g:neocomplcache_enable_at_startup = 1
-" Use smartcase.
-let g:neocomplcache_enable_smart_case = 1
-" Use camel case completion.
-let g:neocomplcache_enable_camel_case_completion = 1
-" Use underbar completion.
-let g:neocomplcache_enable_underbar_completion = 1
-" Set minimum syntax keyword length.
-let g:neocomplcache_min_syntax_length = 3
-let g:neocomplcache_lock_buffer_name_pattern = '\*ku\*'
-
-" Define dictionary.
-let g:neocomplcache_dictionary_filetype_lists = {
-    \ 'default' : '',
-    \ 'vimshell' : $HOME.'/.vimshell_hist',
-    \ 'scheme' : $HOME.'/.gosh_completions'
-    \ }
-
-" Define keyword.
-if !exists('g:neocomplcache_keyword_patterns')
-  let g:neocomplcache_keyword_patterns = {}
-endif
-let g:neocomplcache_keyword_patterns['default'] = '\h\w*'
-
-" Plugin key-mappings.
-imap <C-j>     <Plug>(neocomplcache_snippets_expand)
-smap <C-j>     <Plug>(neocomplcache_snippets_expand)
-inoremap <expr><C-g>     neocomplcache#undo_completion()
-inoremap <expr><C-l>     neocomplcache#complete_common_string()
-
-" Enable heavy omni completion.
-if !exists('g:neocomplcache_omni_patterns')
-  let g:neocomplcache_omni_patterns = {}
-endif
-let g:neocomplcache_omni_patterns.ruby = '[^. *\t]\.\w*\|\h\w*::'
-"autocmd FileType ruby setlocal omnifunc=rubycomplete#Complete
-let g:neocomplcache_omni_patterns.php = '[^. \t]->\h\w*\|\h\w*::'
-let g:neocomplcache_omni_patterns.c = '\%(\.\|->\)\h\w*'
-let g:neocomplcache_omni_patterns.cpp = '\h\w*\%(\.\|->\)\h\w*\|\h\w*::'
-
-" NERDTree
-autocmd vimenter * NERDTree
-autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTreeType") && b:NERDTreeType == "primary") | q | endif
-let NERDTreeMapOpenInTab='j'
-
-let NERDTreeIgnore=['.*\.o$']
-let NERDTreeIgnore+=['.*\~$']
-let NERDTreeIgnore+=['.*\.out$']
-let NERDTreeIgnore+=['.*\.so$', '.*\.a$']
