@@ -26,5 +26,7 @@
   ca = !git add -A && git commit -av
   # Show the diff between the latest commit and the current state
   d = !"git diff-index --quiet HEAD -- || clear; git diff --patch-with-stat"
+  log = !"git log --graph --pretty=format:'%Cred%h%Creset %an: %s - %Creset %C(yellow)%d%Creset %Cgreen(%cr)%Creset' --abbrev-commit --date=relative"
+  s = !"git status -sb"
 [help]
     autocorrect = 1
