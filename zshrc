@@ -2,7 +2,7 @@ autoload -Uz compinit
 compinit
 autoload -U edit-command-line
 zle -N edit-command-line
-bindkey -M vicmd v edit-command-line
+bindkey -e
 zstyle ':completion:*' use-cache on
 zstyle ':completion:*' cache-path ~/.zsh_cache
 zmodload zsh/complist
