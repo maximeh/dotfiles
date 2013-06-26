@@ -2,7 +2,6 @@ servers = (
   {
     address = "irc.rezosup.org";
     chatnet = "UTBM";
-    #port = "6667";
     use_ssl = "no";
     ssl_verify = "no";
     autoconnect = "yes";
@@ -29,91 +28,56 @@ servers = (
   {
     address = "irc.oftc.net";
     chatnet = "oftc";
-    port = "6667";
+    port = "6668";
     use_ssl = "no";
     ssl_verify = "no";
     autoconnect = "yes";
     term_type = "utf-8";
   }
-
 );
 
 chatnets = {
-  UTBM = {
-    type = "IRC";
-    nick = "kinji";
+  UTBM = { type = "IRC"; nick = "kinji";
     autosendcmd = "/msg NickServ IDENTIFY **PASSWORD**;/mode kinji -v";
-
   };
-  freenode = {
-    type = "IRC";
-    nick = "maxime";
+  freenode = { type = "IRC"; nick = "maxime";
     autosendcmd = "/msg NickServ IDENTIFY **PASSWORD**;/mode maxime -v";
   };
-  bitlbee = { type = "IRC"; };
+  bitlbee = { type = "IRC";
+    autosendcmd = "/msg &bitlbee identify **PASSWORD**; wait 2000;";
+  };
+  oftc = { type = "IRC"; nick = "maxime";
+    autosendcmd = "/msg NickServ IDENTIFY **PASSWORD**;";
+  };
 };
 
 channels = (
-  { name = "#utbm-ae"; chatnet = "UTBM"; autojoin = "yes"; use_ssl = "yes"; },
-  { name = "#geek"; chatnet = "UTBM"; autojoin = "yes"; use_ssl = "yes"; },
-  { name = "#lacie-nas"; chatnet = "freenode"; autojoin = "yes"; },
+  { name = "#geek"; chatnet = "UTBM"; autojoin = "yes"; },
   { name = "#lacie"; chatnet = "freenode"; autojoin = "yes"; },
+  { name = "#lacie-nas"; chatnet = "freenode"; autojoin = "yes"; },
   { name = "#maposmatic"; chatnet = "freenode"; autojoin = "yes"; },
   { name = "#apbteam"; chatnet = "freenode"; autojoin = "yes"; },
-  { name = "#debian-mentors"; chatnet = "oftc"; autojoin = "yes"; },
+  { name = "&bitlbee"; chatnet = "bitlbee"; autojoin = "yes"; },
+  { name = "##re"; chatnet = "freenode"; autojoin = "yes"; },
+  { name = "#android-fr"; chatnet = "freenode"; autojoin = "yes"; },
+  { name = "#linuxxx"; chatnet = "freenode"; autojoin = "yes"; },
   { name = "#buildroot"; chatnet = "freenode"; autojoin = "yes"; },
-  { name = "#uclibc"; chatnet = "freenode"; autojoin = "yes"; },
-  { name = "#crosstool-ng"; chatnet = "freenode"; autojoin = "yes"; },
+  { name = "#debian-mentors"; chatnet = "oftc"; autojoin = "yes"; }
 );
 
-ignores = (
-  { level = "NICKS JOINS PARTS MODES QUITS"; network = "FreeNode"; },
-  { level = "MODES NICKS"; channels = ( "&bitlbee" ); network = "BitlBee"; },
-);
+ignores = ( { level = "JOINS PARTS QUITS MODES NICKS"; } );
 
 aliases = {
-  J = "join";
-  WJOIN = "join -window";
-  WQUERY = "query -window";
-  LEAVE = "part";
-  BYE = "quit";
-  EXIT = "quit";
-  SIGNOFF = "quit";
-  DESCRIBE = "action";
-  DATE = "time";
-  HOST = "userhost";
-  LAST = "lastlog";
-  SAY = "msg *";
-  K = "kick";
-  KB = "kickban";
-  KN = "knockout";
-  BANS = "ban";
-  B = "ban";
-  MUB = "unban *";
-  UB = "unban";
-  IG = "ignore";
-  UNIG = "unignore";
-  SB = "scrollback";
-  UMODE = "mode $N";
   WC = "window close";
-  WN = "window new hide";
-  SV = "say Irssi $J ($V) - http://irssi.org/";
-  GOTO = "sb goto";
-  CHAT = "dcc chat";
   RUN = "SCRIPT LOAD";
-  UPTIME = "eval exec - expr `date +%s` - \\$F | awk '{print \"Irssi uptime: \"int(\\\\\\$1/3600/24)\"d \"int(\\\\\\$1/3600%24)\"h \"int(\\\\\\$1/60%60)\"m \"int(\\\\\\$1%60)\"s\" }'";
-  CALC = "exec - if which bc &>/dev/null\\; then echo '$*' | bc | awk '{print \"$*=\"$$1}'\\; else echo bc was not found\\; fi";
-  SBAR = "STATUSBAR";
-  INVITELIST = "mode $C +I";
   Q = "QUERY";
   aw = "away Away - Not here";
   la = "away";
-  brb = "nick kinji`brb; away Away - Be right back";
-  wikipedia = "msg $C ${0}: http://en.wikipedia.org/wiki/${1}";
-  wikipedia_fr = "msg $C ${0}: http://fr.wikipedia.org/wiki/${1}";
   quit = "echo don't do this at home!";
+  ADDALLCHAN = "script exec foreach my \\$channel (Irssi::channels()) { Irssi::command(\"channel add -auto \\$channel->{name} \\$channel->{server}->{tag} \\$channel->{key}\")\\;}";
+  reg = "/msg NickServ IDENTIFY **PASSWORD**";
+  ghost = "/msg NickServ GHOST maxime **PASSWORD**";
 };
-
 
 settings = {
   core = {
@@ -123,7 +87,6 @@ settings = {
     recode_autodetect_utf8 = "yes";
     recode = "yes";
     server_reconnect_time = "30s";
-    #recode_out_default_charset = "utf-8";
     hostname = "f00.fr";
     nick = "kinji";
   };
@@ -141,20 +104,9 @@ settings = {
     reuse_unused_windows = "yes";
     autolog = "yes";
     term_charset = "utf-8";
-    theme = "mine";
+    theme = "solarized-universal";
   };
 };
-hilights = ( { text = "kinji"; nick = "yes"; word = "yes"; } );
-
-completions = {
-  reg = { value = "/msg NickServ IDENTIFY **PASSWORD**"; };
-  ghost = { value = "/msg NickServ GHOST maxime **PASSWORD**"; };
-  bn = { value = "bonne nuit"; };
-  bna = { value = "bon apétit"; };
-  tg = { value = "ta gueule"; };
-  ts = { value = "tu sors"; };
-};
-logs = { };
 windows = {
   1 = {
     immortal = "yes";
@@ -166,8 +118,8 @@ windows = {
       {
         type = "CHANNEL";
         chat_type = "IRC";
-        name = "#utbm-ae";
-        tag = "UTBM";
+        name = "&bitlbee";
+        tag = "bitlbee";
       }
     );
   };
@@ -226,8 +178,8 @@ windows = {
       {
         type = "CHANNEL";
         chat_type = "IRC";
-        name = "#debian-mentors";
-        tag = "oftc";
+        name = "##re";
+        tag = "freenode";
       }
     );
   };
@@ -236,7 +188,7 @@ windows = {
       {
         type = "CHANNEL";
         chat_type = "IRC";
-        name = "#buildroot";
+        name = "#linuxxx";
         tag = "freenode";
       }
     );
@@ -246,8 +198,8 @@ windows = {
       {
         type = "CHANNEL";
         chat_type = "IRC";
-        name = "#uclibc";
-        tag = "freenode";
+        name = "#debian-mentors";
+        tag = "oftc";
       }
     );
   };
@@ -256,7 +208,7 @@ windows = {
       {
         type = "CHANNEL";
         chat_type = "IRC";
-        name = "#crosstool-ng";
+        name = "#buildroot";
         tag = "freenode";
       }
     );
@@ -266,10 +218,11 @@ windows = {
       {
         type = "CHANNEL";
         chat_type = "IRC";
-        name = "&bitlbee";
-        tag = "bitlbee";
+        name = "#android-fr";
+        tag = "freenode";
       }
     );
   };
+
 };
-mainwindows = { 1 = { first_line = "1"; lines = "35"; }; };
+mainwindows = { 1 = { first_line = "1"; lines = "74"; }; };
