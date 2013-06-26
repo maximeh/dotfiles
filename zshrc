@@ -90,27 +90,25 @@ FX=(
     reset     "[00m"
     bold      "[01m" no-bold      "[22m"
     italic    "[03m" no-italic    "[23m"
-    underline "[04m" no-underline "[24m"
-    blink     "[05m" no-blink     "[25m"
-    reverse   "[07m" no-reverse   "[27m"
+    # underline "[04m" no-underline "[24m"
+    # blink     "[05m" no-blink     "[25m"
+    # reverse   "[07m" no-reverse   "[27m"
 )
 
 for color in {000..255}; do
     FG[$color]="[38;5;${color}m"
-    BG[$color]="[48;5;${color}m"
+    # BG[$color]="[48;5;${color}m"
 done
 
-local name_bold="%{$FX[bold]$FG[205]%}%n%{$FX[reset]%}"
-local name_root_bold="%{$FX[bold]$FG[001]%}%n%{$FX[reset]%}"
-local host_bold="%{$FX[bold]$FG[208]%}%m%{$FX[reset]%}"
-local dir_bold="%{$FX[bold]$FG[012]%}%2c%{$FX[reset]%}"
+local dir_bold="%{$FX[bold]$FG[012]%}[%2c]%{$FX[reset]%}"
+local arrow="%{$FX[bold]$FG[208]%}→ %{$FX[reset]%}"
+local triangle="%{$FX[bold]$FG[001]%}Δ %{$FX[reset]%}"
 
+PS1="${dir_bold}"
 if [ "`id -u`" -eq 0 ]; then
-    PS1="┌─${name_root_bold} at ${host_bold} in ${dir_bold}
-└─╼ "
+    PS1="$PS1 ${triangle}"
 else
-    PS1="┌─${name_bold} at ${host_bold} in ${dir_bold}
-└─╼ "
+    PS1="$PS1 ${arrow}"
 fi
 
 # Show time a command took if over 5 sec
