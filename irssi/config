@@ -1,16 +1,17 @@
 servers = (
   {
-    address = "irc.rezosup.org";
+    address = "irc.inp-net.rezosup.org";
     chatnet = "UTBM";
-    use_ssl = "yes";
-    ssl_verify = "yes";
+    port = "6667";
+    use_ssl = "no";
+    ssl_verify = "no";
     autoconnect = "yes";
     term_type = "utf-8";
   },
   {
     address = "irc.freenode.net";
     chatnet = "freenode";
-    port = "6667";
+    port = "6697";
     use_ssl = "yes";
     ssl_verify = "yes";
     autoconnect = "yes";
@@ -20,15 +21,15 @@ servers = (
     address = "f00.fr";
     chatnet = "bitlbee";
     port = "6668";
-    use_ssl = "yes";
-    ssl_verify = "yes";
+    use_ssl = "no";
+    ssl_verify = "no";
     autoconnect = "yes";
     term_type = "utf-8";
   },
   {
     address = "irc.oftc.net";
     chatnet = "oftc";
-    port = "6668";
+    port = "6697";
     use_ssl = "yes";
     ssl_verify = "yes";
     autoconnect = "yes";
@@ -47,7 +48,7 @@ chatnets = {
     autosendcmd = "/msg &bitlbee identify **PASSWORD**; wait 2000;";
   };
   oftc = { type = "IRC"; nick = "maxime";
-    autosendcmd = "/msg NickServ IDENTIFY **PASSWORD**;";
+    autosendcmd = "/msg NickServ IDENTIFY **PASSWORD**";
   };
 };
 
