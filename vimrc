@@ -136,8 +136,8 @@ au FileType gitcommit setlocal tw=72
 au BufRead *.tex setlocal tw=80
 au BufRead .letter,/tmp/mutt*,*.txt,.signature*,signature* setlocal tw=72 foldmethod=manual
 
-" Powerline options
-let g:Powerline_symbols = 'fancy'
+" vim-airline theme
+let g:airline_theme='badwolf'
 
 " Ctrl-P options
 " http://kien.github.com/ctrlp.vim/
