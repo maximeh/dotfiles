@@ -137,6 +137,9 @@ au FileType gitcommit setlocal tw=72
 au BufRead *.tex setlocal tw=80
 au BufRead .letter,/tmp/mutt*,*.txt,.signature*,signature* setlocal tw=72 foldmethod=manual
 
+" vim-airlines option
+let g:airline_theme='solarized'
+
 " Ctrl-P options
 " http://kien.github.com/ctrlp.vim/
 let g:ctrlp_map = '<c-p>'
