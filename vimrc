@@ -36,6 +36,7 @@ set sw=2
 set tabstop=2
 set t_Co=256
 set textwidth=0
+set ttimeout
 set ttimeoutlen=50
 set ttyfast
 set wildignore=*.o,*~,*.swp,*.class
@@ -135,9 +136,6 @@ au FileType gitcommit setlocal tw=72
 
 au BufRead *.tex setlocal tw=80
 au BufRead .letter,/tmp/mutt*,*.txt,.signature*,signature* setlocal tw=72 foldmethod=manual
-
-" vim-airline theme
-let g:airline_theme='badwolf'
 
 " Ctrl-P options
 " http://kien.github.com/ctrlp.vim/
