@@ -14,7 +14,7 @@ if [ -d "$DOTFILES" ]; then
     # Update them
     $GIT submodule init
     $GIT submodule update
-    $GIT pull --recurse-submodules origin master
+    $GIT submodule -q foreach git pull -q origin master
     popd > /dev/null
     exit 0
 fi
