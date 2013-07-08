@@ -36,6 +36,7 @@ set sw=2
 set tabstop=2
 set t_Co=256
 set textwidth=0
+set ttimeoutlen=50
 set ttyfast
 set wildignore=*.o,*~,*.swp,*.class
 set wildmenu
