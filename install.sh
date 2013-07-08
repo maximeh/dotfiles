@@ -34,16 +34,8 @@ cp "$DOTFILES/ssh/config" "$HOME/.ssh"
 [ -h "$HOME/bin" ] && rm "$HOME/bin"
 ln -s "$DOTFILES/bin" "$HOME/bin"
 
-[ -h "$HOME/.fonts" ] && rm "$HOME/.fonts"
-ln -s "$DOTFILES/.fonts" "$HOME/.fonts"
-
 # If we're on a Mac execute hack.sh
 [ "$(uname)" = "Darwin" ] && "$DOTFILES/osx.sh"
-
-# Update the font cache for Linux
-# Mac OS users should double click on the font to install it.
-[ "$(uname)" = "Linux" ] && fc-cache -vf
-[ "$(uname)" = "Darwin" ] && echo "Please install fonts in the .fonts directory"
 
 popd > /dev/null
 exit 0
