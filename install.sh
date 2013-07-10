@@ -1,42 +1,39 @@
 #!/bin/bash
 
-set -x
 set -e
 
-# Get them
-GIT=$(which git)
-DOTFILES="$HOME/.dotfiles"
+GIT=$(git --version)
+DOTFILES_DIR="$HOME/.dotfiles"
+[ -z "$GIT" ] && echo "Please install git" && exit 1
 
-[ -f "$GIT" ] || $(echo "Please install git -> apt-get install git" && exit 1)
-
-if [ -d "$DOTFILES" ]; then
-    pushd "$DOTFILES" > /dev/null
-    # Update them
-    $GIT submodule init
-    $GIT submodule update
-    $GIT submodule -q foreach git pull -q origin master
-    popd > /dev/null
-    exit 0
+if [ ! -d "$DOTFILES_DIR" ]; then
+  # If we're on a Mac execute hack.sh
+  [ "$(uname)" = "Darwin" ] && "$DOTFILES_DIR/osx.sh"
+  git clone --recursive git://github.com/maximeh/dotfiles.git "$DOTFILES_DIR"
 fi
 
-$GIT clone --recursive git://github.com/maximeh/dotfiles.git "$DOTFILES"
-pushd "$DOTFILES" > /dev/null
+pushd "$DOTFILES_DIR" > /dev/null
 
-# Create symlink
-for file in gitconfig vimrc vim zshrc screenrc irssi; do
+# Update
+git submodule init
+git submodule update
+git submodule foreach git pull origin master
+
+# Create symlink for dotfiles
+for file in gitconfig vimrc mutt vim zshrc screenrc irssi; do
     [ -h "$HOME/.$file" ] && rm "$HOME/.$file"
-    ln -s "$DOTFILES/$file" "$HOME/.$file"
+    # File have not been installed by us. Don't touch it.
+    [ -f "$HOME/.$file" ] && continue
+    ln -s "$DOTFILES_DIR/$file" "$HOME/.$file"
 done
-# Special case for SSH, don't want to symlink, just copy the config
-[ ! -d "$HOME/.ssh" ] && mkdir -p "$HOME/.ssh"
-cp "$DOTFILES/ssh/config" "$HOME/.ssh"
-
 [ -h "$HOME/bin" ] && rm "$HOME/bin"
-ln -s "$DOTFILES/bin" "$HOME/bin"
+ln -s "$DOTFILES_DIR/bin" "$HOME/bin"
 
-# If we're on a Mac execute hack.sh
-[ "$(uname)" = "Darwin" ] && "$DOTFILES/osx.sh"
+# Special case for SSH, don't want to symlink, just copy the config
+if [ ! -d "$HOME/.ssh" ]; then
+  mkdir -p "$HOME/.ssh/tmp"
+  cp "$DOTFILES_DIR/ssh/config" "$HOME/.ssh"
+fi
 
 popd > /dev/null
 exit 0
-
