@@ -94,6 +94,17 @@ nmap <leader><space> :noh<CR>
 nmap <leader>r iReviewed-by Maxime Hadjinlian <maxime.hadjinlian@gmail.com><ESC>
 nmap <leader>s iSigned-off-by Maxime Hadjinlian <maxime.hadjinlia@gmail.com><ESC>
 nmap <leader>m mmHmt:%s/<C-V><cr>//ge<cr>'tzt'm
+" vertical split
+" split screen vertically
+nnoremap <leader>\| <C-w>v\|<C-w>l\|:enew<cr>
+" split screen horizontally
+nnoremap <leader>- <C-w>n<C-w>k
+" move around buffer
+nnoremap <leader><Left> <C-w>h
+nnoremap <leader><Down> <C-w>j
+nnoremap <leader><Up> <C-w>k
+nnoremap <leader><Right> <C-w>l
+nnoremap <S-D> <C-w><C-r>
 " Allow saving of files as sudo when I forgot to start vim using sudo.
 cmap w!! w !sudo tee > /dev/null %
 nnoremap - $
