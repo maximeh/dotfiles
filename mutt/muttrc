@@ -46,6 +46,7 @@ unset mark_old              # dont mark unread msgs as old when exiting
 unset markers               # toggle marking wrapped lines in pager with a '+'
 set menu_scroll             # scroll in menus when traversing screen margins
 set tilde                   # pad empty lines with a ~ similar to vi
+set collapse_unread=yes
 
 set quote_regexp = "^([A-Za-z ]+>|[]>:|}-][]>:|}-]*)"     # regexp to determine quotes
 set pager_index_lines = 6   # split screen to show display message index (x-1 entries) at top
