@@ -30,3 +30,6 @@
   s = !"git status -sb"
 [help]
     autocorrect = 1
+[user]
+	name = Maxime Hadjinlian
+	email = maxime.hadjinlian@gmail.com
