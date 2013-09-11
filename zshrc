@@ -85,27 +85,14 @@ echo "'$1' is not a valid file"
   fi
 }
 
-typeset -Ag FX FG BG
-FX=(
-    reset     "[00m"
-    bold      "[01m" no-bold      "[22m"
-    italic    "[03m" no-italic    "[23m"
-)
-
-for color in {000..255}; do
-    FG[$color]="[38;5;${color}m"
-done
-
-local dir_bold="%{$FX[bold]$FG[012]%}[%2c]%{$FX[reset]%}"
-local arrow="%{$FX[bold]$FG[208]%}→ %{$FX[reset]%}"
-local triangle="%{$FX[bold]$FG[001]%}Δ %{$FX[reset]%}"
-
-PS1="${dir_bold}"
-if [ "`id -u`" -eq 0 ]; then
-    PS1="$PS1 ${triangle}"
-else
-    PS1="$PS1 ${arrow}"
+# show username@host if logged in through SSH
+if [[ $SSH_CLIENT != '' || $SSH_TTY != '' ]]; then
+  local username='%n@%m '
 fi
+precmd() {
+  print -P "%F{blue}%~%F{8}$username%f%"
+}
+PROMPT="%(!.%F{red}.%F{magenta})❯%f "
 
 # Show time a command took if over 5 sec
 # https://github.com/bjeanes/dot-files/commit/1ae5bc72dac6d5f2cdfbf5a48fdf140c5d085986
@@ -126,4 +113,6 @@ export VISUAL=vim
 export EDITOR=vim
 export PATH=$PATH:$HOME/bin:/usr/sbin:/sbin
 # Source machine file for specific stuff
-source $HOME/.$(uname -n)
+if [ -f $HOME/.$(uname -n) ]; then
+  source $HOME/.$(uname -n)
+fi
