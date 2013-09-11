@@ -3,6 +3,7 @@
 ! http://ethanschoonover.com/solarized
 
 URxvt.scrollBar: false
+URxvt*termName: rxvt
 
 !-- Xft settings -- !
 Xft.dpi:        96
