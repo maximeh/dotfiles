@@ -90,7 +90,7 @@ if [[ $SSH_CLIENT != '' || $SSH_TTY != '' ]]; then
   local username='%n@%m '
 fi
 precmd() {
-  print -P "%F{blue}%~%F{8}$username%f%"
+  print -P "%F{yellow}$username%f%F{blue}%~%F{8}%f"
 }
 PROMPT="%(!.%F{red}.%F{magenta})❯%f "
 
