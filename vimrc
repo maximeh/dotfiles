@@ -45,8 +45,6 @@ set wildmode=full
 
 filetype plugin indent on
 syntax on
-set t_Co=16
-let g:solarized_termcolors=256
 colorscheme solarized
 
 highlight Normal ctermbg=none
