@@ -45,7 +45,6 @@ alias df='df -h' # Disk free, in gigabytes, not bytes
 alias du='du -h -c' # Calculate total disk usage for a folder
 unalias vi 2>/dev/null
 alias vi='vim'
-alias rec='ffmpeg -f x11grab -r 25 -s 800x600 -i :0.0' # record desk to a file
 # intercept stdout,stderr of PID
 alias intercept='strace -ff -e trace=write -e write=1,2 -p'
 alias duh="du "${@--xd1}" -h | sort -h" # sort dir in . based on their size
