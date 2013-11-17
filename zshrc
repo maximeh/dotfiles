@@ -8,6 +8,9 @@ zstyle ':completion:*' cache-path ~/.zsh_cache
 zmodload zsh/complist
 zstyle ':completion:*:*:kill:*:processes' list-colors "=(#b) #([0-9]#)*=36=31"
 
+bindkey "^[[1~" beginning-of-line
+bindkey "^[[4~" end-of-line
+
 setopt append_history share_history
 setopt hist_ignore_dups histignorealldups
 setopt HIST_FIND_NO_DUPS
