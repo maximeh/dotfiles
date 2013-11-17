@@ -3,7 +3,7 @@
 ! http://ethanschoonover.com/solarized
 URxvt.perl-ext-common: default,matcher,clipboard
 URxvt.url-launcher: /usr/bin/chromium
-URxvt.matcher.button:   1
+URxvt.matcher.button: 1
 URxvt.keysym.Shift-Control-V: perl:clipboard:paste
 URxvt.iso14755: False
 
