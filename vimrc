@@ -34,6 +34,7 @@ set sts=2
 set suffixes=.bak,~,.swp,.o,.info,.aux,.log,.dvi,.bbl,.blg,.brf,.cb,.out,.toc
 set sw=2
 set tabstop=2
+set tabpagemax=200
 set t_Co=256
 set textwidth=0
 set ttimeout
