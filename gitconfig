@@ -8,8 +8,6 @@
   auto=1
 [merge]
   summary=true
-[apply]
-  whitespace = fix
 [alias]
   unstage = reset HEAD
   uncommit = reset --soft HEAD^
@@ -33,3 +31,7 @@
 [user]
 	name = Maxime Hadjinlian
 	email = maxime.hadjinlian@gmail.com
+[push]
+	default = matching
+[sendemail]
+	smtpserver = /usr/bin/msmtp
