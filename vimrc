@@ -185,12 +185,3 @@ let g:rbpt_colorpairs = [
     \ ['darkred',     'DarkOrchid3'],
     \ ['red',         'firebrick3'],
     \ ]
-
-" Load .vimrc.local if found in git directory
-if filereadable('.git/.vimrc.local')
-  source .git/.vimrc.local
-else
-  if filereadable('.vimrc.local')
-    source .vimrc.local
-  endif
-endif
