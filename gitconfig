@@ -1,37 +1,42 @@
 [color]
-  diff = auto
-  status = auto
-  branch = auto
-  interactive = auto
-  ui = 1
+	diff = auto
+	status = auto
+	branch = auto
+	interactive = auto
+	ui = 1
 [gc]
-  auto=1
+	auto=1
 [merge]
-  summary=true
+	summary=true
 [alias]
-  unstage = reset HEAD
-  uncommit = reset --soft HEAD^
-  count = shortlog -sn
-  # Switch to a branch, creating it if necessary
-  go = checkout -B
-  # Show verbose output about tags, branches or remotes
-  tags = tag -l
-  branches = branch -a
-  remotes = remote -v
-  # Clone a repository including all submodules
-  c = clone --recursive
-  # Commit all changes
-  ca = !git add -A && git commit -av
-  # Show the diff between the latest commit and the current state
-  d = !"git diff-index --quiet HEAD -- || clear; git diff --patch-with-stat"
-  log = !"git log --graph --pretty=format:'%Cred%h%Creset %an: %s - %Creset %C(yellow)%d%Creset %Cgreen(%cr)%Creset' --abbrev-commit --date=relative"
-  s = !"git status -sb"
+	unstage = reset HEAD
+	uncommit = reset --soft HEAD^
+	count = shortlog -sn
+	# Switch to a branch, creating it if necessary
+	go = checkout -B
+	# Show verbose output about tags, branches or remotes
+	branches = branch -a
+	remotes = remote -v
+	# Clone a repository including all submodules
+	c = clone --recursive
+	# Commit all changes
+	ca = !git add -A && git commit -av
+	# Show the diff between the latest commit and the current state
+	d = !"git diff-index --quiet HEAD -- || clear; git diff --patch-with-stat"
+	shortlog = !"git log --graph --pretty=format:'%Cred%h%Creset %an: %s - %Creset %C(yellow)%d%Creset %Cgreen(%cr)%Creset' --abbrev-commit --date=relative"
+	s = !"git status -sb"
+	# stash shortcuts
+	sl = stash list
+	sa = stash apply
+	ss = stash save
 [help]
     autocorrect = 1
 [user]
 	name = Maxime Hadjinlian
 	email = maxime.hadjinlian@gmail.com
 [push]
-	default = matching
+	default = tracking
 [sendemail]
 	smtpserver = /usr/bin/msmtp
+[branch]
+	autosetuprebase = always
