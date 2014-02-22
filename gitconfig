@@ -30,13 +30,16 @@
 	sa = stash apply
 	ss = stash save
 [help]
-    autocorrect = 1
+	autocorrect = 1
 [user]
 	name = Maxime Hadjinlian
 	email = maxime.hadjinlian@gmail.com
 [push]
-	default = tracking
+	default = upstream
 [sendemail]
 	smtpserver = /usr/bin/msmtp
 [branch]
 	autosetuprebase = always
+[core]
+	excludesfile = ~/.gitignore_global
+	autocrlf = input
