@@ -44,6 +44,7 @@ set wildmenu
 set wildmode=full
 
 filetype plugin indent on
+set ofu=syntaxcomplete#Complete
 au BufRead,BufNewFile *.go setlocal filetype=go
 syntax on
 colorscheme solarized
