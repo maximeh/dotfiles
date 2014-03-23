@@ -3,7 +3,7 @@ servers = (
     address = "irc.inp-net.rezosup.org";
     chatnet = "UTBM";
     port = "6667";
-    use_ssl = "no";
+    use_ssl = "yes";
     ssl_verify = "no";
     autoconnect = "yes";
     term_type = "utf-8";
@@ -38,29 +38,26 @@ servers = (
 );
 
 chatnets = {
-  UTBM = { type = "IRC"; nick = "kinji";
-    autosendcmd = "/msg NickServ IDENTIFY **PASSWORD**;/mode kinji -v";
+  UTBM = { type = "IRC"; nick = "kinji"; autosendcmd = "/mode kinji -v"; };
+  freenode = {
+    type = "IRC";
+    nick = "maxime";
+    autosendcmd = "/mode maxime -v";
   };
-  freenode = { type = "IRC"; nick = "maxime";
-    autosendcmd = "/msg NickServ IDENTIFY **PASSWORD**;/mode maxime -v";
+  oftc = {
+    type = "IRC";
+    nick = "maxime";
+    autosendcmd = "/mode maxime -v";
   };
-  bitlbee = { type = "IRC";
-    autosendcmd = "/msg &bitlbee identify **PASSWORD**; wait 2000;";
-  };
-  oftc = { type = "IRC"; nick = "maxime";
-    autosendcmd = "/msg NickServ IDENTIFY **PASSWORD**";
-  };
+  bitlbee = { type = "IRC"; };
 };
 
 channels = (
+  { name = "&bitlbee"; chatnet = "bitlbee"; autojoin = "yes"; },
   { name = "#geek"; chatnet = "UTBM"; autojoin = "yes"; },
-  { name = "#lacie"; chatnet = "freenode"; autojoin = "yes"; },
   { name = "#lacie-nas"; chatnet = "freenode"; autojoin = "yes"; },
   { name = "#maposmatic"; chatnet = "freenode"; autojoin = "yes"; },
   { name = "#apbteam"; chatnet = "freenode"; autojoin = "yes"; },
-  { name = "&bitlbee"; chatnet = "bitlbee"; autojoin = "yes"; },
-  { name = "##re"; chatnet = "freenode"; autojoin = "yes"; },
-  { name = "#android-fr"; chatnet = "freenode"; autojoin = "yes"; },
   { name = "#linuxxx"; chatnet = "freenode"; autojoin = "yes"; },
   { name = "#buildroot"; chatnet = "freenode"; autojoin = "yes"; },
   { name = "#debian-mentors"; chatnet = "oftc"; autojoin = "yes"; }
@@ -76,8 +73,8 @@ aliases = {
   la = "away";
   quit = "echo don't do this at home!";
   ADDALLCHAN = "script exec foreach my \\$channel (Irssi::channels()) { Irssi::command(\"channel add -auto \\$channel->{name} \\$channel->{server}->{tag} \\$channel->{key}\")\\;}";
-  reg = "/msg NickServ IDENTIFY **PASSWORD**";
-  ghost = "/msg NickServ GHOST maxime **PASSWORD**";
+  reg = "/msg NickServ IDENTIFY";
+  ghost = "/msg NickServ GHOST maxime";
 };
 
 settings = {
@@ -149,7 +146,7 @@ windows = {
       {
         type = "CHANNEL";
         chat_type = "IRC";
-        name = "#lacie";
+        name = "#maposmatic";
         tag = "freenode";
       }
     );
@@ -159,27 +156,7 @@ windows = {
       {
         type = "CHANNEL";
         chat_type = "IRC";
-        name = "#maposmatic";
-        tag = "freenode";
-      }
-    );
-  };
-  7 = {
-    items = (
-      {
-        type = "CHANNEL";
-        chat_type = "IRC";
         name = "#apbteam";
-        tag = "freenode";
-      }
-    );
-  };
-  8 = {
-    items = (
-      {
-        type = "CHANNEL";
-        chat_type = "IRC";
-        name = "##re";
         tag = "freenode";
       }
     );
@@ -214,16 +191,5 @@ windows = {
       }
     );
   };
-  12 = {
-    items = (
-      {
-        type = "CHANNEL";
-        chat_type = "IRC";
-        name = "#android-fr";
-        tag = "freenode";
-      }
-    );
-  };
-
 };
 mainwindows = { 1 = { first_line = "1"; lines = "74"; }; };
