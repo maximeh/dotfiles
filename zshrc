@@ -57,6 +57,8 @@ alias duh="du "${@--xd1}" -h | sort -h" # sort dir in . based on their size
 alias fix_stty='stty sane'
 # osock: to display open sockets (the -P option to lsof disables port names)
 alias osock='sudo lsof -i -P'
+# remove color and command char from an output
+alias rm_color='sed -r "s:\x1B\[[0-9;]*[mK]::g"'
 
 # Functions
 calc() { echo "$*" | bc -l; } #define the co function to calculate
