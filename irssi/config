@@ -3,7 +3,7 @@ servers = (
     address = "irc.inp-net.rezosup.org";
     chatnet = "UTBM";
     port = "6667";
-    use_ssl = "yes";
+    use_ssl = "no";
     ssl_verify = "no";
     autoconnect = "yes";
     term_type = "utf-8";
@@ -44,7 +44,7 @@ chatnets = {
     nick = "maxime";
     autosendcmd = "/mode maxime -v";
   };
-  oftc = {
+  oftc = { 
     type = "IRC";
     nick = "maxime";
     autosendcmd = "/mode maxime -v";
@@ -85,7 +85,7 @@ settings = {
     recode_autodetect_utf8 = "yes";
     recode = "yes";
     server_reconnect_time = "30s";
-    hostname = "f00.fr";
+    hostname = "";
     nick = "kinji";
   };
   "fe-text" = {
@@ -105,8 +105,9 @@ settings = {
     theme = "solarized-universal";
   };
 };
+logs = { };
 windows = {
-  1 = {
+  1 = { 
     immortal = "yes";
     name = "(msgs)";
     level = "MSGS ACTIONS DCCMSGS";
@@ -136,7 +137,7 @@ windows = {
       {
         type = "CHANNEL";
         chat_type = "IRC";
-        name = "#lacie-nas";
+        name = "#dvlt";
         tag = "freenode";
       }
     );
@@ -146,7 +147,7 @@ windows = {
       {
         type = "CHANNEL";
         chat_type = "IRC";
-        name = "#maposmatic";
+        name = "#lacie-nas";
         tag = "freenode";
       }
     );
@@ -156,12 +157,22 @@ windows = {
       {
         type = "CHANNEL";
         chat_type = "IRC";
+        name = "#maposmatic";
+        tag = "freenode";
+      }
+    );
+  };
+  7 = {
+    items = (
+      {
+        type = "CHANNEL";
+        chat_type = "IRC";
         name = "#apbteam";
         tag = "freenode";
       }
     );
   };
-  9 = {
+  8 = {
     items = (
       {
         type = "CHANNEL";
@@ -171,7 +182,7 @@ windows = {
       }
     );
   };
-  10 = {
+  9 = {
     items = (
       {
         type = "CHANNEL";
@@ -181,7 +192,7 @@ windows = {
       }
     );
   };
-  11 = {
+  10 = {
     items = (
       {
         type = "CHANNEL";
@@ -191,5 +202,25 @@ windows = {
       }
     );
   };
+  11 = {
+    items = (
+      {
+        type = "CHANNEL";
+        chat_type = "IRC";
+        name = "#openocd";
+        tag = "freenode";
+      }
+    );
+  };
+  12 = {
+    items = (
+      {
+        type = "CHANNEL";
+        chat_type = "IRC";
+        name = "#u-boot";
+        tag = "freenode";
+      }
+    );
+  };
 };
-mainwindows = { 1 = { first_line = "1"; lines = "74"; }; };
+mainwindows = { 1 = { first_line = "1"; lines = "98"; }; };
