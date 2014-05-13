@@ -59,12 +59,14 @@ alias fix_stty='stty sane'
 alias osock='sudo lsof -i -P'
 # remove color and command char from an output
 alias rm_color='sed -r "s:\x1B\[[0-9;]*[mK]::g"'
+#ssh without check of the key
+alias sshwk='ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no'
 
 # Functions
 d2h() { printf '0x%08X\n' $1 }
 d2b() { echo "obase=2;ibase=10;$1" | bc | awk '{printf "%016s\n", $0}' }
 d2bs() { d2b $1 | sed 's/.\{4\}/& /g' }
-h2d() { echo "obase=10;ibase=16;$1" | bc }
+h2d() { echo "obase=10;ibase=16;$1:u" | bc }
 h2b() { d2b $(h2d $1) }
 h2bs() { h2b $1 | sed 's/.\{4\}/& /g' }
 b2d() { echo "obase=10;ibase=2;$1" | bc }
