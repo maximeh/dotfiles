@@ -13,7 +13,6 @@ set infercase
 set iskeyword=@,48-57,_,192-255,-
 set lazyredraw
 set ls=2
-set modelines=0
 set nocompatible
 set nocp
 set nostartofline
