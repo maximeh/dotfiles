@@ -20,7 +20,7 @@ git submodule update
 git submodule foreach git pull origin master
 
 # Create symlink for dotfiles
-for file in gitconfig gitignore_global vimrc mutt vim zshrc ncmpcpp screenrc irssi tmux.conf Xresources i3 urxvt; do
+for file in git_template gitconfig gitignore_global vimrc mutt vim zshrc ncmpcpp screenrc irssi tmux.conf Xresources i3 urxvt; do
     [ -h "$HOME/.$file" ] && rm "$HOME/.$file"
     # File have not been installed by us. Don't touch it.
     [ -f "$HOME/.$file" ] && continue

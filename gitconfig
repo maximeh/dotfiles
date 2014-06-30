@@ -29,6 +29,7 @@
 	sl = stash list
 	sa = stash apply
 	ss = stash save
+	ctags = !.git/hooks/ctags
 [help]
 	autocorrect = 1
 [user]
@@ -43,3 +44,5 @@
 [core]
 	excludesfile = ~/.gitignore_global
 	autocrlf = input
+[init]
+	templatedir = ~/.git_template

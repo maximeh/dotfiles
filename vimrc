@@ -33,6 +33,7 @@ set suffixes=.bak,~,.swp,.o,.info,.aux,.log,.dvi,.bbl,.blg,.brf,.cb,.out,.toc
 set sw=2
 set tabstop=2
 set tabpagemax=200
+set tags=.git/tags
 set t_Co=256
 set textwidth=0
 set ttimeout
@@ -121,6 +122,9 @@ nnoremap j :
 nnoremap J :
 nnoremap l n
 nnoremap L N
+
+" Ctrl + \ - Open the definition in a vertical split
+map <C-\> :vsp <CR>:exec("tag ".expand("<cword>"))<CR>
 
 " Comment code
 nnoremap // :TComment<CR>
