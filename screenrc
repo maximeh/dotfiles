@@ -22,3 +22,4 @@ defscrollback 3000
 #termcapinfo xterm ti@:te@
 termcapinfo xterm*|linux* ti@:te@
 
+escape ^Ee
