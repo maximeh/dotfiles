@@ -28,10 +28,10 @@ set showmode
 set sidescrolloff=2
 set smartcase
 set smartindent
-set sts=2
 set suffixes=.bak,~,.swp,.o,.info,.aux,.log,.dvi,.bbl,.blg,.brf,.cb,.out,.toc
-set sw=2
-set tabstop=2
+set sw=8
+set sts=8
+set tabstop=8
 set tabpagemax=200
 set tags=.git/tags
 set t_Co=256
