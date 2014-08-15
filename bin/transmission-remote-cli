@@ -19,9 +19,9 @@
 VERSION = '1.1'
 
 TRNSM_VERSION_MIN = '1.90'
-TRNSM_VERSION_MAX = '2.50'
+TRNSM_VERSION_MAX = '2.90'
 RPC_VERSION_MIN = 8
-RPC_VERSION_MAX = 14
+RPC_VERSION_MAX = 15
 
 # error codes
 CONNECTION_ERROR = 1
@@ -1107,14 +1107,14 @@ class Interface:
        current_limit = (-1,self.stats['speed-limit-up'])[self.stats['speed-limit-up-enabled']]
        limit = self.dialog_input_number("Global upload limit in kilobytes per second", current_limit)
        if limit == -128:
-           return 
+           return
        server.set_rate_limit('up', limit)
 
     def global_download(self, c):
        current_limit = (-1,self.stats['speed-limit-down'])[self.stats['speed-limit-down-enabled']]
        limit = self.dialog_input_number("Global download limit in kilobytes per second", current_limit)
        if limit == -128:
-           return 
+           return
        server.set_rate_limit('down', limit)
 
     def torrent_upload(self, c):
@@ -1123,7 +1123,7 @@ class Interface:
             limit = self.dialog_input_number("Upload limit in kilobytes per second for\n%s" % \
                                                  self.torrents[self.focus]['name'], current_limit)
             if limit == -128:
-                return 
+                return
             server.set_rate_limit('up', limit, self.torrents[self.focus]['id'])
 
     def torrent_download(self, c):
@@ -1132,7 +1132,7 @@ class Interface:
             limit = self.dialog_input_number("Download limit in Kilobytes per second for\n%s" % \
                                                  self.torrents[self.focus]['name'], current_limit)
             if limit == -128:
-                return 
+                return
             server.set_rate_limit('down', limit, self.torrents[self.focus]['id'])
 
     def seed_ratio(self, c):
@@ -2570,7 +2570,7 @@ class Interface:
 
             elif cursorkeys and c != -1:
                 try:
-                    if input == '': input = 0                        
+                    if input == '': input = 0
                     if floating_point: number = float(input)
                     else:              number = int(input)
                     if c == curses.KEY_LEFT or c == ord('h'):    number -= smallstep
@@ -3041,7 +3041,7 @@ def save_config(filepath, force=False):
 def parse_sort_str(sort_str):
     sort_orders = []
     for i in sort_str.split(','):
-        x = i.split(':') 
+        x = i.split(':')
         if len(x) > 1:
             sort_orders.append( { 'name':x[1], 'reverse':True } )
         else:
