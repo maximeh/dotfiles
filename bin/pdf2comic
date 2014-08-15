@@ -1,0 +1,87 @@
+#!/bin/sh
+set -e
+
+workdir=$(mktemp -d)
+
+cleanup() {
+  [ -d ${workdir} ] && rm -Rf ${workdir}
+}
+trap cleanup EXIT
+
+check_app() {
+  app="$1"
+  package="$2"
+  if ! which ${app} 1> /dev/null 2>&1; then
+    echo -n "'${app}' is not present in your path, please install it"
+    if [ -n "${package}" ]; then
+      echo " (part of '${package}' utility)."
+    else
+      echo "."
+    fi
+    exit 1
+  fi
+}
+
+check_app "gs" "ghostscript"
+check_app "pdfinfo" "poppler-utils"
+
+if [ ! -f "$1" ]; then
+  echo "${1} is not a file."
+  exit 1
+fi
+input="${1}"
+input_dir=$(dirname ${input})
+comic_name="${input_dir}/comic.cbr"
+[ -n "$2" ] && comic_name="$2"
+ext=${comic_name##*.}
+if [ "${ext}" = "cbr" ]; then
+  check_app 'rar'
+elif [ "${ext}" = "cbz" ]; then
+  check_app 'zip'
+else
+  echo "Unsupported extension '${ext}'."
+  exit 1
+fi
+
+nb_pages=$(pdfinfo ${input} | awk /Pages:/'{print $2}')
+# We want to keep the resolution of the pdf
+resolution=$(pdfinfo ${input} | awk /Page\ size:/'{print $3$4$5}')
+
+count=0
+if [ $(uname) = "Darwin" ]; then
+  nb_cpus=$(sysctl -n hw.ncpu)
+else
+  nb_cpus=$(nproc)
+fi
+for i in $(seq -w ${nb_pages}); do
+  printf "Extracting (${i}/${nb_pages} pages)\r"
+  gs \
+    -q \
+    -sDEVICE=jpeg   \
+    -o ${workdir}/${i}.jpg \
+    -dJPEGQ=90 \
+    -g${resolution} \
+    -dFirstPage=${i} \
+    -dLastPage=${i} \
+    -dNOPAUSE \
+    -dNOGC \
+    -dBandHeight=100 \
+    -dBandBufferSpace=500000000 \
+    -sBandListStorage=memory \
+    -dBufferSpace=1000000000 \
+    ${input} &
+
+  count=$((count+1))
+  [ $((count%${nb_cpus})) -eq 0 ] && wait
+done
+
+printf "\nCompressing...\n"
+if [ "${ext}" = "cbr" ]; then
+  rar -inul -m5 a ${comic_name} ${workdir}/*
+elif [ "${ext}" = "cbz" ]; then
+  zip -q -j ${comic_name} ${workdir}/*
+fi
+
+printf "The '${ext}' is ready ! It's at '${comic_name}'\n"
+exit 0
+

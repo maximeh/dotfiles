@@ -1,0 +1,87 @@
+#!/bin/sh
+set -e
+# set -x
+
+check_app() {
+  app="$1"
+  package="$2"
+  if ! which ${app} 1> /dev/null 2>&1; then
+    echo -n "'${app}' is not present in your path, please install it"
+    if [ -n "${package}" ]; then
+      echo " (part of '${package}' utility)."
+    else
+      echo "."
+    fi
+    exit 1
+  fi
+}
+
+shrink() {
+  file="$1"
+
+  gs \
+    -q \
+    -dNOPAUSE \
+    -dBATCH \
+    -dSAFER \
+    -dNOGC \
+    -dBandHeight=100 \
+    -dBandBufferSpace=500000000 \
+    -sBandListStorage=memory \
+    -dBufferSpace=1000000000 \
+    -sDEVICE=pdfwrite \
+    -dCompatibilityLevel=1.3 \
+    -dPDFSETTINGS=/screen \
+    -dEmbedAllFonts=true \
+    -dSubsetFonts=true \
+    -dColorImageDownsampleType=/Bicubic \
+    -dColorImageResolution=72 \
+    -dGrayImageDownsampleType=/Bicubic \
+    -dGrayImageResolution=72 \
+    -dMonoImageDownsampleType=/Bicubic \
+    -dMonoImageResolution=72 \
+    -dColorConversionStrategy=/Gray \
+    -dProcessColorModel=/DeviceGray \
+    -sOutputFile="${file}_new.pdf" \
+    "${file}"
+
+  # Replace the file only if they are lighter
+  size_new=$(ls -l "${file}_new.pdf" | awk '{print $5}')
+  size=$(ls -l "${file}" | awk '{print $5}')
+  if [ $size -gt $size_new ]; then
+    mv "${file}_new.pdf" "${file}"
+  else
+    rm "${file}_new.pdf"
+  fi
+
+}
+
+check_app "gs" "ghostscript"
+
+if [ ! -d "$1" ]; then
+  echo "${1} is not a directory."
+  exit 1
+fi
+input="${1}"
+
+nb_files=$(find ${input} -name "*.pdf" | wc -l | tr -d ' ')
+
+if [ $(uname) = "Darwin" ]; then
+  nb_cpus=$(sysctl -n hw.ncpu)
+else
+  nb_cpus=$(nproc)
+fi
+
+count=0
+find ${input} -name "*.pdf" | while read file
+do
+  printf "Shrink (%d/%d files)\r" "${count}" "${nb_files}"
+  shrink "${file}" 1>/dev/null 2>&1 &
+
+  count=$((count+1))
+  [ $((count%${nb_cpus})) -eq 0 ] && wait
+done
+
+echo "Shrink (${nb_files}/${nb_files} files)"
+echo "All done !"
+
