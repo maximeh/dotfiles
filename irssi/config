@@ -75,6 +75,7 @@ aliases = {
   ADDALLCHAN = "script exec foreach my \\$channel (Irssi::channels()) { Irssi::command(\"channel add -auto \\$channel->{name} \\$channel->{server}->{tag} \\$channel->{key}\")\\;}";
   reg = "/msg NickServ IDENTIFY";
   ghost = "/msg NickServ GHOST maxime";
+  dvorak = "bind -delete meta-q;bind -delete meta-w;bind -delete meta-e;bind -delete meta-r;bind -delete meta-t;bind -delete meta-y;bind -delete meta-u;bind -delete meta-i;bind -delete meta-o;bind -delete meta-p;bind -delete meta-f;bind meta-' change_window 11;bind meta-, change_window 12;bind meta-. change_window 13;bind meta-p change_window 14;bind meta-y change_window 15;bind meta-f change_window 16;bind meta-g change_window 17;bind meta-c change_window 18;bind meta-r change_window 19;bind meta-l change_window 20";
 };
 
 settings = {
@@ -103,6 +104,7 @@ settings = {
     autolog = "yes";
     term_charset = "utf-8";
     theme = "solarized-universal";
+    autolog_ignore_targets = "ChanServ NickServ";
   };
 };
 logs = { };
@@ -224,3 +226,15 @@ windows = {
   };
 };
 mainwindows = { 1 = { first_line = "1"; lines = "98"; }; };
+keyboard = (
+  { key = "meta-'"; id = "change_window"; data = "11"; },
+  { key = "meta-,"; id = "change_window"; data = "12"; },
+  { key = "meta-."; id = "change_window"; data = "13"; },
+  { key = "meta-p"; id = "change_window"; data = "14"; },
+  { key = "meta-y"; id = "change_window"; data = "15"; },
+  { key = "meta-f"; id = "change_window"; data = "16"; },
+  { key = "meta-g"; id = "change_window"; data = "17"; },
+  { key = "meta-c"; id = "change_window"; data = "18"; },
+  { key = "meta-r"; id = "change_window"; data = "19"; },
+  { key = "meta-l"; id = "change_window"; data = "20"; }
+);
