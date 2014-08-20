@@ -5,6 +5,7 @@ call pathogen#infect()
 set autoindent
 set autoread
 set backspace=eol,start,indent
+set colorcolumn=80
 set expandtab
 set hidden
 set hlsearch
@@ -28,11 +29,11 @@ set showmode
 set sidescrolloff=2
 set smartcase
 set smartindent
+set sts=8
 set suffixes=.bak,~,.swp,.o,.info,.aux,.log,.dvi,.bbl,.blg,.brf,.cb,.out,.toc
 set sw=8
-set sts=8
-set tabstop=8
 set tabpagemax=200
+set tabstop=8
 set tags=.git/tags
 set t_Co=256
 set textwidth=0
@@ -68,9 +69,6 @@ autocmd BufWrite * :call DeleteTrailingWS()
 
 let mapleader = ","
 let g:mapleader = ","
-
-au filetype c,cpp map <F9> :make<CR>
-au filetype java map <F10> :Java %<CR>
 
 " Nice statusbar
 set laststatus=2
