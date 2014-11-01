@@ -2,7 +2,7 @@
 !
 ! http://ethanschoonover.com/solarized
 URxvt.perl-ext-common: default,matcher,clipboard
-URxvt.url-launcher: /usr/bin/chromium
+URxvt.url-launcher: /usr/bin/iceweasel
 URxvt.matcher.button: 1
 URxvt.keysym.Shift-Control-V: perl:clipboard:paste
 URxvt.keysym.Home: \033[1~
@@ -13,14 +13,14 @@ URxvt.scrollBar: false
 URxvt*termName: xterm-256color
 
 !-- Xft settings -- !
-Xft.dpi:        96
+Xft.dpi:        120
 Xft.antialias:  1
 Xft.rgba:       rgb
 Xft.hinting:    1
 Xft.hintstyle:  hintfull
 
 !! -- Fonts -- !
-URxvt.font: xft:DejaVu Sans Mono:pixelsize=12:Regular
+URxvt.font: xft:DejaVu Sans Mono:pixelsize=20:Regular
 
 ! Common
 
