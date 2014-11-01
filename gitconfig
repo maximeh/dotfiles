@@ -12,6 +12,10 @@
 	unstage = reset HEAD
 	uncommit = reset --soft HEAD^
 	count = shortlog -sn
+	# Find every version of every file and sort by size; help find huge file
+	hugefiles = !"for commit in $(git log --all --pretty=format:%H); do git ls-tree -r -l $commit; done |awk '{print $4 \" \" $5}' |sort -nu"
+	# Will rewrite history and remove file
+	delfile = !"sh -c \"git filter-branch -f --index-filter 'git rm --cached --ignore-unmatch $1' -- --all\""
 	# Switch to a branch, creating it if necessary
 	go = checkout -B
 	# Show verbose output about tags, branches or remotes
@@ -25,6 +29,8 @@
 	# Show the diff between the latest commit and the current state
 	d = !"git diff-index --quiet HEAD -- || clear; git diff --patch-with-stat"
 	graph = !"git log --graph --pretty=format:'%Cred%h%Creset %an: %s - %Creset %C(yellow)%d%Creset %Cgreen(%cr)%Creset' --abbrev-commit --date=relative"
+	rb = "!sh -c \"git rebase -i HEAD~$1\" -"
+	gca = gc --aggressive --prune=now
 	s = !"git status -sb"
 	# stash shortcuts
 	sl = stash list
