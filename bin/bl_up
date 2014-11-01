@@ -1,0 +1,7 @@
+#!/bin/sh
+
+bl_device=/sys/class/backlight/gmux_backlight/brightness
+cur=$(cat $bl_device)
+cur=$((cur+100))
+if [ $cur -gt 1023 ]; then cur=1023; fi;
+echo $cur | sudo tee $bl_device
