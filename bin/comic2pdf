@@ -29,22 +29,22 @@ if [ ! -f "$1" ]; then
   exit 1
 fi
 input="${1}"
-input_dir=$(dirname ${input})
+input_dir=$(dirname "${input}")
 
 comic_name="${input_dir}/comic.pdf"
 [ -n "$2" ] && comic_name="$2"
 
 # Unzip or unrar ?
-mimetype=$(file -b --mime ${input} | cut -d';' -f1)
+mimetype=$(file -b --mime "${input}" | cut -d';' -f1)
 if [ "${mimetype}" = "application/x-rar" ]; then
   check_app 'unrar'
-  unrar -inul e ${input} ${workdir}
+  unrar -inul e "${input}" ${workdir}
 else
   check_app 'unzip'
-  unzip -qq ${input} -d ${workdir}
+  unzip -qq "${input}" -d ${workdir}
 fi
 
-img2pdf ${workdir}/*.jpg -o ${comic_name}
+img2pdf ${workdir}/* -o ${comic_name}
 
 echo "The 'pdf' is ready ! It's at '${comic_name}'"
 exit 0

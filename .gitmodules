@@ -28,3 +28,6 @@
 [submodule "tmux-resurrect"]
 	path = tmux-resurrect
 	url = https://github.com/tmux-plugins/tmux-resurrect
+[submodule "vim/bundle/gnupg.vim"]
+	path = vim/bundle/gnupg.vim
+	url = https://github.com/vim-scripts/gnupg.vim.git

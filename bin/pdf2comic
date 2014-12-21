@@ -22,7 +22,6 @@ check_app() {
   fi
 }
 
-check_app "gs" "ghostscript"
 check_app "pdfinfo" "poppler-utils"
 
 if [ ! -f "$1" ]; then
@@ -30,7 +29,7 @@ if [ ! -f "$1" ]; then
   exit 1
 fi
 input="${1}"
-input_dir=$(dirname ${input})
+input_dir=$(dirname "${input}")
 comic_name="${input_dir}/comic.cbr"
 [ -n "$2" ] && comic_name="$2"
 ext=${comic_name##*.}
@@ -43,37 +42,7 @@ else
   exit 1
 fi
 
-nb_pages=$(pdfinfo ${input} | awk /Pages:/'{print $2}')
-# We want to keep the resolution of the pdf
-resolution=$(pdfinfo ${input} | awk /Page\ size:/'{print $3$4$5}')
-
-count=0
-if [ $(uname) = "Darwin" ]; then
-  nb_cpus=$(sysctl -n hw.ncpu)
-else
-  nb_cpus=$(nproc)
-fi
-for i in $(seq -w ${nb_pages}); do
-  printf "Extracting (${i}/${nb_pages} pages)\r"
-  gs \
-    -q \
-    -sDEVICE=jpeg   \
-    -o ${workdir}/${i}.jpg \
-    -dJPEGQ=90 \
-    -g${resolution} \
-    -dFirstPage=${i} \
-    -dLastPage=${i} \
-    -dNOPAUSE \
-    -dNOGC \
-    -dBandHeight=100 \
-    -dBandBufferSpace=500000000 \
-    -sBandListStorage=memory \
-    -dBufferSpace=1000000000 \
-    ${input} &
-
-  count=$((count+1))
-  [ $((count%${nb_cpus})) -eq 0 ] && wait
-done
+pdftoppm -png -aa yes -aaVector yes "${input}" ${workdir}/pdf2comic
 
 printf "\nCompressing...\n"
 if [ "${ext}" = "cbr" ]; then

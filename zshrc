@@ -32,6 +32,7 @@ unsetopt list_ambiguous
 unsetopt beep
 unsetopt hist_beep
 unsetopt list_beep
+setopt completealiases
 
 # Alias
 alias ls="ls -F --color" # Color is handled differently on Linux
@@ -64,16 +65,16 @@ alias sshwk='ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no'
 alias scpwk='scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no'
 alias pwlist="pwclient list -s New"
 alias pwam="pwclient git-am"
+alias icdiff="icdiff --line-numbers --highlight"
 
 # Functions
-d2h() { for x in "$@"; do printf '0x%08X\n' $x; done }
-d2b() { for x in "$@"; do echo "obase=2;ibase=10;$x" | bc | awk '{printf "%016d\n", $0}'; done }
-d2bs() { for x in "$@"; do d2b $x | sed 's/.\{4\}/& /g'; done }
-h2d() { for x in "$@"; do echo "obase=10;ibase=16;$x:u" | bc; done }
-h2b() { for x in "$@"; do d2b $(h2d $x); done }
-h2bs() { for x in "$@"; do h2b $x | sed 's/.\{4\}/& /g'; done }
-b2d() { for x in "$@"; do echo "obase=10;ibase=2;$x" | bc; done }
-b2h() { for x in "$@"; do d2h $(b2d $x); done }
+d2b() { for x in "$@"; do echo "obase=2;ibase=10;$1" | bc; done }
+h2b() { for x in "$@"; do echo "obase=2;ibase=16;$1:u" | bc; done }
+h2bs() { for x in "$@"; do h2b $1 | rev | sed 's/.\{4\}/& /g' | rev ; done }
+b2d() { for x in "$@"; do echo "obase=10;ibase=2;$1" | bc; done }
+h2d() { for x in "$@"; do echo "obase=10;ibase=16;$1:u" | bc; done }
+d2h() { for x in "$@"; do echo "obase=16;ibase=10;$1:u" | bc; done }
+b2h() { for x in "$@"; do echo "obase=16;ibase=2;$1:u" | bc; done }
 calc() { echo "$*" | bc -l; } #define the co function to calculate
 type() { echo "$*" | pv -qL 10; } #Simulate type char by char
 digga() { dig +nocmd "$1" any +multiline +noall +answer }

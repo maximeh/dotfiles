@@ -9,6 +9,7 @@
 [merge]
 	summary=true
 [alias]
+	news = log -p HEAD@{1}..HEAD@{0}
 	unstage = reset HEAD
 	uncommit = reset --soft HEAD^
 	count = shortlog -sn
@@ -37,6 +38,7 @@
 	sa = stash apply
 	ss = stash save
 	ctags = !.git/hooks/ctags
+	cleanup = !"rm -rf .git/refs/original/; git reflog expire --expire=now --all; git fsck --full --unreachable;  git repack -A -d; git gca"
 [help]
 	autocorrect = 1
 [user]
