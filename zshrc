@@ -3,14 +3,24 @@ compinit
 autoload -U edit-command-line
 autoload -U zmv
 zle -N edit-command-line
-bindkey -e
+
+bindkey -v
+zle -N zle-line-init
+export KEYTIMEOUT=1
+
 zstyle ':completion:*' use-cache on
 zstyle ':completion:*' cache-path ~/.zsh_cache
 zmodload zsh/complist
 zstyle ':completion:*:*:kill:*:processes' list-colors "=(#b) #([0-9]#)*=36=31"
 
-bindkey "^[[1~" beginning-of-line
-bindkey "^[[4~" end-of-line
+bindkey "^[[7~" beginning-of-line
+bindkey "^[[8~" end-of-line
+bindkey '^P' up-history
+bindkey '^N' down-history
+bindkey '^?' backward-delete-char
+bindkey '^h' backward-delete-char
+bindkey '^w' backward-kill-word
+bindkey '^r' history-incremental-search-backward
 
 setopt append_history share_history
 setopt hist_ignore_dups histignorealldups
@@ -44,6 +54,7 @@ alias la='ls -AF' # Compact view, show hidden
 alias ll='ls -lFh' # Long view, no hidden
 alias grep='grep --color=auto' # Always highlight grep search term
 alias psg='ps aux | grep -v grep | grep $1'   # See what's running
+alias pswchan='ps xaopid,wchan:42,cmd'
 alias ping='ping -c 5' # Pings with 5 packets, not unlimited
 alias history='fc -l 1' # I want to see more the 16 history items
 alias df='df -h' # Disk free, in gigabytes, not bytes
@@ -51,6 +62,7 @@ alias du='du -h -c' # Calculate total disk usage for a folder
 alias mmv='noglob zmv -W'
 unalias vi 2>/dev/null
 alias vi='vim'
+alias vim='vim -w ~/.vimlog "$@"'
 # intercept stdout,stderr of PID
 alias intercept='strace -ff -e trace=write -e write=1,2 -p'
 alias duh="du "${@--xd1}" -h | sort -h" # sort dir in . based on their size
@@ -68,13 +80,13 @@ alias pwam="pwclient git-am"
 alias icdiff="icdiff --line-numbers --highlight"
 
 # Functions
-d2b() { for x in "$@"; do echo "obase=2;ibase=10;$1" | bc; done }
-h2b() { for x in "$@"; do echo "obase=2;ibase=16;$1:u" | bc; done }
+d2b() { for x in "$@"; do echo "obase=2;ibase=10;$x" | bc; done }
+h2b() { for x in "$@"; do echo "obase=2;ibase=16;$x:u" | bc; done }
 h2bs() { for x in "$@"; do h2b $1 | rev | sed 's/.\{4\}/& /g' | rev ; done }
-b2d() { for x in "$@"; do echo "obase=10;ibase=2;$1" | bc; done }
-h2d() { for x in "$@"; do echo "obase=10;ibase=16;$1:u" | bc; done }
-d2h() { for x in "$@"; do echo "obase=16;ibase=10;$1:u" | bc; done }
-b2h() { for x in "$@"; do echo "obase=16;ibase=2;$1:u" | bc; done }
+b2d() { for x in "$@"; do echo "obase=10;ibase=2;$x" | bc; done }
+h2d() { for x in "$@"; do echo "obase=10;ibase=16;$x:u" | bc; done }
+d2h() { for x in "$@"; do echo "obase=16;ibase=10;$x:u" | bc; done }
+b2h() { for x in "$@"; do echo "obase=16;ibase=2;$x:u" | bc; done }
 calc() { echo "$*" | bc -l; } #define the co function to calculate
 type() { echo "$*" | pv -qL 10; } #Simulate type char by char
 digga() { dig +nocmd "$1" any +multiline +noall +answer }

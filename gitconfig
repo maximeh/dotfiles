@@ -55,3 +55,5 @@
 	autocrlf = input
 [init]
 	templatedir = ~/.git_template
+[apply]
+	whitespace = warn

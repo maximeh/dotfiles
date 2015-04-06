@@ -9,7 +9,7 @@ order += "wireless wlan0"
 order += "ethernet eth0"
 order += "battery 0"
 order += "load"
-order += "tztime local"
+order += "time"
 
 wireless wlan0 {
         format_up = "W: (%quality at %essid, %bitrate) %ip"
@@ -23,12 +23,13 @@ ethernet eth0 {
 }
 
 battery 0 {
-        format = "%status %percentage %remaining %emptytime"
+        format = "%status %percentage %remaining"
         path = "/sys/class/power_supply/BAT%d/uevent"
+        last_full_capacity = true
         low_threshold = 10
 }
 
-tztime local {
+time {
         format = "%Y-%m-%d %H:%M"
 }
 

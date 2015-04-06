@@ -29,7 +29,7 @@ if [ ! -f "$1" ]; then
   exit 1
 fi
 input="${1}"
-input_name="${input%%.*}"
+input_name="${input%.*}"
 input_dir=$(dirname "${input}")
 comic_name="${input_dir}/${input_name}.cbr"
 [ -n "$2" ] && comic_name="$2"

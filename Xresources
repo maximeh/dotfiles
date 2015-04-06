@@ -5,24 +5,33 @@ URxvt.perl-ext-common: default,matcher,clipboard
 URxvt.url-launcher: /usr/bin/iceweasel
 URxvt.matcher.button: 1
 URxvt.keysym.Shift-Control-V: perl:clipboard:paste
-URxvt.keysym.Home: \033[1~
-URxvt.keysym.End: \033[4~
 URxvt.iso14755: False
-
-URxvt.scrollBar: false
+URxvt.depth: 32
+URxvt.scrollBar: False
+URxvt*secondaryScroll: true
 URxvt*termName: xterm-256color
+URxvt*loginShell: true
+URxvt*saveLines: 65535
+URxvt*cursorUnderline: false
+URxvt*urgentOnBell: true
+URxvt*cursorBlink: false
+
+! Catch ugly URLs
+URxvt*cutchars: '"'()*<>[]{|}
 
 !-- Xft settings -- !
-Xft.dpi:        120
+Xft.dpi:        180
 ! Xft.dpi:        96
 Xft.antialias:  1
 Xft.rgba:       rgb
 Xft.hinting:    1
 Xft.hintstyle:  hintfull
+Xft.autohint: 0
+Xft.lcdfilter:  lcddefault
 
 !! -- Fonts -- !
-! URxvt.font: xft:DejaVu Sans Mono:pixelsize=12:Regular
 URxvt.font: xft:DejaVu Sans Mono:pixelsize=20:Regular
+! URxvt.font: xft:DejaVu Sans Mono:pixelsize=12:Regular
 
 ! Common
 
