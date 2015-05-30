@@ -116,8 +116,6 @@ nnoremap t gj
 nnoremap n gk
 vnoremap t gj
 vnoremap n gk
-nnoremap j :
-nnoremap J :
 nnoremap l n
 nnoremap L N
 

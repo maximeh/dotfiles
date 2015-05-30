@@ -6,17 +6,18 @@ general {
 
 order += "disk /"
 order += "wireless wlan0"
-order += "ethernet eth0"
+order += "ethernet eth1"
 order += "battery 0"
 order += "load"
+order += "volume master"
 order += "time"
 
 wireless wlan0 {
-        format_up = "W: (%quality at %essid, %bitrate) %ip"
+        format_up = "W: (%quality at %essid) %ip"
         format_down = "W: down"
 }
 
-ethernet eth0 {
+ethernet eth1 {
         # if you use %speed, i3status requires the cap_net_admin capability
         format_up = "E: %ip (%speed)"
         format_down = "E: down"
@@ -39,4 +40,11 @@ load {
 
 disk "/" {
         format = "%free"
+}
+
+volume master {
+        format = "♪: %volume"
+        device = "default"
+        mixer = "Master"
+        mixer_idx = 0
 }

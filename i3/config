@@ -127,7 +127,7 @@ bindsym $mod+Shift+period exec "i3-nagbar -t warning -m 'You pressed the exit sh
 
 set $sink alsa_output.pci-0000_00_1b.0.analog-stereo
 bindsym XF86AudioRaiseVolume exec --no-startup-id "pactl set-sink-mute $sink 0; pactl set-sink-volume $sink +2% "
-bindsym XF86AudioLowerVolume exec --no-startup-id "pactl set-sink-mute $sink 0; pactl set-sink-volume $sink -- -2% "
+bindsym XF86AudioLowerVolume exec --no-startup-id "pactl set-sink-mute $sink 0; pactl set-sink-volume $sink -2% "
 bindsym XF86AudioMute exec --no-startup-id "pactl set-sink-mute $sink toggle "
 
 bindsym XF86AudioPlay exec --no-startup-id "ncmpcpp toggle"
@@ -176,9 +176,6 @@ bar {
         status_command i3status -c $HOME/.i3/statusbar
 }
 
-exec --no-startup-id nm-applet
-exec --no-startup-id xfce4-volumed
-exec --no-startup-id $HOME/.xinitrc
 exec --no-startup-id xfce4-power-manager
-exec_always redshift
-
+exec --no-startup-id nm-applet
+exec --no-startup-id $HOME/.xinitrc
