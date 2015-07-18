@@ -43,15 +43,8 @@
 	cleanup = !"rm -rf .git/refs/original/; git reflog expire --expire=now --all; git fsck --full --unreachable;  git repack -A -d; git gca"
 [help]
 	autocorrect = 1
-[user]
-	name = Maxime Hadjinlian
-	email = maxime.hadjinlian@gmail.com
 [push]
 	default = simple
-[sendemail]
-	smtpserver = smtp.gmail.com
-	smtpserverport = 587
-	smtpencryption = tls
 [branch]
 	autosetuprebase = always
 [core]
@@ -68,3 +61,5 @@
 [gui]
 	fontui = -family \"DejaVu Sans\" -size 16 -weight normal -slant roman -underline 0 -overstrike 0
 	fontdiff = -family \"DejaVu Sans Mono\" -size 16 -weight normal -slant roman -underline 0 -overstrike 0
+[include]
+	path = ~/.dotfiles/gitconfig_sendemail

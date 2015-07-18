@@ -5,3 +5,4 @@
 *.pyc
 mutt/cache/
 bin/s
+gitconfig_sendemail
