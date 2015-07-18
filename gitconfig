@@ -29,10 +29,12 @@
 	format-patch = format-patch -M
 	# Show the diff between the latest commit and the current state
 	d = !"git diff-index --quiet HEAD -- || clear; git diff --patch-with-stat"
-	graph = !"git log --graph --pretty=format:'%Cred%h%Creset %an: %s - %Creset %C(yellow)%d%Creset %Cgreen(%cr)%Creset' --abbrev-commit --date=relative"
-	rb = "!sh -c \"git rebase -i HEAD~$1\" -"
+	rb = "!sh -c \"git rebase -i --autostash --autosquash HEAD~$1\" -"
 	gca = gc --aggressive --prune=now
 	s = !"git status -sb"
+	glog = log --oneline --graph --decorate
+	slog = log --oneline --decorate
+	plog = log -p --stat
 	# stash shortcuts
 	sl = stash list
 	sa = stash apply
@@ -47,13 +49,22 @@
 [push]
 	default = simple
 [sendemail]
-	smtpserver = /usr/bin/msmtp
+	smtpserver = smtp.gmail.com
+	smtpserverport = 587
+	smtpencryption = tls
 [branch]
 	autosetuprebase = always
 [core]
+	fsyncobjectfiles = yes
 	excludesfile = ~/.gitignore_global
 	autocrlf = input
 [init]
 	templatedir = ~/.git_template
 [apply]
 	whitespace = warn
+[diff]
+	renames = copies
+	renamelimit = 2048
+[gui]
+	fontui = -family \"DejaVu Sans\" -size 16 -weight normal -slant roman -underline 0 -overstrike 0
+	fontdiff = -family \"DejaVu Sans Mono\" -size 16 -weight normal -slant roman -underline 0 -overstrike 0
