@@ -67,8 +67,8 @@ func! DeleteTrailingWS()
 endfunc
 autocmd BufWrite * :call DeleteTrailingWS()
 
-let mapleader = ","
-let g:mapleader = ","
+let mapleader = "\<Space>"
+let g:mapleader = "\<Space>"
 
 " Nice statusbar
 set laststatus=2
@@ -119,6 +119,14 @@ vnoremap n gk
 nnoremap l n
 nnoremap L N
 
+" Copy paste into system buffer
+vmap <Leader>y "+y
+vmap <Leader>d "+d
+nmap <Leader>p "+p
+nmap <Leader>P "+P
+vmap <Leader>p "+p
+vmap <Leader>P "+P
+
 " Ctrl + \ - Open the definition in a vertical split
 map <C-\> :vsp <CR>:exec("tag ".expand("<cword>"))<CR>
 
@@ -149,6 +157,8 @@ au BufRead .letter,/tmp/mutt*,*.txt,.signature*,signature* setlocal tw=72 foldme
 
 " vim-airlines option
 let g:airline_theme='solarized'
+let g:airline_left_sep=''
+let g:airline_right_sep=''
 
 " Ctrl-P options
 " http://kien.github.com/ctrlp.vim/
