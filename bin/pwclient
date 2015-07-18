@@ -33,7 +33,7 @@ import ConfigParser
 # This script will check the PW_XMLRPC_URL environment variable
 # for the URL to access.  If that is unspecified, it will fallback to
 # the hardcoded default value specified here.
-DEFAULT_URL = "http://patchwork/xmlrpc/"
+DEFAULT_URL = "http://patchwork.ozlabs.org/xmlrpc/"
 CONFIG_FILES = [os.path.expanduser('~/.pwclientrc')]
 
 class Filter:
