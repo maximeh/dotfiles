@@ -3,46 +3,63 @@ compinit
 autoload -U edit-command-line
 autoload -U zmv
 zle -N edit-command-line
-
-bindkey -v
 zle -N zle-line-init
-export KEYTIMEOUT=1
 
 zstyle ':completion:*' use-cache on
 zstyle ':completion:*' cache-path ~/.zsh_cache
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
+zstyle ':completion:*' menu select=2
+zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
 zmodload zsh/complist
 zstyle ':completion:*:*:kill:*:processes' list-colors "=(#b) #([0-9]#)*=36=31"
 
+bindkey -e
+bindkey '\e[1;5C' forward-word            # C-Right
+bindkey '\e[1;5D' backward-word           # C-Left
+bindkey '\e[2~'   overwrite-mode          # Insert
+bindkey '\e[3~'   delete-char             # Del
+bindkey '\e[5~'   history-search-backward # PgUp
+bindkey '\e[6~'   history-search-forward  # PgDn
+bindkey '^A'      beginning-of-line       # Home
+bindkey '^D'      delete-char             # Del
+bindkey '^E'      end-of-line             # End
+bindkey '^R'      history-incremental-pattern-search-backward
 bindkey "^[[7~" beginning-of-line
 bindkey "^[[8~" end-of-line
-bindkey '^P' up-history
-bindkey '^N' down-history
-bindkey '^?' backward-delete-char
-bindkey '^h' backward-delete-char
-bindkey '^w' backward-kill-word
-bindkey '^r' history-incremental-search-backward
 
-setopt append_history share_history
-setopt hist_ignore_dups histignorealldups
-setopt HIST_FIND_NO_DUPS
-setopt HIST_REDUCE_BLANKS
-setopt EXTENDED_HISTORY
-setopt auto_remove_slash
-setopt glob_dots
-setopt rmstarwait
-setopt chase_links
+setopt always_to_end
+setopt append_history
+setopt auto_cd
 setopt auto_pushd
-export dirstacksize=5
-setopt autocd
-setopt autopushd pushdminus pushdsilent pushdtohome
-setopt cdablevars
+setopt auto_remove_slash
+setopt cdable_vars
+setopt chase_links
+setopt complete_aliases
+setopt complete_in_word
+setopt correct
 setopt extended_glob
-setopt COMPLETE_IN_WORD
-unsetopt list_ambiguous
+setopt extended_history
+setopt glob_dots
+setopt hash_list_all
+setopt hist_find_no_dups
+setopt hist_ignore_all_dups
+setopt hist_ignore_dups
+setopt hist_ignore_space
+setopt hist_reduce_blanks
+setopt hist_verify
+setopt inc_append_history
+setopt list_ambiguous
+setopt pushd_minus
+setopt pushd_silent
+setopt pushd_to_home
+setopt share_history
+
 unsetopt beep
+unsetopt bg_nice
 unsetopt hist_beep
+unsetopt hup
 unsetopt list_beep
-setopt completealiases
+unsetopt rm_star_silent
 
 # Alias
 alias ls="ls -F --color" # Color is handled differently on Linux
@@ -70,13 +87,9 @@ alias duh="du "${@--xd1}" -h | sort -h" # sort dir in . based on their size
 alias fix_stty='stty sane'
 # osock: to display open sockets (the -P option to lsof disables port names)
 alias osock='sudo lsof -i -P'
-# remove color and command char from an output
-alias rm_color='sed -r "s:\x1B\[[0-9;]*[mK]::g"'
 #ssh without check of the key
 alias sshwk='ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no'
 alias scpwk='scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no'
-alias pwlist="pwclient list -s New"
-alias pwam="pwclient git-am"
 alias icdiff="icdiff --line-numbers --highlight"
 
 # Functions
@@ -96,25 +109,30 @@ fatty () { dpkg-query -Wf '${Installed-Size}\t${Package}\n' | sort -n | awk '{pr
 headers () { curl -I -L $@ ; }
 
 function x {
-  echo Extracting $1 ...
-  if [ -f $1 ] ; then
-case $1 in
-          *.tar.bz2) tar xjf $1 ;;
-          *.tar.gz) tar xzf $1 ;;
-          *.bz2) bunzip2 $1 ;;
-          *.rar) rar x $1 ;;
-          *.gz) gunzip $1 ;;
-          *.tar) tar xf $1 ;;
-          *.tbz2) tar xjf $1 ;;
-          *.tgz) tar xzf $1 ;;
-          *.zip) unzip $1 ;;
-          *.Z) uncompress $1 ;;
-          *.7z) 7z x $1 ;;
-          *) echo "'$1' cannot be extracted via extract()" ;;
-      esac
-else
-echo "'$1' is not a valid file"
-  fi
+        echo Extracting $1 ...
+        if [ -f $1 ] ; then
+          case $1 in
+            *.tar.bz2) tar xjf $1 ;;
+            *.tar.gz) tar xzf $1 ;;
+            *.bz2) bunzip2 $1 ;;
+            *.rar) rar x $1 ;;
+            *.gz) gunzip $1 ;;
+            *.tar) tar xf $1 ;;
+            *.tbz2) tar xjf $1 ;;
+            *.tgz) tar xzf $1 ;;
+            *.zip) unzip $1 ;;
+            *.Z) uncompress $1 ;;
+            *.7z) 7z x $1 ;;
+            *) echo "'$1' cannot be extracted via extract()" ;;
+          esac
+        else
+          echo "'$1' is not a valid file"
+        fi
+}
+
+function resetfont {
+  font_line=$(grep font "$HOME"/.Xresources)
+  printf '\e]710;%s\007' "${font_line#*: }"
 }
 
 # show username@host if logged in through SSH
@@ -126,24 +144,25 @@ precmd() {
 }
 PROMPT="%(!.%F{red}.%F{magenta})❯%f "
 
-# Show time a command took if over 5 sec
-# https://github.com/bjeanes/dot-files/commit/1ae5bc72dac6d5f2cdfbf5a48fdf140c5d085986
-export REPORTTIME=5
-export TIMEFMT="%*Es total, %U user, %S system, %P cpu"
-export HISTSIZE=32768
-export SAVEHIST=32768
-export HISTFILESIZE=$HISTSIZE
-# Make some commands not show up in history
-export HISTIGNORE="ls:cd:cd -:pwd:exit:date:* --help:* -h"
-# Fichier où est stocké l'historique
+export DIRSTACKSIZE=5
+export EDITOR=vim
 export HISTFILE=~/.histfile
+export HISTFILESIZE=$HISTSIZE
+export HISTIGNORE="ls:cd:cd -:pwd:exit:date:* --help:* -h"
+export HISTSIZE=32768
+export KEYTIMEOUT=1
 export LANG="en_US.UTF-8"
 export LC_ALL="en_US.UTF-8"
 export LOCALE="en_US.UTF-8"
+export PATH=$PATH:$HOME/bin:/usr/sbin:/sbin
+# Show time a command took if over 5 sec
+# https://github.com/bjeanes/dot-files/commit/1ae5bc72dac6d5f2cdfbf5a48fdf140c5d085986
+export REPORTTIME=5
+export SAVEHIST=32768
+export TIMEFMT="%*Es total, %U user, %S system, %P cpu"
 export TZ=/usr/share/zoneinfo/Europe/Paris
 export VISUAL=vim
-export EDITOR=vim
-export PATH=$PATH:$HOME/bin:/usr/sbin:/sbin
+
 # Source machine file for specific stuff
 if [ -f $HOME/.$(uname -n) ]; then
   source $HOME/.$(uname -n)
