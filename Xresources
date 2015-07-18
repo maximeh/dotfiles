@@ -20,18 +20,16 @@ URxvt*cursorBlink: false
 URxvt*cutchars: '"'()*<>[]{|}
 
 !-- Xft settings -- !
-Xft.dpi:        180
-! Xft.dpi:        96
-Xft.antialias:  1
-Xft.rgba:       rgb
-Xft.hinting:    1
-Xft.hintstyle:  hintfull
+Xft.dpi: 96
+Xft.antialias: 1
+Xft.rgba: rgb
+Xft.hinting: 1
+Xft.hintstyle: hintfull
 Xft.autohint: 0
-Xft.lcdfilter:  lcddefault
+Xft.lcdfilter: lcddefault
 
 !! -- Fonts -- !
-URxvt.font: xft:DejaVu Sans Mono:pixelsize=20:Regular
-! URxvt.font: xft:DejaVu Sans Mono:pixelsize=12:Regular
+URxvt.font: xft:DejaVu Sans Mono:pixelsize=12:Regular
 
 ! Common
 
