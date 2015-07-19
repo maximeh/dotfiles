@@ -6,11 +6,11 @@
 # Keyboard ligthing
 # echo 0 > /sys/devices/platform/applesmc.768/leds/smc::kbd_backlight/brightness
 
-if [ ! -f /tmp/firstboot ]; then
+if [ -f /tmp/firstboot ]; then
         firstboot=1
-        touch "/tmp/firstboot"
 else
         firstboot=0
+        touch "/tmp/firstboot"
 fi
 
 if [ $firstboot -eq 0 ]; then
