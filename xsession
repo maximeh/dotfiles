@@ -62,5 +62,5 @@ i3-msg reload
 
 if [ $firstboot -eq 0 ]; then
         xautolock -time 10 -locker "i3lock --ignore-empty-password -c 000000" &
-        feh --randomize --bg-scale /home/maxime/Documents/wallpaper/*
 fi
+feh --randomize --bg-scale /home/maxime/Documents/wallpaper/*
