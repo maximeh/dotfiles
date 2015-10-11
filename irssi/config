@@ -1,10 +1,10 @@
 servers = (
   {
-    address = "irc.inp-net.rezosup.org";
+    address = "irc.enst.rezosup.org";
     chatnet = "UTBM";
     port = "6667";
-    use_ssl = "no";
-    ssl_verify = "no";
+    use_ssl = "yes";
+    ssl_verify = "yes";
     autoconnect = "yes";
     term_type = "utf-8";
   },
@@ -18,7 +18,7 @@ servers = (
     term_type = "utf-8";
   },
   {
-    address = "f00.fr";
+    address = "mangue";
     chatnet = "bitlbee";
     port = "6668";
     use_ssl = "no";
@@ -50,6 +50,7 @@ chatnets = {
     autosendcmd = "/mode maxime -v";
   };
   bitlbee = { type = "IRC"; };
+  slack = { type = "IRC"; nick = "maskime"; };
 };
 
 channels = (
@@ -60,10 +61,14 @@ channels = (
   { name = "#apbteam"; chatnet = "freenode"; autojoin = "yes"; },
   { name = "#linuxxx"; chatnet = "freenode"; autojoin = "yes"; },
   { name = "#buildroot"; chatnet = "freenode"; autojoin = "yes"; },
-  { name = "#debian-mentors"; chatnet = "oftc"; autojoin = "yes"; }
+  { name = "#debian-mentors"; chatnet = "oftc"; autojoin = "yes"; },
+  { name = "#general"; chatnet = "slack"; autojoin = "yes"; }
 );
 
-ignores = ( { level = "JOINS PARTS QUITS MODES NICKS"; } );
+ignores = (
+  { level = "JOINS PARTS QUITS MODES NICKS"; },
+  { level = "MODES"; servertag = "slack"; }
+);
 
 aliases = {
   WC = "window close";
@@ -108,6 +113,18 @@ settings = {
   };
 };
 logs = { };
+keyboard = (
+  { key = "meta-'"; id = "change_window"; data = "11"; },
+  { key = "meta-,"; id = "change_window"; data = "12"; },
+  { key = "meta-."; id = "change_window"; data = "13"; },
+  { key = "meta-p"; id = "change_window"; data = "14"; },
+  { key = "meta-y"; id = "change_window"; data = "15"; },
+  { key = "meta-f"; id = "change_window"; data = "16"; },
+  { key = "meta-g"; id = "change_window"; data = "17"; },
+  { key = "meta-c"; id = "change_window"; data = "18"; },
+  { key = "meta-r"; id = "change_window"; data = "19"; },
+  { key = "meta-l"; id = "change_window"; data = "20"; }
+);
 windows = {
   1 = { 
     immortal = "yes";
@@ -120,7 +137,7 @@ windows = {
         type = "CHANNEL";
         chat_type = "IRC";
         name = "&bitlbee";
-        tag = "bitlbee";
+        tag = "bitlbee2";
       }
     );
   };
@@ -207,34 +224,12 @@ windows = {
   11 = {
     items = (
       {
-        type = "CHANNEL";
+        type = "QUERY";
         chat_type = "IRC";
-        name = "#openocd";
-        tag = "freenode";
-      }
-    );
-  };
-  12 = {
-    items = (
-      {
-        type = "CHANNEL";
-        chat_type = "IRC";
-        name = "#u-boot";
-        tag = "freenode";
+        name = "JuliaVidile";
+        tag = "bitlbee2";
       }
     );
   };
 };
-mainwindows = { 1 = { first_line = "1"; lines = "98"; }; };
-keyboard = (
-  { key = "meta-'"; id = "change_window"; data = "11"; },
-  { key = "meta-,"; id = "change_window"; data = "12"; },
-  { key = "meta-."; id = "change_window"; data = "13"; },
-  { key = "meta-p"; id = "change_window"; data = "14"; },
-  { key = "meta-y"; id = "change_window"; data = "15"; },
-  { key = "meta-f"; id = "change_window"; data = "16"; },
-  { key = "meta-g"; id = "change_window"; data = "17"; },
-  { key = "meta-c"; id = "change_window"; data = "18"; },
-  { key = "meta-r"; id = "change_window"; data = "19"; },
-  { key = "meta-l"; id = "change_window"; data = "20"; }
-);
+mainwindows = { 1 = { first_line = "1"; lines = "69"; }; };
