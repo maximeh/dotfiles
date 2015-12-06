@@ -1,65 +1,51 @@
-[color]
-	diff = auto
-	status = auto
-	branch = auto
-	interactive = auto
-	ui = 1
-[gc]
-	auto=1
-[merge]
-	summary=true
 [alias]
-	news = log -p HEAD@{1}..HEAD@{0}
-	unstage = reset HEAD
-	uncommit = reset --soft HEAD^
+	br = branch -a
+	cl = clone --recursive
 	count = shortlog -sn
-	# Find every version of every file and sort by size; help find huge file
-	hugefiles = !"for commit in $(git log --all --pretty=format:%H); do git ls-tree -r -l $commit; done |awk '{print $4 \" \" $5}' |sort -nu"
-	# Will rewrite history and remove file
-	delfile = !"sh -c \"git filter-branch -f --index-filter 'git rm --cached --ignore-unmatch $1' -- --all\""
-	# Switch to a branch, creating it if necessary
-	go = checkout -B
-	# Show verbose output about tags, branches or remotes
-	branches = branch -a
-	remotes = remote -v
-	# Clone a repository including all submodules
-	c = clone --recursive
-	# Commit all changes
-	ca = !git add -A && git commit -av
-	format-patch = format-patch -M
-	# Show the diff between the latest commit and the current state
-	d = !"git diff-index --quiet HEAD -- || clear; git diff --patch-with-stat"
-	rb = "!sh -c \"git rebase -i --autostash --autosquash HEAD~$1\" -"
-	gca = gc --aggressive --prune=now
-	s = !"git status -sb"
-	glog = log --oneline --graph --decorate
-	slog = log --oneline --decorate
-	plog = log -p --stat
-	# stash shortcuts
-	sl = stash list
-	sa = stash apply
-	ss = stash save
 	ctags = !.git/hooks/ctags
-	cleanup = !"rm -rf .git/refs/original/; git reflog expire --expire=now --all; git fsck --full --unreachable;  git repack -A -d; git gca"
-[help]
-	autocorrect = 1
-[push]
-	default = simple
-[branch]
-	autosetuprebase = always
-[core]
-	fsyncobjectfiles = yes
-	excludesfile = ~/.gitignore_global
-	autocrlf = input
-[init]
-	templatedir = ~/.git_template
+	fp = format-patch -M
+	go = checkout -B
+	gr = grep --full-name --line-number -I
+	lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative
+	rb = "!sh -c \"git rebase -i HEAD~$1\" -"
+	re = remote -v
+	s = status -sb
+	staged = diff --staged
+	uncommit = reset --soft HEAD^
 [apply]
 	whitespace = warn
+[branch]
+	autosetuprebase = always
+[color]
+	branch = auto
+	diff = auto
+	interactive = auto
+	pager = true
+	status = auto
+	ui = auto
+[core]
+	autocrlf = input
+	excludesfile = ~/.gitignore_global
+	fsyncobjectfiles = yes
 [diff]
-	renames = copies
 	renamelimit = 2048
-[gui]
-	fontui = -family \"DejaVu Sans\" -size 16 -weight normal -slant roman -underline 0 -overstrike 0
-	fontdiff = -family \"DejaVu Sans Mono\" -size 16 -weight normal -slant roman -underline 0 -overstrike 0
+	renames = copies
+[gc]
+	auto=1
+[help]
+	autocorrect = 1
 [include]
 	path = ~/.dotfiles/gitconfig_sendemail
+[init]
+	templatedir = ~/.git_template
+[merge]
+	summary=true
+[pull]
+	rebase = true
+[push]
+	default = simple
+[rebase]
+	autosquash = true
+	autostash = true
+
+

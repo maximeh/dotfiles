@@ -38,9 +38,9 @@ else
         xrandr --output "${screen}" --auto --right-of DP-2
 fi
 
-dpi=180
+dpi=220
 pixelsize=20
-fontsize=6
+fontsize=8
 dmenu_fontsize=24
 if [ $connected -eq 1 ]; then
         dpi=96
@@ -58,7 +58,7 @@ xrdb -merge ~/.Xresources
 # Change i3 config's size font
 sed -i "s/^set \$fontsize.*/set \$fontsize ${fontsize}/g" ~/.i3/config
 sed -i "s/^set \$dmenu_fontsize.*/set \$dmenu_fontsize ${dmenu_fontsize}/g" ~/.i3/config
-i3-msg reload
+i3-msg restart
 
 if [ $firstboot -eq 0 ]; then
         xautolock -time 10 -locker "i3lock --ignore-empty-password -c 000000" &

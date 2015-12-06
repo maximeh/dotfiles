@@ -42,15 +42,15 @@ autocmd Syntax * syn match ExtraWhitespace /\s\+$\| \+\ze\t/
 
 " Delete trailing white space.
 func! DeleteTrailingWS()
-  exe "normal mz"
-  %s/\s\+$//ge
-  exe "normal `z"
+	exe "normal mz"
+	%s/\s\+$//ge
+	exe "normal `z"
 endfunc
 autocmd BufWrite * :call DeleteTrailingWS()
 
 let mapleader = "\<Space>"
 let g:mapleader = "\<Space>"
-inoremap eu <esc>
+inoremap eu <ESC>
 
 " Spelling settings
 set dictionary=/usr/share/dict/words
@@ -70,8 +70,8 @@ nmap <leader>d :bd<CR>
 nmap <leader>w :w!<CR>
 nmap :W :w
 nmap <leader><space> :noh<CR>
-nmap <leader>r iReviewed-by Maxime Hadjinlian <maxime.hadjinlian@gmail.com><ESC>
-nmap <leader>s iSigned-off-by Maxime Hadjinlian <maxime.hadjinlian@gmail.com><ESC>
+nmap <leader>r iReviewed-by: Maxime Hadjinlian <maxime.hadjinlian@gmail.com><ESC>
+nmap <leader>s iSigned-off-by: Maxime Hadjinlian <maxime.hadjinlian@gmail.com><ESC>
 
 " Remove ^M
 nmap <leader>m mmHmt:%s/<C-V><cr>//ge<cr>'tzt'm
@@ -98,13 +98,12 @@ nnoremap _ ^
 nnoremap t j
 nnoremap n k
 nnoremap s l
-vmap     s l
+vmap	 s l
 nnoremap t gj
 nnoremap n gk
 vnoremap t gj
 vnoremap n gk
 nnoremap l n
-nnoremap L N
 
 " Copy paste into system buffer
 vmap <Leader>y "+y

@@ -1,6 +1,7 @@
 #!/bin/sh
 
 wget -O .config http://autobuild.buildroot.org/toolchains/configs/br-arm-full.config
+wget -O .config http://autobuild.buildroot.org/toolchains/configs/br-arm-cortex-a9-glibc.config
 
 cat <<- EOF>> .config
 BR2_INIT_NONE=y
