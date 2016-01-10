@@ -94,13 +94,15 @@ alias icdiff="icdiff --line-numbers --highlight"
 
 # Functions
 d2b() { for x in "$@"; do echo "obase=2;ibase=10;$x" | bc; done }
+d2bs() { for x in "$@"; do d2b $x | rev | sed 's/.\{4\}/& /g' | rev; done }
 h2b() { for x in "$@"; do echo "obase=2;ibase=16;$x:u" | bc; done }
-h2bs() { for x in "$@"; do h2b $1 | rev | sed 's/.\{4\}/& /g' | rev ; done }
+h2bs() { for x in "$@"; do h2b $x | rev | sed 's/.\{4\}/& /g' | rev ; done }
 b2d() { for x in "$@"; do echo "obase=10;ibase=2;$x" | bc; done }
 h2d() { for x in "$@"; do echo "obase=10;ibase=16;$x:u" | bc; done }
 d2h() { for x in "$@"; do echo "obase=16;ibase=10;$x:u" | bc; done }
 b2h() { for x in "$@"; do echo "obase=16;ibase=2;$x:u" | bc; done }
 calc() { echo "$*" | bc -l; } #define the co function to calculate
+epoch() { date -d @$1; }
 type() { echo "$*" | pv -qL 10; } #Simulate type char by char
 digga() { dig +nocmd "$1" any +multiline +noall +answer }
 # list available package listed by size in human forms
@@ -149,7 +151,7 @@ export EDITOR=vim
 export HISTFILE=~/.histfile
 export HISTFILESIZE=$HISTSIZE
 export HISTIGNORE="ls:cd:cd -:pwd:exit:date:* --help:* -h"
-export HISTSIZE=32768
+export HISTSIZE=1000000000
 export KEYTIMEOUT=1
 export LANG="en_US.UTF-8"
 export LC_ALL="en_US.UTF-8"
@@ -158,7 +160,7 @@ export PATH=$PATH:$HOME/bin:/usr/sbin:/sbin
 # Show time a command took if over 5 sec
 # https://github.com/bjeanes/dot-files/commit/1ae5bc72dac6d5f2cdfbf5a48fdf140c5d085986
 export REPORTTIME=5
-export SAVEHIST=32768
+export SAVEHIST=$HISTSIZE
 export TIMEFMT="%*Es total, %U user, %S system, %P cpu"
 export TZ=/usr/share/zoneinfo/Europe/Paris
 export VISUAL=vim
