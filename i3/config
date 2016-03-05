@@ -127,9 +127,9 @@ bindsym $mod+Shift+d exec --no-startup-id "$HOME/.xinitrc"
 bindsym $mod+Shift+period exec "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? This will end your X session.' -b 'Yes, exit i3' 'i3-msg exit'"
 
 set $sink alsa_output.pci-0000_00_1b.0.analog-stereo
-bindsym XF86AudioRaiseVolume exec --no-startup-id "pactl set-sink-mute $sink 0; pactl set-sink-volume $sink +2%; killall -USR1 i3status"
-bindsym XF86AudioLowerVolume exec --no-startup-id "pactl set-sink-mute $sink 0; pactl set-sink-volume $sink -2%; killall -USR1 i3status"
-bindsym XF86AudioMute exec --no-startup-id "pactl set-sink-mute $sink toggle; killall -USR1 i3status"
+bindsym XF86AudioRaiseVolume exec --no-startup-id "pactl set-sink-mute $sink 0; pactl set-sink-volume $sink +2%"
+bindsym XF86AudioLowerVolume exec --no-startup-id "pactl set-sink-mute $sink 0; pactl set-sink-volume $sink -2%"
+bindsym XF86AudioMute exec --no-startup-id "pactl set-sink-mute $sink toggle"
 
 bindsym XF86AudioPlay exec --no-startup-id "mpc toggle"
 bindsym XF86AudioStop exec --no-startup-id "mpc stop"
@@ -138,6 +138,14 @@ bindsym XF86AudioNext exec --no-startup-id "mpc next"
 
 bindsym XF86MonBrightnessUp exec --no-startup-id "sudo /home/maxime/bin/mbp_backlight up"
 bindsym XF86MonBrightnessDown exec --no-startup-id "sudo /home/maxime/bin/mbp_backlight down"
+
+# Screenshots
+# Screenshot fullscreen
+bindsym Print exec "scrot -q 100 '/home/maxime/%Y-%m-%d-%H-%M-%S_$wx$h.png' -e 'scp $f f00.fr:/var/www/f00.fr/screenshots/ && echo https://f00.fr/screenshots/$n | xclip -i -selection clipboard && rm /home/maxime/$n'"
+# Screenshot with selection
+bindsym $mod+Print exec "sleep 0.2; scrot -q 100 -s '/home/maxime/%Y-%m-%d-%H-%M-%S_$wx$h.png' -e 'scp $f f00.fr:/var/www/f00.fr/screenshots/ && echo https://f00.fr/screenshots/$n | xclip -i -selection clipboard && rm /home/maxime/$n'"
+# Screenshot current focused window
+bindsym Shift+Print exec "scrot -q 100 -u '/home/maxime/%Y-%m-%d-%H-%M-%S_$wx$h.png' -e 'scp $f f00.fr:/var/www/f00.fr/screenshots/ && echo https://f00.fr/screenshots/$n | xclip -i -selection clipboard && rm /home/maxime/$n'"
 
 # resize window (you can also use the mouse for that)
 mode "resize" {
@@ -173,9 +181,12 @@ bar {
         status_command i3status -c $HOME/.i3/statusbar
 }
 
-for_window[title="^Spark$"] floating enable
-for_window[title="^CrashPlan$"] floating enable
-for_window[title="^Spotify$"] floating enable
+for_window[class="^Spark$"] floating enable
+for_window[class="^CrashPlan$"] floating enable
+for_window[class="^Spotify$"] floating enable
+for_window[class="Steam"] floating enable
+for_window[class="VirtualBox"] floating enable
+for_window[class="vlc"] floating enable
 for_window[title="^Infinit$"] floating enable
 
 exec --no-startup-id $HOME/.xinitrc
