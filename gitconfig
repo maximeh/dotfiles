@@ -11,9 +11,11 @@
 	re = remote -v
 	s = status -sb
 	staged = diff --staged
-	uncommit = reset --soft HEAD^
+	undo = reset --soft HEAD^
+	contributors = shortlog --summary --numbered
+	dm = "!git branch --merged | grep -v '\\*' | xargs -n 1 git branch -d"
 [apply]
-	whitespace = warn
+	whitespace = fix
 [branch]
 	autosetuprebase = always
 [color]
@@ -25,8 +27,10 @@
 	ui = auto
 [core]
 	autocrlf = input
+	editor = vim
 	excludesfile = ~/.gitignore_global
 	fsyncobjectfiles = yes
+	whitespace = space-before-tab,-indent-with-non-tab,trailing-space
 [diff]
 	renamelimit = 2048
 	renames = copies
