@@ -25,3 +25,6 @@
 [submodule "vim/bundle/gnupg.vim"]
 	path = vim/bundle/gnupg.vim
 	url = https://github.com/vim-scripts/gnupg.vim.git
+[submodule "vim/bundle/vim-airline-themes"]
+	path = vim/bundle/vim-airline-themes
+	url = git@github.com:vim-airline/vim-airline-themes.git
