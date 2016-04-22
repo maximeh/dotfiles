@@ -1,0 +1,92 @@
+# ~/.mutt/muttrc
+
+source ~/.mutt/macros
+source ~/.mutt/colors.lightr
+
+# identity
+# --------
+
+set realname    = "John Doe"         	    # real name for From field
+set from        = john.doe@gmail.com        # default as shown in other people's inboxes
+set imap_user   = john.doe@gmail.com        # imap username
+set imap_pass   = password                           # imap password
+set smtp_pass   = password
+set smtp_url    = "smtps://username@gmail.com@smtp.gmail.com/"
+
+# source private account details to override the above
+source ~/.mutt_private
+
+# Status Bar
+
+set status_chars  = " *%A"
+set status_format = "───[ Folder: %f ]───[%r%m messages%?n? (%n new)?%?d? (%d to delete)?%?t? (%t tagged)? ]───%>─%?p?( %p postponed )?───"
+
+# global options
+# --------------
+
+set ssl_force_tls           # force encrypted connections or fail
+set beep_new                # beep on new message?
+set delete = yes            # delete messages without confirmation?
+unset confirmappend         # don't confirm when moving msgs to exising mailbox
+unset move                  # gmail does that
+
+# Header stuff
+
+ignore  * # ignore all headers except for ...
+unignore  From: To: CC: Date: Subject: User-Agent: X-Mailer
+hdr_order From: To: CC: Date: Subject: User-Agent: X-Mailer
+
+# reading mail
+
+folder-hook . push "<collapse-all>" #collapse all threads by default
+set sort = threads          # primary sort order (threads, date, from, size, to, etc)
+set sort_aux = reverse-last-date-received   # like gmail
+set strict_threads          # thread msgs by In-Reply-To and References instead of Subject
+unset mark_old              # dont mark unread msgs as old when exiting
+unset markers               # toggle marking wrapped lines in pager with a '+'
+set menu_scroll             # scroll in menus when traversing screen margins
+set tilde                   # pad empty lines with a ~ similar to vi
+set collapse_unread=yes
+
+set quote_regexp = "^([A-Za-z ]+>|[]>:|}-][]>:|}-]*)"     # regexp to determine quotes
+set pager_index_lines = 6   # split screen to show display message index (x-1 entries) at top
+set pager_context = 5       # retain X lines of prev page when scrolling
+set pager_stop              # dont auto-go to next msg
+set status_on_top           # toggle status bar location
+
+set index_format = "%4C  %Z   %[%F  %H:%M]  %-22.22L  %s  %*    (%-4.4c)"    # message index format
+set pager_format = "[%C/%m] %b  %> %lL (%P)"      # pager statusbar
+set folder_format = "%2C %t %N %8s %d %f"         # mailbox list view
+set status_format = "%r %?M?%M/?%m total, %?n?%n new, ?%?u?%u unread, ?%?p?%p drafts, ?%?t?%t +tagged, ?%?d?%d deleted, ?(%f %l)  %?b?%b unread messages. ?%>  %V   sort by: %s/%S  (%P) %r"
+
+# composing mail
+# --------------
+
+set editor="vim +':set tw=77' +':set spell' +':set wrap' +\`awk '/^$/ {print i+2; exit} {i++}' %s\` %s"
+set ispell = "aspell -e -c"     # use aspell for spell-checking
+set edit_headers                # edit mail headers in vim -- VERY HANDY
+set fast_reply                  # recipient & subject prompts will be skipped
+set include = yes               # include message in replies
+set forward_format = "Fwd: %s"  # define the subject of forwarded messages
+set mime_forward = ask-no       # forward messages as attachments?
+set postpone = ask-yes          # prompt to postpone messages
+set date_format = "%b %d, %Y at %I:%M %p"     # date format for RE/FW headers
+set attribution = "On %D, %f wrote:"          # RE/FW headers
+
+# attachment/mime settings
+
+set mailcap_path = ~/.mutt/mailcap
+bind attach <return> view-mailcap
+
+# address book
+
+# use google contacts for addressbook
+set query_command = "gcontacts -m short -r -s name %s"
+# tab-complete queries using goobook
+bind editor <Tab> complete-query
+macro index,pager a '\\
+<enter-command>set my_wait_key=$wait_key<enter>\\
+<enter-command>set wait_key<enter>\\
+<pipe-message>gcontacts -c '-'<return>\\
+<enter-command>set wait_key=$my_wait_key<enter>'
+

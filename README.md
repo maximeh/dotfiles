@@ -1,7 +1,4 @@
 Install
 =======
 
-Simply execute this command :
-
-    $ curl -s -k https://raw.github.com/maximeh/dotfiles/master/install.sh | bash
-
+None of this is meant to be used by anyone but me.

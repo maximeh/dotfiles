@@ -1,0 +1,25 @@
+# screen configuration
+
+hardstatus off
+hardstatus alwayslastline
+#hardstatus string "%{+b wk} %-w%{=b wk} %n %t %{-}%+w %-= %D %d-%M,%c:%s"
+hardstatus string "%{+b wk} %-w%{=b wk} %n %t %{-}%+w %-="
+sorendition "+b Wk"
+
+#screen -t "IRC" 0 irssi
+#screen -t "HTOP" 1 sudo htop
+
+# COLORS! and some usefull terminfo
+term screen-256color
+terminfo rxvt-unicode 'Co#256:AB=\E[48;5;%dm:AF=\E[38;5;%dm'
+termcapinfo xterm 'Co#256:AB=\E[48;5;%dm:AF=\E[38;5;%dm'
+
+autodetach on
+startup_message off
+pow_detach_msg "\$LOGNAME screen session \$:cr:\$:nl:ended."
+defscrollback 3000
+
+#termcapinfo xterm ti@:te@
+termcapinfo xterm*|linux* ti@:te@
+
+escape ^Ee

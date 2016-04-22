@@ -1,0 +1,34 @@
+#!/bin/sh
+
+# Initialize a minimal Buildroot configuration, using an external
+# toolchain configuration.
+#
+# Usage:
+#
+#  br-init-conf [list | toolchain-name]
+#
+# Without argument, initializes a configuration with a pre-built
+# Buildroot ARM toolchain.
+#
+# With 'list' passed as argument, lists the available external
+# toolchain configurations.
+#
+# Any toolchain configuration name can be passed as argument to
+# initialize a minimal configuration with this toolchain.
+
+if test -z "$1" ; then
+    BRCONFIG=br-arm-full
+elif test "$1" = "list" ; then
+    curl -s http://autobuild.buildroot.org/toolchains/configs/toolchain-configs.csv | cut -f1 -d',' | sed 's%.*/\([^.]*\).config%\1%'
+    exit 0
+else
+    BRCONFIG=$1
+fi
+
+wget -O .config http://autobuild.buildroot.org/toolchains/configs/${BRCONFIG}.config
+cat >> .config <<EOF
+BR2_INIT_NONE=y
+BR2_SYSTEM_BIN_SH_NONE=y
+# BR2_PACKAGE_BUSYBOX is not set
+# BR2_TARGET_ROOTFS_TAR is not set
+EOF

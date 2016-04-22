@@ -1,0 +1,235 @@
+servers = (
+  {
+    address = "irc.enst.rezosup.org";
+    chatnet = "UTBM";
+    port = "6667";
+    use_ssl = "yes";
+    ssl_verify = "yes";
+    autoconnect = "yes";
+    term_type = "utf-8";
+  },
+  {
+    address = "irc.freenode.net";
+    chatnet = "freenode";
+    port = "6697";
+    use_ssl = "yes";
+    ssl_verify = "yes";
+    autoconnect = "yes";
+    term_type = "utf-8";
+  },
+  {
+    address = "mangue";
+    chatnet = "bitlbee";
+    port = "6668";
+    use_ssl = "no";
+    ssl_verify = "no";
+    autoconnect = "yes";
+    term_type = "utf-8";
+  },
+  {
+    address = "irc.oftc.net";
+    chatnet = "oftc";
+    port = "6697";
+    use_ssl = "yes";
+    ssl_verify = "yes";
+    autoconnect = "yes";
+    term_type = "utf-8";
+  }
+);
+
+chatnets = {
+  UTBM = { type = "IRC"; nick = "kinji"; autosendcmd = "/mode kinji -v"; };
+  freenode = {
+    type = "IRC";
+    nick = "maxime";
+    autosendcmd = "/mode maxime -v";
+  };
+  oftc = { 
+    type = "IRC";
+    nick = "maxime";
+    autosendcmd = "/mode maxime -v";
+  };
+  bitlbee = { type = "IRC"; };
+  slack = { type = "IRC"; nick = "maskime"; };
+};
+
+channels = (
+  { name = "&bitlbee"; chatnet = "bitlbee"; autojoin = "yes"; },
+  { name = "#geek"; chatnet = "UTBM"; autojoin = "yes"; },
+  { name = "#lacie-nas"; chatnet = "freenode"; autojoin = "yes"; },
+  { name = "#maposmatic"; chatnet = "freenode"; autojoin = "yes"; },
+  { name = "#apbteam"; chatnet = "freenode"; autojoin = "yes"; },
+  { name = "#linuxxx"; chatnet = "freenode"; autojoin = "yes"; },
+  { name = "#buildroot"; chatnet = "freenode"; autojoin = "yes"; },
+  { name = "#debian-mentors"; chatnet = "oftc"; autojoin = "yes"; },
+  { name = "#general"; chatnet = "slack"; autojoin = "yes"; }
+);
+
+ignores = (
+  { level = "JOINS PARTS QUITS MODES NICKS"; },
+  { level = "MODES"; servertag = "slack"; }
+);
+
+aliases = {
+  WC = "window close";
+  RUN = "SCRIPT LOAD";
+  Q = "QUERY";
+  aw = "away Away - Not here";
+  la = "away";
+  quit = "echo don't do this at home!";
+  ADDALLCHAN = "script exec foreach my \\$channel (Irssi::channels()) { Irssi::command(\"channel add -auto \\$channel->{name} \\$channel->{server}->{tag} \\$channel->{key}\")\\;}";
+  reg = "/msg NickServ IDENTIFY";
+  ghost = "/msg NickServ GHOST maxime";
+  dvorak = "bind -delete meta-q;bind -delete meta-w;bind -delete meta-e;bind -delete meta-r;bind -delete meta-t;bind -delete meta-y;bind -delete meta-u;bind -delete meta-i;bind -delete meta-o;bind -delete meta-p;bind -delete meta-f;bind meta-' change_window 11;bind meta-, change_window 12;bind meta-. change_window 13;bind meta-p change_window 14;bind meta-y change_window 15;bind meta-f change_window 16;bind meta-g change_window 17;bind meta-c change_window 18;bind meta-r change_window 19;bind meta-l change_window 20";
+};
+
+settings = {
+  core = {
+    real_name = "Maxime H.";
+    user_name = "kinji";
+    quit_message = "Saying that Java is nice because it works on all OS's is like saying that anal sex is nice because it works on all genders";
+    recode_autodetect_utf8 = "yes";
+    recode = "yes";
+    server_reconnect_time = "30s";
+    hostname = "";
+    nick = "kinji";
+  };
+  "fe-text" = {
+    term_force_colors = "yes";
+    indent = "2";
+    actlist_sort = "refnum";
+  };
+  "fe-common/core" = {
+    autocreate_own_query = "no";
+    autocreate_query_level = "MSGS";
+    use_status_window = "no";
+    use_msgs_window = "yes";
+    autoclose_windows = "yes";
+    reuse_unused_windows = "yes";
+    autolog = "yes";
+    term_charset = "utf-8";
+    theme = "solarized-universal";
+    autolog_ignore_targets = "ChanServ NickServ";
+  };
+};
+logs = { };
+keyboard = (
+  { key = "meta-'"; id = "change_window"; data = "11"; },
+  { key = "meta-,"; id = "change_window"; data = "12"; },
+  { key = "meta-."; id = "change_window"; data = "13"; },
+  { key = "meta-p"; id = "change_window"; data = "14"; },
+  { key = "meta-y"; id = "change_window"; data = "15"; },
+  { key = "meta-f"; id = "change_window"; data = "16"; },
+  { key = "meta-g"; id = "change_window"; data = "17"; },
+  { key = "meta-c"; id = "change_window"; data = "18"; },
+  { key = "meta-r"; id = "change_window"; data = "19"; },
+  { key = "meta-l"; id = "change_window"; data = "20"; }
+);
+windows = {
+  1 = { 
+    immortal = "yes";
+    name = "(msgs)";
+    level = "MSGS ACTIONS DCCMSGS";
+  };
+  2 = {
+    items = (
+      {
+        type = "CHANNEL";
+        chat_type = "IRC";
+        name = "&bitlbee";
+        tag = "bitlbee2";
+      }
+    );
+  };
+  3 = {
+    items = (
+      {
+        type = "CHANNEL";
+        chat_type = "IRC";
+        name = "#geek";
+        tag = "UTBM";
+      }
+    );
+  };
+  4 = {
+    items = (
+      {
+        type = "CHANNEL";
+        chat_type = "IRC";
+        name = "#dvlt";
+        tag = "freenode";
+      }
+    );
+  };
+  5 = {
+    items = (
+      {
+        type = "CHANNEL";
+        chat_type = "IRC";
+        name = "#lacie-nas";
+        tag = "freenode";
+      }
+    );
+  };
+  6 = {
+    items = (
+      {
+        type = "CHANNEL";
+        chat_type = "IRC";
+        name = "#maposmatic";
+        tag = "freenode";
+      }
+    );
+  };
+  7 = {
+    items = (
+      {
+        type = "CHANNEL";
+        chat_type = "IRC";
+        name = "#apbteam";
+        tag = "freenode";
+      }
+    );
+  };
+  8 = {
+    items = (
+      {
+        type = "CHANNEL";
+        chat_type = "IRC";
+        name = "#linuxxx";
+        tag = "freenode";
+      }
+    );
+  };
+  9 = {
+    items = (
+      {
+        type = "CHANNEL";
+        chat_type = "IRC";
+        name = "#debian-mentors";
+        tag = "oftc";
+      }
+    );
+  };
+  10 = {
+    items = (
+      {
+        type = "CHANNEL";
+        chat_type = "IRC";
+        name = "#buildroot";
+        tag = "freenode";
+      }
+    );
+  };
+  11 = {
+    items = (
+      {
+        type = "QUERY";
+        chat_type = "IRC";
+        name = "JuliaVidile";
+        tag = "bitlbee2";
+      }
+    );
+  };
+};
+mainwindows = { 1 = { first_line = "1"; lines = "69"; }; };

@@ -1,0 +1,53 @@
+[alias]
+	br = branch -a
+	cl = clone --recursive
+	count = shortlog -sn
+	ctags = !.git/hooks/ctags
+	fp = format-patch -M
+	go = checkout -B
+	gr = grep --full-name --line-number -I
+	lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative
+	rb = "!sh -c \"git rebase -i HEAD~$1\" -"
+	re = remote -v
+	s = status -sb
+	staged = diff --staged
+	undo = reset --soft HEAD^
+	contributors = shortlog --summary --numbered
+	dm = "!git branch --merged | grep -v '\\*' | xargs -n 1 git branch -d"
+[apply]
+	whitespace = fix
+[branch]
+	autosetuprebase = always
+[color]
+	branch = auto
+	diff = auto
+	interactive = auto
+	pager = true
+	status = auto
+	ui = auto
+[core]
+	autocrlf = input
+	editor = vim
+	excludesfile = ~/.gitignore_global
+	fsyncobjectfiles = yes
+	whitespace = space-before-tab,-indent-with-non-tab,trailing-space
+[diff]
+	renamelimit = 2048
+	renames = copies
+[gc]
+	auto=1
+[help]
+	autocorrect = 1
+[include]
+	path = ~/.dotfiles/gitconfig_sendemail
+[init]
+	templatedir = ~/.git_template
+[merge]
+	summary=true
+[pull]
+	rebase = true
+[push]
+	default = simple
+[rebase]
+	autosquash = true
+	autostash = true

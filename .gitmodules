@@ -1,30 +1,27 @@
-[submodule "vim/bundle/tcomment"]
-	path = vim/bundle/tcomment
+[submodule "vim/.vim/bundle/tcomment"]
+	path = vim/.vim/bundle/tcomment
 	url = git://github.com/tomtom/tcomment_vim.git
-[submodule "vim/bundle/syntastic"]
-	path = vim/bundle/syntastic
+[submodule "vim/.vim/bundle/syntastic"]
+	path = vim/.vim/bundle/syntastic
 	url = git://github.com/scrooloose/syntastic.git
-[submodule "vim/bundle/ctrlp.vim"]
-	path = vim/bundle/ctrlp.vim
+[submodule "vim/.vim/bundle/ctrlp.vim"]
+	path = vim/.vim/bundle/ctrlp.vim
 	url = https://github.com/kien/ctrlp.vim.git
-[submodule "vim/bundle/vim-colors-solarized"]
-	path = vim/bundle/vim-colors-solarized
-	url = git://github.com/altercation/vim-colors-solarized.git
-[submodule "vim/bundle/vim-gitgutter"]
-	path = vim/bundle/vim-gitgutter
+[submodule "vim/.vim/bundle/vim-gitgutter"]
+	path = vim/.vim/bundle/vim-gitgutter
 	url = git://github.com/airblade/vim-gitgutter.git
-[submodule "vim/bundle/vim-airline"]
-	path = vim/bundle/vim-airline
+[submodule "vim/.vim/bundle/vim-airline"]
+	path = vim/.vim/bundle/vim-airline
 	url = https://github.com/bling/vim-airline.git
-[submodule "vim/bundle/vim-polyglot"]
-	path = vim/bundle/vim-polyglot
+[submodule "vim/.vim/bundle/vim-polyglot"]
+	path = vim/.vim/bundle/vim-polyglot
 	url = https://github.com/sheerun/vim-polyglot.git
-[submodule "vim/bundle/vim-obsession"]
-	path = vim/bundle/vim-obsession
+[submodule "vim/.vim/bundle/vim-obsession"]
+	path = vim/.vim/bundle/vim-obsession
 	url = git://github.com/tpope/vim-obsession.git
-[submodule "vim/bundle/gnupg.vim"]
-	path = vim/bundle/gnupg.vim
+[submodule "vim/.vim/bundle/gnupg.vim"]
+	path = vim/.vim/bundle/gnupg.vim
 	url = https://github.com/vim-scripts/gnupg.vim.git
-[submodule "vim/bundle/vim-airline-themes"]
-	path = vim/bundle/vim-airline-themes
+[submodule "vim/.vim/bundle/vim-airline-themes"]
+	path = vim/.vim/bundle/vim-airline-themes
 	url = git@github.com:vim-airline/vim-airline-themes.git

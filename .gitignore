@@ -3,9 +3,8 @@
 *.sw[nop]
 *.netrwhist
 *.pyc
-mutt/cache/
-bin/s
-gitconfig_sendemail
-irssi/sasl-ecdsa-freenode.key
-irssi/sasl-ecdsa-freenode.pub
-irssi/sasl.auth
+mutt/.mutt/cache/
+ssh/
+common/.bin/s
+common/.bin/weather
+.gitconfig_sendemail
