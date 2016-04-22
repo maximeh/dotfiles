@@ -39,7 +39,7 @@
 [help]
 	autocorrect = 1
 [include]
-	path = ~/.dotfiles/gitconfig_sendemail
+	path = ~/.gitconfig_sendemail
 [init]
 	templatedir = ~/.git_template
 [merge]
