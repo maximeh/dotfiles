@@ -1,14 +1,13 @@
 [alias]
-	br = branch -a
+	branches = branch -a
+	remotes = remote -v
 	cl = clone --recursive
-	count = shortlog -sn
 	ctags = !.git/hooks/ctags
 	fp = format-patch -M
 	go = checkout -B
 	gr = grep --full-name --line-number -I
 	lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative
 	rb = "!sh -c \"git rebase -i HEAD~$1\" -"
-	re = remote -v
 	s = status -sb
 	staged = diff --staged
 	undo = reset --soft HEAD^
