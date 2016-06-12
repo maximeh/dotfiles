@@ -24,8 +24,9 @@
 #           $ sudo mbp_backlight down
 #
 
-BACKLIGHT=$(cat /sys/class/backlight/gmux_backlight/brightness)
-MAX=$(cat /sys/class/backlight/gmux_backlight/max_brightness)
+BACKLIGHT_PATH="/sys/class/backlight/gmux_backlight/"
+BACKLIGHT=$(cat "${BACKLIGHT_PATH}/brightness")
+MAX=$(cat "${BACKLIGHT_PATH}/max_brightness")
 MIN=0
 INCREMENT=50
 
@@ -40,13 +41,13 @@ case $1 in
 		TOTAL=$((BACKLIGHT+INCREMENT))
 		[ "$BACKLIGHT" -eq "$MAX" ] && exit 1
 		[ "$TOTAL" -gt "$MAX" ] && TOTAL=$MAX
-		echo $TOTAL > /sys/class/backlight/gmux_backlight/brightness
+		echo $TOTAL > "${BACKLIGHT_PATH}/brightness"
 		;;
 	down)
 		TOTAL=$((BACKLIGHT-INCREMENT))
 		[ "$BACKLIGHT" -eq "$MIN" ] && exit 1
 		[ "$TOTAL" -lt "$MIN" ] && TOTAL=$MIN
-		echo $TOTAL > /sys/class/backlight/gmux_backlight/brightness
+		echo $TOTAL > "${BACKLIGHT_PATH}/brightness"
 		;;
 	*)
 		echo "Use: mbp_backlight up|down"
