@@ -22,7 +22,7 @@ check_app() {
   fi
 }
 
-check_app "img2pdf" "https://github.com/josch/img2pdf.git"
+check_app "img2pdf" "https://gitlab.mister-muffin.de/josch/img2pdf"
 
 if [ ! -f "$1" ]; then
   echo "${1} is not a file."
