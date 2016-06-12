@@ -161,7 +161,7 @@ export PATH=$PATH:$HOME/.bin:$HOME/.$(uname -n)_bin:/usr/sbin:/sbin
 export REPORTTIME=5
 export SAVEHIST=$HISTSIZE
 export TIMEFMT="%*Es total, %U user, %S system, %P cpu"
-export TZ=/usr/share/zoneinfo/Europe/Paris
+export TZ=right/Europe/Paris
 export VISUAL=vim
 
 # Source machine file for specific stuff
