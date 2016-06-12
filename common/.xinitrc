@@ -61,6 +61,6 @@ sed -i "s/^set \$dmenu_fontsize.*/set \$dmenu_fontsize ${dmenu_fontsize}/g" ~/.i
 i3-msg restart
 
 if [ $firstboot -eq 0 ]; then
-	xautolock -time 10 -locker "i3lock --ignore-empty-password -c 000000" &
+	xautolock -time 2 -locker "i3lock --ignore-empty-password -c 000000" &
 fi
 feh --randomize --bg-scale /home/maxime/Documents/perso/wallpaper/*
