@@ -10,8 +10,8 @@
 # Please see http://i3wm.org/docs/userguide.html for a complete reference!
 
 set $mod Mod1
-set $fontsize 4
-set $dmenu_fontsize 12
+set $fontsize 8
+set $dmenu_fontsize 24
 
 # Font for window titles. Will also be used by the bar unless a different font
 # is used in the bar {} block below. ISO 10646 = Unicode
@@ -114,7 +114,7 @@ bindsym $mod+Shift+9 move container to workspace 9
 bindsym $mod+Shift+0 move container to workspace 10
 
 # find the mouse
-bindsym $mod+m exec "$HOME/bin/move_mouse"
+bindsym $mod+m exec "$HOME/.bin/move_mouse"
 # lock session
 bindsym $mod+l exec i3lock --pointer=win --inactivity-timeout=1 --ignore-empty-password -c 000000
 # reload the configuration file
@@ -136,16 +136,16 @@ bindsym XF86AudioStop exec --no-startup-id "mpc stop"
 bindsym XF86AudioPrev exec --no-startup-id "mpc prev"
 bindsym XF86AudioNext exec --no-startup-id "mpc next"
 
-bindsym XF86MonBrightnessUp exec --no-startup-id "sudo /home/maxime/bin/mbp_backlight up"
-bindsym XF86MonBrightnessDown exec --no-startup-id "sudo /home/maxime/bin/mbp_backlight down"
+bindsym XF86MonBrightnessUp exec --no-startup-id "sudo $HOME/.bin/mbp_backlight up"
+bindsym XF86MonBrightnessDown exec --no-startup-id "sudo $HOME/.bin/mbp_backlight down"
 
 # Screenshots
 # Screenshot fullscreen
-bindsym Print exec "scrot -q 100 '/home/maxime/%Y-%m-%d-%H-%M-%S_$wx$h.png' -e 'scp $f f00.fr:/var/www/f00.fr/screenshots/ && echo https://f00.fr/screenshots/$n | xclip -i -selection clipboard && rm /home/maxime/$n'"
+bindsym Print exec "scrot -q 100 '$HOME/%Y-%m-%d-%H-%M-%S_$wx$h.png' -e 'scp $f f00.fr:/var/www/f00.fr/screenshots/ && echo https://f00.fr/screenshots/$n | xclip -i -selection clipboard && rm $HOME/$n'"
 # Screenshot with selection
-bindsym $mod+Print exec "sleep 0.2; scrot -q 100 -s '/home/maxime/%Y-%m-%d-%H-%M-%S_$wx$h.png' -e 'scp $f f00.fr:/var/www/f00.fr/screenshots/ && echo https://f00.fr/screenshots/$n | xclip -i -selection clipboard && rm /home/maxime/$n'"
+bindsym $mod+Print exec "sleep 0.2; scrot -q 100 -s '$HOME/%Y-%m-%d-%H-%M-%S_$wx$h.png' -e 'scp $f f00.fr:/var/www/f00.fr/screenshots/ && echo https://f00.fr/screenshots/$n | xclip -i -selection clipboard && rm $HOME/$n'"
 # Screenshot current focused window
-bindsym Shift+Print exec "scrot -q 100 -u '/home/maxime/%Y-%m-%d-%H-%M-%S_$wx$h.png' -e 'scp $f f00.fr:/var/www/f00.fr/screenshots/ && echo https://f00.fr/screenshots/$n | xclip -i -selection clipboard && rm /home/maxime/$n'"
+bindsym Shift+Print exec "scrot -q 100 -u '$HOME/%Y-%m-%d-%H-%M-%S_$wx$h.png' -e 'scp $f f00.fr:/var/www/f00.fr/screenshots/ && echo https://f00.fr/screenshots/$n | xclip -i -selection clipboard && rm $HOME/$n'"
 
 # resize window (you can also use the mouse for that)
 mode "resize" {
