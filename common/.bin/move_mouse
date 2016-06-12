@@ -8,6 +8,6 @@ POS_Y=$(echo "$LOCATION" | cut -d' ' -f2 | cut -d':' -f2)
 
 for i in $(seq $((POS_X-20)) $((POS_X+20))); do
 	${XDOTOOL} mousemove "${i}" "${POS_Y}"
-	usleep 200
+	sleep 0.002
 done
 ${XDOTOOL} mousemove "${POS_X}" "${POS_Y}"
