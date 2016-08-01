@@ -32,7 +32,7 @@ set wildmode=full
 
 syntax on
 filetype plugin indent on
-colorscheme coin
+colorscheme darknight
 
 " Color trailing whitespace
 autocmd Syntax * syn match ExtraWhitespace /\s\+$\| \+\ze\t/
