@@ -13,6 +13,7 @@
 	undo = reset --soft HEAD^
 	contributors = shortlog --summary --numbered
 	dm = "!git branch --merged | grep -v '\\*' | xargs -n 1 git branch -d"
+	tags = "!git tag --sort=v:refname"
 [apply]
 	whitespace = fix
 [branch]
