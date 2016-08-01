@@ -86,9 +86,6 @@ alias duh="du "${@--xd1}" -h | sort -h" # sort dir in . based on their size
 alias fix_stty='stty sane'
 # osock: to display open sockets (the -P option to lsof disables port names)
 alias osock='sudo lsof -i -P'
-#ssh without check of the key
-alias sshwk='ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no'
-alias scpwk='scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no'
 alias icdiff="icdiff --line-numbers --highlight"
 
 # Functions
@@ -161,7 +158,7 @@ export PATH=$PATH:$HOME/.bin:$HOME/.$(uname -n)_bin:/usr/sbin:/sbin
 export REPORTTIME=5
 export SAVEHIST=$HISTSIZE
 export TIMEFMT="%*Es total, %U user, %S system, %P cpu"
-export TZ=right/Europe/Paris
+export TZ=Europe/Paris
 export VISUAL=vim
 
 # Source machine file for specific stuff
