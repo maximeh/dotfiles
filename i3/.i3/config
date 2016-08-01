@@ -188,6 +188,7 @@ for_window[class="Steam"] floating enable
 for_window[class="VirtualBox"] floating enable
 for_window[class="vlc"] floating enable
 for_window[title="^Infinit$"] floating enable
+for_window[title="^TeamViewer$"] floating enable
 
 exec --no-startup-id $HOME/.xinitrc
 exec --no-startup-id nm-applet &
