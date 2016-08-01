@@ -25,3 +25,9 @@
 [submodule "vim/.vim/bundle/vim-airline-themes"]
 	path = vim/.vim/bundle/vim-airline-themes
 	url = git@github.com:vim-airline/vim-airline-themes.git
+[submodule "vim/.vim/bundle/darknight"]
+	path = vim/.vim/bundle/darknight
+	url = git@github.com:maximeh/darknight.git
+[submodule "vim/.vim/bundle/localindent.vim"]
+	path = vim/.vim/bundle/localindent.vim
+	url = git@github.com:maximeh/localindent.vim.git
