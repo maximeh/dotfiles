@@ -1,9 +1,6 @@
 [submodule "vim/.vim/bundle/tcomment"]
 	path = vim/.vim/bundle/tcomment
 	url = git://github.com/tomtom/tcomment_vim.git
-[submodule "vim/.vim/bundle/syntastic"]
-	path = vim/.vim/bundle/syntastic
-	url = git://github.com/scrooloose/syntastic.git
 [submodule "vim/.vim/bundle/ctrlp.vim"]
 	path = vim/.vim/bundle/ctrlp.vim
 	url = https://github.com/kien/ctrlp.vim.git
@@ -25,3 +22,6 @@
 [submodule "vim/.vim/bundle/localindent.vim"]
 	path = vim/.vim/bundle/localindent.vim
 	url = git@github.com:maximeh/localindent.vim.git
+[submodule "vim/.vim/bundle/YouCompleMe"]
+	path = vim/.vim/bundle/YouCompleMe
+	url = git@github.com:Valloric/YouCompleteMe.git
