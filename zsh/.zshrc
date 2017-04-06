@@ -73,12 +73,18 @@ alias grep='grep --color=auto' # Always highlight grep search term
 alias psg='ps aux | grep -v grep | grep $1'   # See what's running
 alias pswchan='ps xaopid,wchan:42,cmd'
 alias ping='ping -c 5' # Pings with 5 packets, not unlimited
+alias myip='curl https://f00.fr/ip'
 alias history='fc -l 1' # I want to see more the 16 history items
 alias df='df -h' # Disk free, in gigabytes, not bytes
 alias du='du -h -c' # Calculate total disk usage for a folder
 alias mmv='noglob zmv -W'
 unalias vi 2>/dev/null
 alias vi='vim'
+alias ag='sudo apt-get'
+alias agi='sudo apt-get install'
+alias agr='sudo apt-get remove'
+alias agu='sudo sh -c "apt-get update && apt-get dist-upgrade && apt-get autoremove && apt-get autoclean"'
+alias ags='apt-cache search'
 # intercept stdout,stderr of PID
 alias intercept='strace -ff -e trace=write -e write=1,2 -p'
 alias duh="du "${@--xd1}" -h | sort -h" # sort dir in . based on their size
