@@ -1,15 +1,13 @@
 #!/bin/sh
 
-for i in /sys/bus/usb/devices/*; do
-        [ ! -f $i/idVendor ] && continue
-        idVendor=$(cat $i/idVendor)
-        idProduct=$(cat $i/idProduct)
-        # Typematrix
-        if [ "$idVendor" =  "1e54" -a "$idProduct" =  "2030" ]; then
-             echo "on" > $i/power/control
-        fi
-        # Mouse
-        if [ "$idVendor" =  "1bcf" -a "$idProduct" =  "0005" ]; then
-             echo "on" > $i/power/control
-        fi
+# Disable auto suspend when a screen is connected. We could use the battery
+# status but it's not up-to-date when we are pinging it.
+# Leave out HDMI as I don't use it at work so it means a special event which
+# require special tunning.
+if xrandr | grep 'DP-3 disconnected' || xrandr | grep 'DP-4 disconnected'; then
+	exit 0
+fi
+
+for usb_dev in /sys/bus/usb/devices/*/; do
+	echo "on" > "${usb_dev}/power/control"
 done
