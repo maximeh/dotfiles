@@ -14,6 +14,7 @@
 	contributors = shortlog --summary --numbered
 	dm = "!git branch --merged | grep -v '\\*' | xargs -n 1 git branch -d"
 	tags = "!git tag --sort=v:refname"
+	latest = for-each-ref --count=30 --sort=-committerdate refs/heads/ --format='%(refname:short)'
 [apply]
 	whitespace = fix
 [branch]
@@ -51,3 +52,5 @@
 [rebase]
 	autosquash = true
 	autostash = true
+[user]
+	useConfigOnly = true
