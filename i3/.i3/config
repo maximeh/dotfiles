@@ -142,14 +142,10 @@ bindsym XF86MonBrightnessDown exec --no-startup-id "sudo $HOME/.bin/mbp_backligh
 # resize window (you can also use the mouse for that)
 mode "resize" {
         # These bindings trigger as soon as you enter the resize mode
-        # Pressing right will shrink the window’s width.
-        # Pressing left will grow the window’s width.
-        # Pressing down will shrink the window’s height.
-        # Pressing up will grow the window’s height.
-        bindsym Right resize shrink width 10 px or 10 ppt
-        bindsym Up resize grow height 10 px or 10 ppt
-        bindsym Down resize shrink height 10 px or 10 ppt
-        bindsym Left resize grow width 10 px or 10 ppt
+	bindsym Left exec $HOME/.bin/i3-smart-resize "Left"
+	bindsym Right exec $HOME/.bin/i3-smart-resize "Right"
+	bindsym Up exec $HOME/.bin/i3-smart-resize "Up"
+	bindsym Down exec $HOME/.bi/i3-smart-resize "Down"
 
         # back to normal: Enter or Escape
         bindsym Return mode "default"
