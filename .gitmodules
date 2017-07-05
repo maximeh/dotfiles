@@ -1,30 +1,24 @@
-[submodule "vim/.vim/bundle/tcomment"]
-	path = vim/.vim/bundle/tcomment
+[submodule "vim/.vim/pack/p/start/tcomment"]
+	path = vim/.vim/pack/p/start/tcomment
 	url = git://github.com/tomtom/tcomment_vim.git
-[submodule "vim/.vim/bundle/ctrlp.vim"]
-	path = vim/.vim/bundle/ctrlp.vim
-	url = https://github.com/kien/ctrlp.vim.git
-[submodule "vim/.vim/bundle/vim-gitgutter"]
-	path = vim/.vim/bundle/vim-gitgutter
+[submodule "vim/.vim/pack/p/start/vim-gitgutter"]
+	path = vim/.vim/pack/p/start/vim-gitgutter
 	url = git://github.com/airblade/vim-gitgutter.git
-[submodule "vim/.vim/bundle/vim-airline"]
-	path = vim/.vim/bundle/vim-airline
+[submodule "vim/.vim/pack/p/start/vim-airline"]
+	path = vim/.vim/pack/p/start/vim-airline
 	url = https://github.com/bling/vim-airline.git
-[submodule "vim/.vim/bundle/vim-polyglot"]
-	path = vim/.vim/bundle/vim-polyglot
+[submodule "vim/.vim/pack/p/start/vim-polyglot"]
+	path = vim/.vim/pack/p/start/vim-polyglot
 	url = https://github.com/sheerun/vim-polyglot.git
-[submodule "vim/.vim/bundle/vim-airline-themes"]
-	path = vim/.vim/bundle/vim-airline-themes
+[submodule "vim/.vim/pack/p/start/vim-airline-themes"]
+	path = vim/.vim/pack/p/start/vim-airline-themes
 	url = git@github.com:vim-airline/vim-airline-themes.git
-[submodule "vim/.vim/bundle/darknight"]
-	path = vim/.vim/bundle/darknight
+[submodule "vim/.vim/pack/p/start/darknight"]
+	path = vim/.vim/pack/p/start/darknight
 	url = git@github.com:maximeh/darknight.git
-[submodule "vim/.vim/bundle/localindent.vim"]
-	path = vim/.vim/bundle/localindent.vim
+[submodule "vim/.vim/pack/p/start/localindent.vim"]
+	path = vim/.vim/pack/p/start/localindent.vim
 	url = git@github.com:maximeh/localindent.vim.git
-[submodule "vim/.vim/bundle/YouCompleMe"]
-	path = vim/.vim/bundle/YouCompleMe
-	url = git@github.com:Valloric/YouCompleteMe.git
-[submodule "vim/.vim/bundle/ale"]
-	path = vim/.vim/bundle/ale
+[submodule "vim/.vim/pack/p/start/ale"]
+	path = vim/.vim/pack/p/start/ale
 	url = https://github.com/w0rp/ale.git
