@@ -1,5 +1,4 @@
 " Vim configuration file
-call pathogen#infect()
 
 " Global settings
 set autoindent
@@ -28,7 +27,7 @@ set laststatus=2
 set tags=.git/tags
 set timeoutlen=300
 set wildmenu
-set wildmode=full
+set wildmode=list:longest,list:full
 
 syntax on
 filetype plugin indent on
@@ -47,7 +46,7 @@ autocmd BufWrite * :call DeleteTrailingWS()
 
 let mapleader = "\<Space>"
 let g:mapleader = "\<Space>"
-inoremap jj <ESC>
+inoremap uu <ESC>
 
 " Spelling settings
 set dictionary=/usr/share/dict/words
@@ -61,8 +60,6 @@ let g:gitgutter_realtime = 1
 let g:gitgutter_eager = 1
 
 " Shortcuts
-map <Tab> :bn<CR>
-map <S-Tab> :bp<CR>
 nmap <leader>d :bd<CR>
 nmap <leader>w :w!<CR>
 nmap :W :w
@@ -121,9 +118,16 @@ let g:airline_theme='solarized'
 let g:airline_left_sep=''
 let g:airline_right_sep=''
 
-" Ctrl-P options
-" http://kien.github.com/ctrlp.vim/
-let g:ctrlp_map = '<c-p>'
-let g:ctrlp_working_path_mode = 0
-let g:ctrlp_dotfiles = 0
-let g:ctrlp_user_command = 'ag %s -l --nocolor --hidden -g ""'
+" Tab completion
+" will insert tab at beginning of line,
+" will use completion if not at beginning
+function! InsertTabWrapper()
+    let col = col('.') - 1
+    if !col || getline('.')[col - 1] !~ '\k'
+        return "\<tab>"
+    else
+        return "\<c-p>"
+    endif
+endfunction
+inoremap <Tab> <c-r>=InsertTabWrapper()<cr>
+inoremap <S-Tab> <c-n>
