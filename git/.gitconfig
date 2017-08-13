@@ -54,3 +54,5 @@
 	autostash = true
 [user]
 	useConfigOnly = true
+[commit]
+	verbose = true
