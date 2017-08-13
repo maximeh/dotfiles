@@ -1,0 +1,56 @@
+#!/bin/sh
+
+# Setup screens, kill the laptop screen if external screen is connected.
+# Adjust DPI and other stuff.
+# SCREEN = 1 => EXTERNAL screen plugged
+SCREEN=0
+if xrandr | grep 'DP-3 connected' || xrandr | grep 'DP-4 connected'; then
+	SCREEN=1
+fi
+echo "${SCREEN}" > /tmp/screen
+
+if [ $SCREEN -eq 0 ]; then
+	xrandr --output DP-2 --auto &
+	xcalib -s DP-2 "${HOME}/.dotfiles/Macbook Pro Retina.icc" &
+else
+	# Kill main screen
+	xrandr --output DP-2 --off &
+
+	screen=$(xrandr | grep -w connected | grep -v DP-2 | awk '{print $1}')
+	xrandr --output "${screen}" \
+		--rotate left \
+		--auto \
+		--panning 0x0+0+0/0x0+0+0/0/0/0/0 \
+		--right-of DP-2 &
+fi
+
+dpi=220
+size=6.5
+fontsize=8
+dmenu_fontsize=24
+if [ $SCREEN -eq 1 ]; then
+	dpi=96
+	size=9
+	fontsize=4
+	dmenu_fontsize=12
+fi
+TERM_FONT="xft:DejaVu Sans Mono:size=${size}:Regular"
+
+# Send all the pts an escape sequence to change the font settings
+for pts in /dev/pts/[0-9]*; do
+	printf '\33]50;%s\007' "${TERM_FONT}" > "${pts}"
+done
+
+# Set the correct DPI value
+sed -i "s/^Xft.dpi.*/Xft.dpi: ${dpi}/g" ~/.Xresources
+# Set the correct font settings
+sed -i "s/^URxvt.font:.*/URxvt.font: ${TERM_FONT}/g" ~/.Xresources
+xrdb -merge ~/.Xresources
+
+# Change i3 config's size font
+sed -i "s/^set \$fontsize.*/set \$fontsize ${fontsize}/g" ~/.i3/config
+sed -i "s/^set \$dmenu_fontsize.*/set \$dmenu_fontsize ${dmenu_fontsize}/g" ~/.i3/config
+i3-msg restart
+
+# Wait for the few process started in background
+wait

@@ -1,0 +1,16 @@
+#!/bin/sh
+
+# Put that into /etc/rc.local
+# Force enable ASPM for Thunderbolt (PCIE)
+setpci -s 06:00.0 0xd0.B=0x43
+setpci -s 07:06.0 0xd0.B=0x43
+
+# Small fix to make the backlight work on MacBook 11,3
+setpci -v -H1 -s 00:01.00 BRIDGE_CONTROL=0
+
+# Keyboard ligthing
+echo 0 > /sys/devices/platform/applesmc.768/leds/smc::kbd_backlight/brightness
+
+# grep . -r /sys/firmware/acpi/interrupts
+echo disable > /sys/firmware/acpi/interrupts/gpe16
+echo disable > /sys/firmware/acpi/interrupts/gpe17

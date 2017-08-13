@@ -1,0 +1,12 @@
+#!/bin/sh
+
+# Setup keyboard
+xmodmap -e "remove lock = Caps_Lock"
+setxkbmap -option ctrl:nocaps
+
+# Start with no dead keys.
+setxkbmap dvorak -variant "nodeadkeys"
+setxkbmap -option compose:rwin
+setxkbmap -option compose:lwin
+setxkbmap -option compose:ralt
+xset r rate 175 35
