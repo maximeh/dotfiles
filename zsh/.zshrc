@@ -41,11 +41,9 @@ setopt extended_glob
 setopt extended_history
 setopt glob_dots
 setopt hash_list_all
-setopt hist_find_no_dups
-setopt hist_ignore_all_dups
+setopt hist_expire_dups_first
 setopt hist_ignore_dups
 setopt hist_ignore_space
-setopt hist_reduce_blanks
 setopt hist_verify
 setopt inc_append_history
 setopt list_ambiguous
@@ -62,37 +60,25 @@ unsetopt list_beep
 unsetopt rm_star_silent
 
 # Alias
-alias ls="ls -F --color" # Color is handled differently on Linux
-alias ..='cd ..' # Go up one directory
-alias ...='cd ../..' # Go up two directories
-alias ....='cd ../../..' # And for good measure
-alias l='ls -lah' # Long view, show hidden
-alias la='ls -AF' # Compact view, show hidden
-alias ll='ls -lFh' # Long view, no hidden
-alias grep='grep --color=auto' # Always highlight grep search term
-alias psg='ps aux | grep -v grep | grep $1'   # See what's running
+alias ls="ls -F --color"
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
+alias l='ls -lsah'
+alias la='ls -AF'
+alias ll='ls -lFh'
+alias grep='grep --color=auto'
+alias psg='ps aux | grep -v grep | grep $1'
 alias pswchan='ps xaopid,wchan:42,cmd'
-alias ping='ping -c 5' # Pings with 5 packets, not unlimited
+alias ping='ping -c 5'
 alias myip='curl https://f00.fr/ip'
-alias history='fc -l 1' # I want to see more the 16 history items
-alias df='df -h' # Disk free, in gigabytes, not bytes
-alias du='du -h -c' # Calculate total disk usage for a folder
+alias history='fc -il 1'
+alias df='df -h'
+alias du='du -h -c'
 alias mmv='noglob zmv -W'
 unalias vi 2>/dev/null
 alias vi='vim'
-alias ag='sudo apt-get'
-alias agi='sudo apt-get install'
-alias agr='sudo apt-get remove'
-alias agu='sudo sh -c "apt-get update && apt-get dist-upgrade && apt-get autoremove && apt-get autoclean"'
-alias ags='apt-cache search'
-# intercept stdout,stderr of PID
-alias intercept='strace -ff -e trace=write -e write=1,2 -p'
-alias duh="du "${@--xd1}" -h | sort -h" # sort dir in . based on their size
-# fix_stty: restore terminal settings when they get completely screwed up
-alias fix_stty='stty sane'
-# osock: to display open sockets (the -P option to lsof disables port names)
-alias osock='sudo lsof -i -P'
-alias icdiff="icdiff --line-numbers --highlight"
+alias duh="du "${@--xd1}" -h | sort -h"
 
 # Functions
 d2b() { for x in "$@"; do echo "obase=2;ibase=10;$x" | bc; done }
@@ -103,27 +89,19 @@ b2d() { for x in "$@"; do echo "obase=10;ibase=2;$x" | bc; done }
 h2d() { for x in "$@"; do echo "obase=10;ibase=16;$x:u" | bc; done }
 d2h() { for x in "$@"; do echo "obase=16;ibase=10;$x:u" | bc; done }
 b2h() { for x in "$@"; do echo "obase=16;ibase=2;$x:u" | bc; done }
-calc() { echo "$*" | bc -l; } #define the co function to calculate
 epoch() { date -d @$1; }
-type() { echo "$*" | pv -qL 10; } #Simulate type char by char
 digga() { dig +nocmd "$1" any +multiline +noall +answer }
-# list available package listed by size in human forms
 fatty () { dpkg-query -Wf '${Installed-Size}\t${Package}\n' | sort -n | awk '{printf "%.3f MB ==> %s\n", $1/(1024), $2}' }
-# get just the HTTP headers from a web page (and its redirects)
 headers () { curl -I -L $@ ; }
 
 function x {
         echo Extracting $1 ...
         if [ -f $1 ] ; then
           case $1 in
-            *.tar.bz2) tar xjf $1 ;;
-            *.tar.gz) tar xzf $1 ;;
+            *.tar.*|*.t*) tar xf $1 ;;
             *.bz2) bunzip2 $1 ;;
             *.rar) rar x $1 ;;
             *.gz) gunzip $1 ;;
-            *.tar) tar xf $1 ;;
-            *.tbz2) tar xjf $1 ;;
-            *.tgz) tar xzf $1 ;;
             *.zip) unzip $1 ;;
             *.Z) uncompress $1 ;;
             *.7z) 7z x $1 ;;
@@ -132,11 +110,6 @@ function x {
         else
           echo "'$1' is not a valid file"
         fi
-}
-
-function resetfont {
-  font_line=$(grep font "$HOME"/.Xresources)
-  printf '\e]710;%s\007' "${font_line#*: }"
 }
 
 # show username@host if logged in through SSH
@@ -153,21 +126,18 @@ export EDITOR=vim
 export HISTFILE=~/.histfile
 export HISTFILESIZE=$HISTSIZE
 export HISTIGNORE="ls:cd:cd -:pwd:exit:date:* --help:* -h"
-export HISTSIZE=1000000000
+export HISTSIZE=150000
 export KEYTIMEOUT=1
 export LANG="en_US.UTF-8"
 export LC_ALL="en_US.UTF-8"
 export LOCALE="en_US.UTF-8"
 export PATH=$PATH:$HOME/.bin:$HOME/.$(uname -n)_bin:/usr/sbin:/sbin
-# Show time a command took if over 5 sec
-# https://github.com/bjeanes/dot-files/commit/1ae5bc72dac6d5f2cdfbf5a48fdf140c5d085986
 export REPORTTIME=5
 export SAVEHIST=$HISTSIZE
 export TIMEFMT="%*Es total, %U user, %S system, %P cpu"
 export TZ=Europe/Paris
 export VISUAL=vim
 
-# Source machine file for specific stuff
 if [ -f $HOME/.$(uname -n) ]; then
   source $HOME/.$(uname -n)
 fi
