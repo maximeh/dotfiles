@@ -3,51 +3,43 @@ general {
 	interval = 2
 }
 
-order += "disk /"
 order += "wireless wlan0"
 order += "ethernet eth1"
 order += "battery 0"
-order += "load"
 order += "volume master"
 order += "time"
 
 wireless wlan0 {
-	format_up = "W: (%quality at %essid) %ip"
-	format_down = "W: down"
+	format_up = "(%quality at %essid ) %ip "
+	format_down = "- "
 }
 
 ethernet eth1 {
 	# if you use %speed, i3status requires the cap_net_admin capability
-	format_up = "E: %ip (%speed)"
-	format_down = "E: down"
+	format_up = "%ip (%speed) "
+	format_down = " - "
 }
 
 battery 0 {
-	format = "%status %percentage %remaining"
+	format = "%status %percentage "
 	format_down = "No battery"
-	status_chr = "⚇ CHR"
-	status_bat = "⚡ BAT"
-	status_full = "☻ FULL"
+	status_chr = " +"
+	status_bat = " -"
+	status_full = " ="
+	status_unk = " ? "
 	path = "/sys/class/power_supply/BAT%d/uevent"
 	last_full_capacity = true
-	low_threshold = 10
+	low_threshold = 15
+	threshold_type = percentage
+	integer_battery_capacity = true
 }
 
 time {
-	format = "%Y-%m-%d %H:%M"
-}
-
-load {
-	format = "%5min"
-}
-
-disk "/" {
-	format = "%free"
+	format = " %Y-%m-%d %H:%M"
 }
 
 volume master {
-	format = "♪: %volume"
-	device = "default"
-	mixer = "Master"
-	mixer_idx = 0
+	format = " ♪: %volume "
+	format_muted = " ♪: %volume "
+	device = "pulse:alsa_output.pci-0000_00_1b.0.analog-stereo"
 }

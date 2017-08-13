@@ -116,19 +116,19 @@ bindsym $mod+Shift+0 move container to workspace 10
 # find the mouse
 bindsym $mod+m exec "$HOME/.bin/move_mouse"
 # lock session
-bindsym $mod+l exec i3lock --pointer=win --inactivity-timeout=1 --ignore-empty-password -c 000000
+bindsym $mod+l exec slock
 # reload the configuration file
 bindsym $mod+Shift+j reload
 # restart i3 inplace (preserves your layout/session, can be used to upgrade i3)
 bindsym $mod+Shift+p restart
-# Execute xinitrc if you switch display
-bindsym $mod+Shift+d exec --no-startup-id "$HOME/.xinitrc"
+# Execute multihead if you switch display
+bindsym $mod+Shift+d exec --no-startup-id "$HOME/.bin/multihead"
 # exit i3 (logs you out of your X session)
 bindsym $mod+Shift+period exec "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? This will end your X session.' -b 'Yes, exit i3' 'i3-msg exit'"
 
 set $sink alsa_output.pci-0000_00_1b.0.analog-stereo
-bindsym XF86AudioRaiseVolume exec --no-startup-id "pactl set-sink-mute $sink 0; pactl set-sink-volume $sink +2%"
-bindsym XF86AudioLowerVolume exec --no-startup-id "pactl set-sink-mute $sink 0; pactl set-sink-volume $sink -2%"
+bindsym XF86AudioRaiseVolume exec --no-startup-id "pactl set-sink-volume $sink +1%"
+bindsym XF86AudioLowerVolume exec --no-startup-id "pactl set-sink-volume $sink -1%"
 bindsym XF86AudioMute exec --no-startup-id "pactl set-sink-mute $sink toggle"
 
 bindsym XF86AudioPlay exec --no-startup-id "mpc toggle"
@@ -145,7 +145,7 @@ mode "resize" {
 	bindsym Left exec $HOME/.bin/i3-smart-resize "Left"
 	bindsym Right exec $HOME/.bin/i3-smart-resize "Right"
 	bindsym Up exec $HOME/.bin/i3-smart-resize "Up"
-	bindsym Down exec $HOME/.bi/i3-smart-resize "Down"
+	bindsym Down exec $HOME/.bin/i3-smart-resize "Down"
 
         # back to normal: Enter or Escape
         bindsym Return mode "default"
@@ -173,17 +173,15 @@ bar {
 new_window pixel 1
 
 for_window[class="^Spark$"] floating enable
-for_window[class="^CrashPlan$"] floating enable
 for_window[class="^Spotify$"] floating enable
 for_window[class="Steam"] floating enable
 for_window[class="VirtualBox"] floating enable
 for_window[class="vlc"] floating enable
-for_window[title="^Infinit$"] floating enable
-for_window[title="^TeamViewer$"] floating enable
-for_window[title="^KSP$"] floating enable
+assign [class="firefox"] 2
+assign [class="google-chrome"] 3
 
 exec --no-startup-id $HOME/.xinitrc
 exec --no-startup-id nm-applet &
-exec --no-startup-id dunst &
-exec --no-startup-id unclutter -idle 1 -root &
-exec --no-startup-id xautolock -time 2 -corners ---- -cornersize 30 -locker "i3lock --ignore-empty-password -c 000000" &
+
+exec --no-startup-id "i3-msg 'workspace 1; append_layout $HOME/.i3/workspace-1.json'"
+exec --no-startup-id "i3-msg 'workspace 2; append_layout $HOME/.i3/workspace-2.json'"
