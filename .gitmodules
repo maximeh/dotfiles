@@ -4,15 +4,9 @@
 [submodule "vim/.vim/pack/p/start/vim-gitgutter"]
 	path = vim/.vim/pack/p/start/vim-gitgutter
 	url = git://github.com/airblade/vim-gitgutter.git
-[submodule "vim/.vim/pack/p/start/vim-airline"]
-	path = vim/.vim/pack/p/start/vim-airline
-	url = https://github.com/bling/vim-airline.git
 [submodule "vim/.vim/pack/p/start/vim-polyglot"]
 	path = vim/.vim/pack/p/start/vim-polyglot
 	url = https://github.com/sheerun/vim-polyglot.git
-[submodule "vim/.vim/pack/p/start/vim-airline-themes"]
-	path = vim/.vim/pack/p/start/vim-airline-themes
-	url = git@github.com:vim-airline/vim-airline-themes.git
 [submodule "vim/.vim/pack/p/start/darknight"]
 	path = vim/.vim/pack/p/start/darknight
 	url = git@github.com:maximeh/darknight.git
