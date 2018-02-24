@@ -15,11 +15,11 @@ done
 
 keyboard &
 
-wallpapers &
-
 wait
+
+wallpapers &
 
 /usr/bin/unclutter -idle 1 -root &
 /usr/bin/xautolock \
 	-corners ---- -cornersize 30 \
-	-locker "slock" &
+	-locker "xscreensaver-command -lock" &
