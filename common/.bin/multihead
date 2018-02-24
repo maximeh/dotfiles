@@ -9,9 +9,17 @@ if xrandr | grep 'DP-3 connected' || xrandr | grep 'DP-4 connected'; then
 fi
 echo "${SCREEN}" > /tmp/screen
 
+rm -f "${HOME}/.xscreensaver"
 if [ $SCREEN -eq 0 ]; then
-	xrandr --output DP-2 --auto &
+	# For some reasons, you need to enable the output, then disable the
+	# panning, otherwise it will keep the highest value in height or width
+	# of the previous resolution of the primary display (resulting in
+	# panning and since it doesn't work when you specify that you don't
+	# want it...)
+	xrandr --output DP-2 --auto --primary
+	xrandr --output DP-2 --panning 0x0+0+0/0x0+0+0/0/0/0/0
 	xcalib -s DP-2 "${HOME}/.dotfiles/Macbook Pro Retina.icc" &
+	ln -s "${HOME}/.dotfiles/xscreensaver/battery" "${HOME}/.xscreensaver"
 else
 	# Kill main screen
 	xrandr --output DP-2 --off &
@@ -19,19 +27,22 @@ else
 	screen=$(xrandr | grep -w connected | grep -v DP-2 | awk '{print $1}')
 	xrandr --output "${screen}" \
 		--rotate left \
+		--primary \
 		--auto \
 		--panning 0x0+0+0/0x0+0+0/0/0/0/0 \
 		--right-of DP-2 &
+
+	ln -s "${HOME}/.dotfiles/xscreensaver/nobattery" "${HOME}/.xscreensaver"
 fi
 
 dpi=220
 size=6.5
-fontsize=8
+fontsize=7
 dmenu_fontsize=24
 if [ $SCREEN -eq 1 ]; then
 	dpi=96
 	size=9
-	fontsize=4
+	fontsize=8
 	dmenu_fontsize=12
 fi
 TERM_FONT="xft:DejaVu Sans Mono:size=${size}:Regular"
