@@ -3,7 +3,6 @@ compinit
 autoload -U edit-command-line
 autoload -U zmv
 zle -N edit-command-line
-zle -N zle-line-init
 
 zstyle ':completion:*' use-cache on
 zstyle ':completion:*' cache-path ~/.zsh_cache
@@ -37,22 +36,26 @@ setopt chase_links
 setopt complete_aliases
 setopt complete_in_word
 setopt correct
+setopt correctall
 setopt extended_glob
 setopt extended_history
 setopt glob_dots
 setopt hash_list_all
 setopt hist_expire_dups_first
+setopt hist_find_no_dups
 setopt hist_ignore_dups
 setopt hist_ignore_space
+setopt hist_reduce_blanks
 setopt hist_verify
 setopt inc_append_history
 setopt list_ambiguous
+setopt no_beep
+setopt pushd_ignore_dups
 setopt pushd_minus
 setopt pushd_silent
 setopt pushd_to_home
 setopt share_history
 
-unsetopt beep
 unsetopt bg_nice
 unsetopt hist_beep
 unsetopt hup
@@ -68,7 +71,6 @@ alias l='ls -lsah'
 alias la='ls -AF'
 alias ll='ls -lFh'
 alias grep='grep --color=auto'
-alias psg='ps aux | grep -v grep | grep $1'
 alias pswchan='ps xaopid,wchan:42,cmd'
 alias ping='ping -c 5'
 alias myip='curl https://f00.fr/ip'
@@ -94,7 +96,7 @@ digga() { dig +nocmd "$1" any +multiline +noall +answer }
 fatty () { dpkg-query -Wf '${Installed-Size}\t${Package}\n' | sort -n | awk '{printf "%.3f MB ==> %s\n", $1/(1024), $2}' }
 headers () { curl -I -L $@ ; }
 
-function x {
+x() {
         echo Extracting $1 ...
         if [ -f $1 ] ; then
           case $1 in
@@ -110,6 +112,17 @@ function x {
         else
           echo "'$1' is not a valid file"
         fi
+}
+
+any() {
+    emulate -L zsh
+    unsetopt KSH_ARRAYS
+    if [[ -z "$1" ]] ; then
+        echo "any - grep for process(es) by keyword" >&2
+        echo "Usage: any " >&2 ; return 1
+    else
+        ps xauwww | grep -i --color=auto "[${1[1]}]${1[2,-1]}"
+    fi
 }
 
 # show username@host if logged in through SSH
