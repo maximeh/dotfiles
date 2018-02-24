@@ -29,6 +29,12 @@ BACKLIGHT=$(cat "${BACKLIGHT_PATH}/brightness")
 MAX=$(cat "${BACKLIGHT_PATH}/max_brightness")
 MIN=0
 INCREMENT=50
+if [ ! -d "${BACKLIGHT_PATH}" ]; then
+	BACKLIGHT_PATH="/sys/class/backlight/acpi_video0/"
+	BACKLIGHT=$(cat "${BACKLIGHT_PATH}/brightness")
+	MAX=$(cat "${BACKLIGHT_PATH}/max_brightness")
+	INCREMENT=10
+fi
 
 if [ "$(id -u)" -ne 0 ]; then
 	echo "Please run this program as superuser"
