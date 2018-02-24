@@ -1,4 +1,5 @@
 [alias]
+	git = !exec git
 	branches = branch -a
 	remotes = remote -v
 	cl = clone --recursive
@@ -15,6 +16,7 @@
 	dm = "!git branch --merged | grep -v '\\*' | xargs -n 1 git branch -d"
 	tags = "!git tag --sort=v:refname"
 	latest = for-each-ref --count=30 --sort=-committerdate refs/heads/ --format='%(refname:short)'
+	pushf = push --force-with-lease
 [apply]
 	whitespace = fix
 [branch]
@@ -35,6 +37,11 @@
 [diff]
 	renamelimit = 2048
 	renames = copies
+	tool = meld
+[difftool]
+	prompt = false
+[difftool "meld"]
+	cmd = meld "$LOCAL" "$REMOTE"
 [gc]
 	auto=1
 [help]
@@ -45,6 +52,9 @@
 	templatedir = ~/.git_template
 [merge]
 	summary=true
+	tool = meld
+[mergetool "meld"]
+	cmd = meld "$LOCAL" "$MERGED" "$REMOTE" --output "$MERGED"
 [pull]
 	rebase = true
 [push]
