@@ -10,7 +10,7 @@
 # Please see http://i3wm.org/docs/userguide.html for a complete reference!
 
 set $mod Mod1
-set $fontsize 8
+set $fontsize 7
 set $dmenu_fontsize 24
 
 # Font for window titles. Will also be used by the bar unless a different font
@@ -116,13 +116,13 @@ bindsym $mod+Shift+0 move container to workspace 10
 # find the mouse
 bindsym $mod+m exec "$HOME/.bin/move_mouse"
 # lock session
-bindsym $mod+l exec slock
+bindsym $mod+l exec "$HOME/.bin/lockme"
 # reload the configuration file
 bindsym $mod+Shift+j reload
 # restart i3 inplace (preserves your layout/session, can be used to upgrade i3)
 bindsym $mod+Shift+p restart
 # Execute multihead if you switch display
-bindsym $mod+Shift+d exec --no-startup-id "$HOME/.bin/multihead"
+bindsym $mod+Shift+d exec --no-startup-id "$HOME/.bin/multihead;$HOME/.bin/wallpapers"
 # exit i3 (logs you out of your X session)
 bindsym $mod+Shift+period exec "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? This will end your X session.' -b 'Yes, exit i3' 'i3-msg exit'"
 
@@ -182,6 +182,5 @@ assign [class="google-chrome"] 3
 
 exec --no-startup-id $HOME/.xinitrc
 exec --no-startup-id nm-applet &
+exec --no-startup-id xscreensaver -no-capture-stderr &
 
-exec --no-startup-id "i3-msg 'workspace 1; append_layout $HOME/.i3/workspace-1.json'"
-exec --no-startup-id "i3-msg 'workspace 2; append_layout $HOME/.i3/workspace-2.json'"
