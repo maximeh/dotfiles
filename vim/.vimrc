@@ -118,6 +118,7 @@ vmap <S-T> xp`[V`]
 " ALE
 let g:ale_sign_warning = '▲'
 let g:ale_sign_error = '✗'
+let g:ale_python_pylint_executable = 'python3'
 highlight link ALEWarningSign String
 highlight link ALEErrorSign Title
 
