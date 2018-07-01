@@ -19,3 +19,6 @@
 [submodule "vim/.vim/pack/p/start/lightline"]
 	path = vim/.vim/pack/p/start/lightline
 	url = https://github.com/itchyny/lightline.vim
+[submodule "vim/.vim/pack/p/start/vim-autoclose"]
+	path = vim/.vim/pack/p/start/vim-autoclose
+	url = git@github.com:Townk/vim-autoclose.git
