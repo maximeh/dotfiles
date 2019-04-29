@@ -8,3 +8,4 @@ ssh/
 common/.bin/s
 common/.bin/weather
 .gitconfig_sendemail
+tmux/.tmux/resurrect/*
