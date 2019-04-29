@@ -3,34 +3,34 @@
 " Global settings
 set autoindent
 set autoread
+set backspace=indent,eol,start
 set colorcolumn=80
 set formatprg=par\ -w80
 set hidden
 set hlsearch
+set ignorecase
 set incsearch
+set laststatus=2
 set lazyredraw
 set nocompatible
 set nostartofline
 set novisualbell
+set number
 set pastetoggle=<F2>
+set relativenumber
 set scrolloff=3
 set showfulltag
 set showmatch
 set showmode
 set sidescrolloff=2
-set ignorecase
+set signcolumn=yes
 set smartcase
 set smartindent
-set lazyredraw
 set tabpagemax=50
-set laststatus=2
-set signcolumn=yes
 set tags=.git/tags
 set timeoutlen=300
 set wildmenu
 set wildmode=list:longest,list:full
-set number
-set relativenumber
 
 syntax on
 filetype plugin indent on
@@ -118,7 +118,6 @@ vmap <S-T> xp`[V`]
 " ALE
 let g:ale_sign_warning = '▲'
 let g:ale_sign_error = '✗'
-let g:ale_python_pylint_executable = 'python3'
 highlight link ALEWarningSign String
 highlight link ALEErrorSign Title
 
@@ -170,17 +169,3 @@ function! s:MaybeUpdateLightline()
     call lightline#update()
   end
 endfunction
-
-" Tab completion
-" will insert tab at beginning of line,
-" will use completion if not at beginning
-function! InsertTabWrapper()
-    let col = col('.') - 1
-    if !col || getline('.')[col - 1] !~ '\k'
-        return "\<tab>"
-    else
-        return "\<c-p>"
-    endif
-endfunction
-inoremap <Tab> <c-r>=InsertTabWrapper()<cr>
-inoremap <S-Tab> <c-n>
