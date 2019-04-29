@@ -2,5 +2,7 @@
 set -e
 PATH="/usr/local/bin:$PATH"
 trap "rm -f .git/tags.$$" EXIT
-ctags --tag-relative -Rf.git/tags.$$ --exclude=.git --languages=-javascript,sql
+ctags --tag-relative --python-kinds=-iv -Rf.git/tags.$$ --exclude=.git --languages=-javascript,sql
+# Add this if you want to list all of python modules in the system (3rd parties libraries)
+#$(python -c "import os, sys; print(' '.join('{}'.format(d) for d in sys.path if os.path.isdir(d)))")
 mv .git/tags.$$ .git/tags
