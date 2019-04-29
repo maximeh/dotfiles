@@ -63,7 +63,7 @@ unsetopt list_beep
 unsetopt rm_star_silent
 
 # Alias
-alias ls="ls -F --color"
+alias ls="ls -F -G"
 alias ..='cd ..'
 alias ...='cd ../..'
 alias ....='cd ../../..'
@@ -139,7 +139,7 @@ export EDITOR=vim
 export HISTFILE=~/.histfile
 export HISTFILESIZE=$HISTSIZE
 export HISTIGNORE="ls:cd:cd -:pwd:exit:date:* --help:* -h"
-export HISTSIZE=150000
+export HISTSIZE=1000
 export KEYTIMEOUT=1
 export LANG="en_US.UTF-8"
 export LC_ALL="en_US.UTF-8"
@@ -152,5 +152,7 @@ export TZ=Europe/Paris
 export VISUAL=vim
 
 if [ -f $HOME/.$(uname -n) ]; then
-  source $HOME/.$(uname -n)
+    source $HOME/.$(uname -n)
 fi
+
+test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
