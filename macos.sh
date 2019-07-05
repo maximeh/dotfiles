@@ -16,6 +16,9 @@ while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
 # General UI/UX                                                               #
 ###############################################################################
 
+# Disable GateKeeper (to open any apps)
+sudo spctl --master-disable
+
 # Set computer name (as done via System Preferences → Sharing)
 #sudo scutil --set ComputerName "0x6D746873"
 #sudo scutil --set HostName "0x6D746873"
@@ -91,6 +94,9 @@ defaults write com.apple.helpviewer DevMode -bool true
 # Commented out, as this is known to cause problems in various Adobe apps :(
 # See https://github.com/mathiasbynens/dotfiles/issues/237
 #echo "0x08000100:0" > ~/.CFUserTextEncoding
+
+# Disable iTunes auto start when a device is connected
+defaults write com.apple.iTunesHelper ignore-devices 1
 
 # Reveal IP address, hostname, OS version, etc. when clicking the clock
 # in the login window
