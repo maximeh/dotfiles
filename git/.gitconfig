@@ -34,10 +34,15 @@
 	excludesfile = ~/.gitignore_global
 	fsyncobjectfiles = yes
 	whitespace = space-before-tab,-indent-with-non-tab,trailing-space
+	pager = diff-so-fancy | less --tabs=4 -RFX
+	ignorecase = false
 [diff]
 	renamelimit = 2048
 	renames = copies
 	tool = meld
+	algorithm = patience
+	colorMovedWS = allow-indentation-change
+	colorMoved = dimmed-zebra
 [difftool]
 	prompt = false
 [difftool "meld"]
