@@ -2,9 +2,10 @@ servers = (
   {
     address = "irc.enst.rezosup.org";
     chatnet = "UTBM";
-    port = "6667";
+    port = "6697";
     use_ssl = "yes";
     ssl_verify = "yes";
+    ssl_capath = "/etc/ssl/certs";
     autoconnect = "yes";
     term_type = "utf-8";
   },
@@ -14,13 +15,14 @@ servers = (
     port = "6697";
     use_ssl = "yes";
     ssl_verify = "yes";
+    ssl_capath = "/etc/ssl/certs";
     autoconnect = "yes";
     term_type = "utf-8";
   },
   {
-    address = "mangue";
+    address = "localhost";
     chatnet = "bitlbee";
-    port = "6668";
+    port = "6667";
     use_ssl = "no";
     ssl_verify = "no";
     autoconnect = "yes";
@@ -32,8 +34,19 @@ servers = (
     port = "6697";
     use_ssl = "yes";
     ssl_verify = "yes";
+    ssl_capath = "/etc/ssl/certs";
     autoconnect = "yes";
     term_type = "utf-8";
+  },
+  {
+    address = "devialet.irc.slack.com";
+    chatnet = "slack";
+    port = "6667";
+    password = "devialet.GVIMz3zkp1qx966xd0yU";
+    use_ssl = "yes";
+    ssl_verify = "yes";
+    ssl_capath = "/etc/ssl/certs";
+    autoconnect = "yes";
   }
 );
 
@@ -43,6 +56,9 @@ chatnets = {
     type = "IRC";
     nick = "maxime";
     autosendcmd = "/mode maxime -v";
+    sasl_mechanism = "plain";
+    sasl_username = "maxime";
+    sasl_password = "B55vph!r";
   };
   oftc = { 
     type = "IRC";
@@ -67,7 +83,8 @@ channels = (
 
 ignores = (
   { level = "JOINS PARTS QUITS MODES NICKS"; },
-  { level = "MODES"; servertag = "slack"; }
+  { level = "MODES"; servertag = "slack"; },
+  { mask = "saslserv"; level = "ALL"; }
 );
 
 aliases = {
@@ -111,6 +128,15 @@ settings = {
     theme = "solarized-universal";
     autolog_ignore_targets = "ChanServ NickServ";
   };
+  "perl/core/scripts" = {
+    awl_shared_sbar = "OFF";
+    awl_placement = "bottom";
+    awl_position = "4";
+    awl_display_key = "$N$H$C$S";
+    awl_display_nokey = "$N$H$C$S";
+    awl_height_adjust = "2";
+    awl_hide_data = "0";
+  };
 };
 logs = { };
 keyboard = (
@@ -137,7 +163,7 @@ windows = {
         type = "CHANNEL";
         chat_type = "IRC";
         name = "&bitlbee";
-        tag = "bitlbee2";
+        tag = "bitlbee";
       }
     );
   };
@@ -224,12 +250,99 @@ windows = {
   11 = {
     items = (
       {
-        type = "QUERY";
+        type = "CHANNEL";
         chat_type = "IRC";
-        name = "JuliaVidile";
-        tag = "bitlbee2";
+        name = "#general";
+        tag = "slack";
+      }
+    );
+  };
+  12 = {
+    items = (
+      {
+        type = "CHANNEL";
+        chat_type = "IRC";
+        name = "#elec";
+        tag = "slack";
+      }
+    );
+  };
+  13 = {
+    items = (
+      {
+        type = "CHANNEL";
+        chat_type = "IRC";
+        name = "#music";
+        tag = "slack";
+      }
+    );
+  };
+  14 = {
+    items = (
+      {
+        type = "CHANNEL";
+        chat_type = "IRC";
+        name = "#gossip";
+        tag = "slack";
+      }
+    );
+  };
+  15 = {
+    items = (
+      {
+        type = "CHANNEL";
+        chat_type = "IRC";
+        name = "#support";
+        tag = "slack";
+      }
+    );
+  };
+  16 = {
+    items = (
+      {
+        type = "CHANNEL";
+        chat_type = "IRC";
+        name = "#devteam-people";
+        tag = "slack";
+      }
+    );
+  };
+  17 = {
+    items = (
+      {
+        type = "CHANNEL";
+        chat_type = "IRC";
+        name = "#devteam";
+        tag = "slack";
       }
     );
   };
 };
-mainwindows = { 1 = { first_line = "1"; lines = "69"; }; };
+mainwindows = { 1 = { first_line = "1"; lines = "68"; }; };
+statusbar = {
+  default = {
+    remove = { };
+    window = {
+      items = {
+        barstart = { priority = "100"; };
+        user = { };
+        window = { };
+        window_empty = { };
+        lag = { priority = "-1"; };
+        act = { priority = "10"; };
+        more = { priority = "-1"; alignment = "right"; };
+        barend = { priority = "100"; alignment = "right"; };
+      };
+      visible = "inactive";
+    };
+    visible = { };
+    awl_0 = {
+      position = "4";
+      items = {
+        barstart = { priority = "100"; };
+        awl_0 = { };
+        barend = { priority = "100"; alignment = "right"; };
+      };
+    };
+  };
+};
