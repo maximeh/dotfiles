@@ -12,7 +12,7 @@ zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
 zmodload zsh/complist
 zstyle ':completion:*:*:kill:*:processes' list-colors "=(#b) #([0-9]#)*=36=31"
 
-bindkey -e
+bindkey -v
 bindkey '\e[1;5C' forward-word            # C-Right
 bindkey '\e[1;5D' backward-word           # C-Left
 bindkey '\e[2~'   overwrite-mode          # Insert
@@ -26,6 +26,7 @@ bindkey '^R'      history-incremental-pattern-search-backward
 bindkey "^[[7~" beginning-of-line
 bindkey "^[[8~" end-of-line
 
+setopt vi
 setopt always_to_end
 setopt append_history
 setopt auto_cd
@@ -54,7 +55,6 @@ setopt pushd_ignore_dups
 setopt pushd_minus
 setopt pushd_silent
 setopt pushd_to_home
-setopt share_history
 
 unsetopt bg_nice
 unsetopt hist_beep
@@ -81,6 +81,8 @@ alias mmv='noglob zmv -W'
 unalias vi 2>/dev/null
 alias vi='vim'
 alias duh="du "${@--xd1}" -h | sort -h"
+alias open_port="lsof -Pn -i4tcp -stcp:listen"
+alias g='git'
 
 # Functions
 d2b() { for x in "$@"; do echo "obase=2;ibase=10;$x" | bc; done }
@@ -134,25 +136,30 @@ precmd() {
 }
 PROMPT="%(!.%F{red}.%F{magenta})❯%f "
 
+[[ $ZSH_EVAL_CONTEXT =~ :file$ ]] && sourced=1 || sourced=0
+if [ $sourced -eq 1 ]; then
+    PATH="/usr/sbin:/usr/bin/:/sbin:/bin"
+fi
+
 export DIRSTACKSIZE=5
 export EDITOR=vim
 export HISTFILE=~/.histfile
 export HISTFILESIZE=$HISTSIZE
 export HISTIGNORE="ls:cd:cd -:pwd:exit:date:* --help:* -h"
-export HISTSIZE=1000
+export HISTSIZE=50000
 export KEYTIMEOUT=1
 export LANG="en_US.UTF-8"
 export LC_ALL="en_US.UTF-8"
 export LOCALE="en_US.UTF-8"
-export PATH=$PATH:$HOME/.bin:$HOME/.local/bin:$HOME/.$(uname -n)_bin:/usr/sbin:/sbin
+export PATH="/usr/local/opt/python@3.8/bin:$PATH"
+export PATH=$PATH:$HOME/.bin:$HOME/.local/bin:$HOME/.$(uname -n)_bin
 export REPORTTIME=5
-export SAVEHIST=$HISTSIZE
+export SAVEHIST=10000
 export TIMEFMT="%*Es total, %U user, %S system, %P cpu"
-export TZ=Europe/Paris
 export VISUAL=vim
 
 if [ -f $HOME/.$(uname -n) ]; then
-    source $HOME/.$(uname -n)
+   source $HOME/.$(uname -n)
 fi
 
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
