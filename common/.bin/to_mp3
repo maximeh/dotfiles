@@ -1,0 +1,73 @@
+#!/usr/bin/env python3
+
+'''convert a range of different audio files to mp3 files using multiple
+parallel processes'''
+
+import os
+import subprocess
+import sys
+
+from multiprocessing import cpu_count
+from multiprocessing.pool import ThreadPool
+from pathlib import Path
+
+OUTPUT_FOLDER_NAME = "MP3"
+AUDIO_FILE_TYPES = ("aac",
+                   "aiff",
+                   "flac",
+                   "m4a",
+                   "mp3",
+                   "ogg",
+                   "opus",
+                   "raw",
+                   "wav",
+                   "webm",
+                   "wma")
+
+def convert_to_mp3(task):
+    '''Start up a new ffmpeg subprocess transcode the given audio file
+    and save the newly transcoded file to a directory within the same
+    directory of the original audio '''
+    input = task[0]
+    output = task[1]
+
+    completed = subprocess.run(["ffmpeg",
+                                "-loglevel",
+                                "quiet",
+                                "-hide_banner",
+                                "-y",
+                                "-i",
+                                input,
+                                "-write_id3v1",
+                                "1",
+                                "-id3v2_version",
+                                "3",
+                                "-codec:a",
+                                "libmp3lame",
+                                "-q:a",
+                                "3",
+                                output],
+                               stderr=subprocess.DEVNULL,
+                               stdout=subprocess.DEVNULL,
+                               stdin=subprocess.PIPE)
+    print(f"'{output}' - return code {completed.returncode}")
+
+if __name__ == "__main__":
+    files = []
+    cwd = Path.cwd()
+    for ext in AUDIO_FILE_TYPES:
+        files.extend(Path(cwd).rglob('*.%s' % ext))
+
+    with ThreadPool(cpu_count())as p:
+        tasks = []
+        for file in files:
+            stem = file.relative_to(cwd)
+            output_path = Path(cwd, OUTPUT_FOLDER_NAME, stem)
+            if not output_path.parent.is_dir():
+                output_path.parent.mkdir(parents=True)
+            tasks.append([file, output_path])
+        print(f"Transcoding {len(tasks)} Audio files")
+        p.map(convert_to_mp3, tasks)
+
+    print("Done")
+    sys.exit(0)
