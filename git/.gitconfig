@@ -1,22 +1,27 @@
 [alias]
-	git = !exec git
 	branches = branch -a
-	remotes = remote -v
+	cane = commit --amend --no-edit
 	cl = clone --recursive
+	cm = 'commit -m'
+	contributors = shortlog --summary --numbered
 	ctags = !.git/hooks/ctags
+	d = diff
+	dm = "!git branch --merged | grep -v '\\*' | xargs -n 1 git branch -d"
+	f = fetch -p --all
 	fp = format-patch -M
+	git = !exec git
 	go = checkout -B
 	gr = grep --full-name --line-number -I
+	latest = for-each-ref --count=30 --sort=-committerdate refs/heads/ --format='%(refname:short)'
 	lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative
+	pushf = push --force-with-lease
 	rb = "!sh -c \"git rebase -i HEAD~$1\" -"
+	remotes = remote -v
+	rh = 'reset --hard'
 	s = status -sb
 	staged = diff --staged
-	undo = reset --soft HEAD^
-	contributors = shortlog --summary --numbered
-	dm = "!git branch --merged | grep -v '\\*' | xargs -n 1 git branch -d"
 	tags = "!git tag --sort=v:refname"
-	latest = for-each-ref --count=30 --sort=-committerdate refs/heads/ --format='%(refname:short)'
-	pushf = push --force-with-lease
+	undo = reset --soft HEAD^
 [apply]
 	whitespace = fix
 [branch]
@@ -71,3 +76,22 @@
 	useConfigOnly = true
 [commit]
 	verbose = true
+[includeIf "gitdir:~/work/"]
+	path = ~/work/.gitconfig
+[includeIf "gitdir:~/Documents/data/"]
+	path = ~/Documents/data/.gitconfig
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
+[remote "origin"]
+	# github, pagure
+	fetch = +refs/pull/*/head:refs/remotes/origin/pr/*
+	# gitlab
+	fetch = +refs/merge-requests/*/head:refs/remotes/origin/mr/*
+	# stash
+	fetch = +refs/pull-requests/*:refs/pull-requests/*
+[rerere]
+	enabled = true
+	autoupdate = true
