@@ -20,7 +20,7 @@ set pastetoggle=<F2>
 set relativenumber
 set scrolloff=3
 set showfulltag
-set showmatch
+set showmatch matchtime=3
 set showmode
 set sidescrolloff=2
 set signcolumn=yes
@@ -84,6 +84,10 @@ nnoremap <leader><Down> <C-w>j
 nnoremap <leader><Up> <C-w>k
 nnoremap <leader><Right> <C-w>l
 nnoremap <S-D> <C-w><C-r>
+
+inoremap } }<Left><c-o>%<c-o>:sleep 500m<CR><c-o>%<c-o>a
+inoremap ] ]<Left><c-o>%<c-o>:sleep 500m<CR><c-o>%<c-o>a
+inoremap ) )<Left><c-o>%<c-o>:sleep 500m<CR><c-o>%<c-o>a
 
 " Allow saving of files as sudo when I forgot to start vim using sudo.
 cmap w!! w !sudo tee > /dev/null %
