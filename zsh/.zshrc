@@ -4,6 +4,9 @@ autoload -U edit-command-line
 autoload -U zmv
 zle -N edit-command-line
 
+zstyle ':completion:*:(rsync|ssh|scp):*' hosts
+zstyle ':completion:*:(rsync|ssh|scp):*' users
+zstyle ':completion:*:(ssh|scp|rsync):*:hosts-host' ignored-patterns '*(.|:)*' loopback ip6-loopback localhost ip6-localhost broadcasthost
 zstyle ':completion:*' use-cache on
 zstyle ':completion:*' cache-path ~/.zsh_cache
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
@@ -25,6 +28,8 @@ bindkey '^E'      end-of-line             # End
 bindkey '^R'      history-incremental-pattern-search-backward
 bindkey "^[[7~" beginning-of-line
 bindkey "^[[8~" end-of-line
+bindkey '^xe' edit-command-line
+bindkey '^x^e' edit-command-line
 
 setopt vi
 setopt always_to_end
@@ -85,6 +90,7 @@ alias open_port="lsof -Pn -i4tcp -stcp:listen"
 alias g='git'
 
 # Functions
+abs() { echo -n $PWD/$1 }
 d2b() { for x in "$@"; do echo "obase=2;ibase=10;$x" | bc; done }
 d2bs() { for x in "$@"; do d2b $x | rev | sed 's/.\{4\}/& /g' | rev; done }
 h2b() { for x in "$@"; do echo "obase=2;ibase=16;$x:u" | bc; done }
@@ -127,6 +133,14 @@ any() {
     fi
 }
 
+delete-branches() {
+  git branch |
+    grep --invert-match '\*' |
+    cut -c 3- |
+    fzf --multi --preview="git log {} --" |
+    xargs --no-run-if-empty git branch --delete --force
+}
+
 # show username@host if logged in through SSH
 if [[ $SSH_CLIENT != '' || $SSH_TTY != '' ]]; then
   local username='%n@%m '
@@ -163,3 +177,4 @@ if [ -f $HOME/.$(uname -n) ]; then
 fi
 
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
+[[ :$PATH: == *:$HOME/bin:* ]] || PATH=$HOME/bin:$PATH
