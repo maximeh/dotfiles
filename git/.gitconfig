@@ -60,6 +60,7 @@
 	path = ~/.gitconfig_sendemail
 [init]
 	templatedir = ~/.git_template
+	defaultBranch = main
 [merge]
 	summary=true
 	tool = meld
@@ -80,11 +81,6 @@
 	path = ~/work/.gitconfig
 [includeIf "gitdir:~/Documents/data/"]
 	path = ~/Documents/data/.gitconfig
-[filter "lfs"]
-	clean = git-lfs clean -- %f
-	smudge = git-lfs smudge -- %f
-	process = git-lfs filter-process
-	required = true
 [remote "origin"]
 	# github, pagure
 	fetch = +refs/pull/*/head:refs/remotes/origin/pr/*
@@ -95,3 +91,10 @@
 [rerere]
 	enabled = true
 	autoupdate = true
+[interactive]
+	diffFilter = diff-so-fancy --patch
+[filter "lfs"]
+	process = git-lfs filter-process
+	required = true
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f

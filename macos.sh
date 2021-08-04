@@ -215,6 +215,7 @@ defaults write com.apple.screensaver askForPasswordDelay -int 0
 
 # Save screenshots to the desktop
 defaults write com.apple.screencapture location -string "${HOME}/Desktop"
+defaults write com.apple.screencapture show-thumbnail -bool FALSE
 
 # Save screenshots in PNG format (other options: BMP, GIF, JPG, PDF, TIFF)
 defaults write com.apple.screencapture type -string "png"
@@ -386,6 +387,9 @@ defaults write com.apple.dashboard mcx-disabled -bool true
 # Don’t show Dashboard as a Space
 defaults write com.apple.dock dashboard-in-overlay -bool true
 
+# Set default iCal duration to 15mn instead of 1h
+defaults write com.apple.iCal 'Default duration in minutes for new event' 15
+
 # Don’t automatically rearrange Spaces based on most recent use
 defaults write com.apple.dock mru-spaces -bool false
 
@@ -413,6 +417,7 @@ find "${HOME}/Library/Application Support/Dock" -name "*-*.db" -maxdepth 1 -dele
 # Add iOS & Watch Simulator to Launchpad
 # sudo ln -sf "/Applications/Xcode.app/Contents/Developer/Applications/Simulator.app" "/Applications/Simulator.app"
 # sudo ln -sf "/Applications/Xcode.app/Contents/Developer/Applications/Simulator (Watch).app" "/Applications/Simulator (Watch).app"
+defaults write com.apple.dt.Xcode ApplePersistenceIgnoreState YES
 
 # Add a spacer to the left side of the Dock (where the applications are)
 #defaults write com.apple.dock persistent-apps -array-add '{tile-data={}; tile-type="spacer-tile";}'
