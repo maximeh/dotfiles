@@ -78,7 +78,7 @@ alias ll='ls -lFh'
 alias grep='grep --color=auto'
 alias pswchan='ps xaopid,wchan:42,cmd'
 alias ping='ping -c 5'
-alias myip='curl https://f00.fr/ip'
+alias myip='curl https://m14n.dev/ip'
 alias history='fc -il 1'
 alias df='df -h'
 alias du='du -h -c'
@@ -166,7 +166,7 @@ export LANG="en_US.UTF-8"
 export LC_ALL="en_US.UTF-8"
 export LOCALE="en_US.UTF-8"
 export PATH="/usr/local/opt/python@3.8/bin:$PATH"
-export PATH=$PATH:$HOME/.bin:$HOME/.local/bin:$HOME/.$(uname -n)_bin
+export PATH=$PATH:$HOME/.bin:$HOME/.local/bin:$HOME/.$(uname -n)_bin:/opt/homebrew/bin:/opt/homebrew/sbin
 export REPORTTIME=5
 export SAVEHIST=10000
 export TIMEFMT="%*Es total, %U user, %S system, %P cpu"
@@ -175,6 +175,3 @@ export VISUAL=vim
 if [ -f $HOME/.$(uname -n) ]; then
    source $HOME/.$(uname -n)
 fi
-
-test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
-[[ :$PATH: == *:$HOME/bin:* ]] || PATH=$HOME/bin:$PATH

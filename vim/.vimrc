@@ -127,7 +127,7 @@ highlight link ALEErrorSign Title
 
 " Lightline
 let g:lightline = {
-\ 'colorscheme': 'dark',
+\ 'colorscheme': 'srcery_drk',
 \ 'active': {
 \   'left': [['mode', 'paste'], ['filename', 'modified']],
 \   'right': [['lineinfo'], ['percent'], ['readonly', 'linter_warnings', 'linter_errors', 'linter_ok']]

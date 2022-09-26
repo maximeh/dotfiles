@@ -37,7 +37,6 @@
 	autocrlf = input
 	editor = vim
 	excludesfile = ~/.gitignore_global
-	fsyncobjectfiles = yes
 	whitespace = space-before-tab,-indent-with-non-tab,trailing-space
 	pager = diff-so-fancy | less --tabs=4 -RFX
 	ignorecase = false
@@ -56,20 +55,16 @@
 	auto=1
 [help]
 	autocorrect = 1
-[include]
-	path = ~/.gitconfig_sendemail
 [init]
 	templatedir = ~/.git_template
 	defaultBranch = main
 [merge]
 	summary=true
-	tool = meld
-[mergetool "meld"]
-	cmd = meld "$LOCAL" "$MERGED" "$REMOTE" --output "$MERGED"
 [pull]
 	rebase = true
 [push]
 	default = simple
+	autoSetupRemote = true
 [rebase]
 	autosquash = true
 	autostash = true
@@ -77,10 +72,8 @@
 	useConfigOnly = true
 [commit]
 	verbose = true
-[includeIf "gitdir:~/work/"]
-	path = ~/work/.gitconfig
-[includeIf "gitdir:~/Documents/data/"]
-	path = ~/Documents/data/.gitconfig
+[include]
+	path = ~/.gitconfig_local
 [remote "origin"]
 	# github, pagure
 	fetch = +refs/pull/*/head:refs/remotes/origin/pr/*
@@ -94,7 +87,9 @@
 [interactive]
 	diffFilter = diff-so-fancy --patch
 [filter "lfs"]
-	process = git-lfs filter-process
-	required = true
 	clean = git-lfs clean -- %f
 	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
+[add "interactive"]
+	useBuiltin = false
