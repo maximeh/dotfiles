@@ -89,6 +89,13 @@ alias duh="du "${@--xd1}" -h | sort -h"
 alias open_port="lsof -Pn -i4tcp -stcp:listen"
 alias g='git'
 
+
+git-find-word() {
+  git grep -l $1 | xargs -n1 git blame -f -n -w | grep $1 | sed "s/.\{9\}//" | sed "s/(.*)[[:space:]]*//"
+}
+alias todo='git-find-word "TODO"'
+alias fixme='git-find-word "FIXME"'
+
 # Functions
 abs() { echo -n $PWD/$1 }
 d2b() { for x in "$@"; do echo "obase=2;ibase=10;$x" | bc; done }
@@ -150,28 +157,26 @@ precmd() {
 }
 PROMPT="%(!.%F{red}.%F{magenta})❯%f "
 
-[[ $ZSH_EVAL_CONTEXT =~ :file$ ]] && sourced=1 || sourced=0
-if [ $sourced -eq 1 ]; then
-    PATH="/usr/sbin:/usr/bin/:/sbin:/bin"
-fi
-
 export DIRSTACKSIZE=5
 export EDITOR=vim
 export HISTFILE=~/.histfile
+export HISTSIZE=99999
 export HISTFILESIZE=$HISTSIZE
+export SAVEHIST=$HISTSIZE
 export HISTIGNORE="ls:cd:cd -:pwd:exit:date:* --help:* -h"
-export HISTSIZE=50000
 export KEYTIMEOUT=1
 export LANG="en_US.UTF-8"
 export LC_ALL="en_US.UTF-8"
 export LOCALE="en_US.UTF-8"
-export PATH="/usr/local/opt/python@3.8/bin:$PATH"
-export PATH=$PATH:$HOME/.bin:$HOME/.local/bin:$HOME/.$(uname -n)_bin:/opt/homebrew/bin:/opt/homebrew/sbin
+export PATH="$HOME/Library/Python/3.10/bin:$PATH"
+export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"
+# export PATH="$PATH:/usr/sbin:/usr/bin:/sbin:/bin"
+export PATH="$PATH:$HOME/.bin:$HOME/.local/bin"
+export PATH="$PATH:/Library/TeX/texbin/"
 export REPORTTIME=5
-export SAVEHIST=10000
 export TIMEFMT="%*Es total, %U user, %S system, %P cpu"
 export VISUAL=vim
 
-if [ -f $HOME/.$(uname -n) ]; then
-   source $HOME/.$(uname -n)
+if [ -f $HOME/.zshrc_local ]; then
+  source $HOME/.zshrc_local
 fi

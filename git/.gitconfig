@@ -43,14 +43,11 @@
 [diff]
 	renamelimit = 2048
 	renames = copies
-	tool = meld
 	algorithm = patience
 	colorMovedWS = allow-indentation-change
 	colorMoved = dimmed-zebra
 [difftool]
 	prompt = false
-[difftool "meld"]
-	cmd = meld "$LOCAL" "$REMOTE"
 [gc]
 	auto=1
 [help]
