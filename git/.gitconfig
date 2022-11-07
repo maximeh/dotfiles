@@ -1,4 +1,5 @@
 [alias]
+	amend = commit --amend -C HEAD
 	branches = branch -a
 	cane = commit --amend --no-edit
 	cl = clone --recursive

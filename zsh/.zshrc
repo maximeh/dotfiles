@@ -89,7 +89,6 @@ alias duh="du "${@--xd1}" -h | sort -h"
 alias open_port="lsof -Pn -i4tcp -stcp:listen"
 alias g='git'
 
-
 git-find-word() {
   git grep -l $1 | xargs -n1 git blame -f -n -w | grep $1 | sed "s/.\{9\}//" | sed "s/(.*)[[:space:]]*//"
 }
@@ -155,7 +154,7 @@ fi
 precmd() {
   print -P "%F{yellow}$username%f%F{blue}%~%F{8}%f"
 }
-PROMPT="%(!.%F{red}.%F{magenta})❯%f "
+PROMPT="%(!.%F{red}.%F{magenta});%f "
 
 export DIRSTACKSIZE=5
 export EDITOR=vim
