@@ -1,7 +1,8 @@
-autoload -Uz compinit
-compinit
-autoload -U edit-command-line
-autoload -U zmv
+autoload -Uz compinit edit-command-line zmv zrecompile
+for dump in ~/.zcompdump(N.mh+24); do
+  compinit
+done
+compinit -C
 zle -N edit-command-line
 
 zstyle ':completion:*:(rsync|ssh|scp):*' hosts
@@ -12,7 +13,6 @@ zstyle ':completion:*' cache-path ~/.zsh_cache
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
 zstyle ':completion:*' menu select=2
 zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
-zmodload zsh/complist
 zstyle ':completion:*:*:kill:*:processes' list-colors "=(#b) #([0-9]#)*=36=31"
 
 bindkey -v
@@ -167,9 +167,9 @@ export KEYTIMEOUT=1
 export LANG="en_US.UTF-8"
 export LC_ALL="en_US.UTF-8"
 export LOCALE="en_US.UTF-8"
-export PATH="$HOME/Library/Python/3.10/bin:$PATH"
+export PATH="$HOME/Library/Python/3.10/bin"
 export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"
-# export PATH="$PATH:/usr/sbin:/usr/bin:/sbin:/bin"
+export PATH="$PATH:/usr/bin:/bin:/usr/sbin:/sbin"
 export PATH="$PATH:$HOME/.bin:$HOME/.local/bin"
 export PATH="$PATH:/Library/TeX/texbin/"
 export REPORTTIME=5
