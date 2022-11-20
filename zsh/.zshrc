@@ -5,15 +5,11 @@ done
 compinit -C
 zle -N edit-command-line
 
-zstyle ':completion:*:(rsync|ssh|scp):*' hosts
-zstyle ':completion:*:(rsync|ssh|scp):*' users
-zstyle ':completion:*:(ssh|scp|rsync):*:hosts-host' ignored-patterns '*(.|:)*' loopback ip6-loopback localhost ip6-localhost broadcasthost
-zstyle ':completion:*' use-cache on
-zstyle ':completion:*' cache-path ~/.zsh_cache
+# Make completion usable on NFS directories
+# https://unix.stackexchange.com/questions/162078/stop-zsh-from-completing-parent-directories
+zstyle ':completion:*' accept-exact-dirs true
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
 zstyle ':completion:*' menu select=2
-zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
-zstyle ':completion:*:*:kill:*:processes' list-colors "=(#b) #([0-9]#)*=36=31"
 
 bindkey -v
 bindkey '\e[1;5C' forward-word            # C-Right
