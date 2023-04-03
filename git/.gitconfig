@@ -12,7 +12,7 @@
 	fp = format-patch -M
 	git = !exec git
 	go = checkout -B
-	gr = grep --full-name --line-number -I
+	gr = "!rg -g '!.git'"
 	latest = for-each-ref --count=30 --sort=-committerdate refs/heads/ --format='%(refname:short)'
 	lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative
 	pushf = push --force-with-lease
