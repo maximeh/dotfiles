@@ -66,8 +66,6 @@ nmap <leader>d :bd<CR>
 nmap <leader>w :w!<CR>
 nmap :W :w
 nmap <leader><space> :noh<CR>
-nmap <leader>r iReviewed-by: Maxime Hadjinlian <maxime.hadjinlian@gmail.com><ESC>
-nmap <leader>s iSigned-off-by: Maxime Hadjinlian <maxime.hadjinlian@gmail.com><ESC>
 
 " Remove ^M
 nmap <leader>m mmHmt:%s/<C-V><cr>//ge<cr>'tzt'm
@@ -105,9 +103,6 @@ vnoremap t gj
 vnoremap n gk
 nnoremap l n
 
-" Ctrl + \ - Open the definition in a vertical split
-map <C-\> :vsp <CR>:exec("tag ".expand("<cword>"))<CR>
-
 " Comment code
 nnoremap // :TComment<CR>
 vnoremap // :TComment<CR>
@@ -119,57 +114,3 @@ nmap <S-T> ddp
 vmap <S-N> xkP`[V`]
 vmap <S-T> xp`[V`]
 
-" ALE
-let g:ale_sign_warning = '▲'
-let g:ale_sign_error = '✗'
-highlight link ALEWarningSign String
-highlight link ALEErrorSign Title
-
-" Lightline
-let g:lightline = {
-\ 'colorscheme': 'srcery_drk',
-\ 'active': {
-\   'left': [['mode', 'paste'], ['filename', 'modified']],
-\   'right': [['lineinfo'], ['percent'], ['readonly', 'linter_warnings', 'linter_errors', 'linter_ok']]
-\ },
-\ 'component_expand': {
-\   'linter_warnings': 'LightlineLinterWarnings',
-\   'linter_errors': 'LightlineLinterErrors',
-\   'linter_ok': 'LightlineLinterOK'
-\ },
-\ 'component_type': {
-\   'readonly': 'error',
-\   'linter_warnings': 'warning',
-\   'linter_errors': 'error'
-\ },
-\ }
-
-function! LightlineLinterWarnings() abort
-  let l:counts = ale#statusline#Count(bufnr(''))
-  let l:all_errors = l:counts.error + l:counts.style_error
-  let l:all_non_errors = l:counts.total - l:all_errors
-  return l:counts.total == 0 ? '' : printf('%d ◆', all_non_errors)
-endfunction
-
-function! LightlineLinterErrors() abort
-  let l:counts = ale#statusline#Count(bufnr(''))
-  let l:all_errors = l:counts.error + l:counts.style_error
-  let l:all_non_errors = l:counts.total - l:all_errors
-  return l:counts.total == 0 ? '' : printf('%d ✗', all_errors)
-endfunction
-
-function! LightlineLinterOK() abort
-  let l:counts = ale#statusline#Count(bufnr(''))
-  let l:all_errors = l:counts.error + l:counts.style_error
-  let l:all_non_errors = l:counts.total - l:all_errors
-  return l:counts.total == 0 ? '✓ ' : ''
-endfunction
-
-autocmd User ALELint call s:MaybeUpdateLightline()
-
-" Update and show lightline but only if it's visible (e.g., not in Goyo)
-function! s:MaybeUpdateLightline()
-  if exists('#lightline')
-    call lightline#update()
-  end
-endfunction

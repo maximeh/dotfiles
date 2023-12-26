@@ -1,4 +1,0 @@
-#!/bin/sh
-
-vol=$(echo "$1 10" | awk '{printf "%.1f", $1 / $2}')
-sudo osascript -e "set Volume ${vol}"

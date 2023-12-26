@@ -11,23 +11,12 @@ zstyle ':completion:*' accept-exact-dirs true
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
 zstyle ':completion:*' menu select=2
 
-bindkey -v
-bindkey '\e[1;5C' forward-word            # C-Right
-bindkey '\e[1;5D' backward-word           # C-Left
-bindkey '\e[2~'   overwrite-mode          # Insert
-bindkey '\e[3~'   delete-char             # Del
-bindkey '\e[5~'   history-search-backward # PgUp
-bindkey '\e[6~'   history-search-forward  # PgDn
-bindkey '^A'      beginning-of-line       # Home
-bindkey '^D'      delete-char             # Del
-bindkey '^E'      end-of-line             # End
-bindkey '^R'      history-incremental-pattern-search-backward
-bindkey "^[[7~" beginning-of-line
-bindkey "^[[8~" end-of-line
-bindkey '^xe' edit-command-line
-bindkey '^x^e' edit-command-line
+bindkey -e "^[b" forward-word      # ⌥→
+bindkey -e "^[f" backward-word     # ⌥←
+bindkey -v '^A' beginning-of-line       # Home
+bindkey -v '^E' end-of-line             # End
+bindkey -v '^R' history-incremental-pattern-search-backward
 
-setopt vi
 setopt always_to_end
 setopt append_history
 setopt auto_cd
@@ -56,6 +45,7 @@ setopt pushd_ignore_dups
 setopt pushd_minus
 setopt pushd_silent
 setopt pushd_to_home
+setopt vi
 
 unsetopt bg_nice
 unsetopt hist_beep
@@ -69,11 +59,8 @@ alias ..='cd ..'
 alias ...='cd ../..'
 alias ....='cd ../../..'
 alias l='ls -lsah'
-alias la='ls -AF'
 alias ll='ls -lFh'
 alias grep='grep --color=auto'
-alias pswchan='ps xaopid,wchan:42,cmd'
-alias ping='ping -c 5'
 alias myip='curl https:/nova.m14n.dev/ip'
 alias history='fc -il 1'
 alias df='df -h'
@@ -82,7 +69,6 @@ alias mmv='noglob zmv -W'
 unalias vi 2>/dev/null
 alias vi='vim'
 alias duh="du "${@--xd1}" -h | sort -h"
-alias open_port="lsof -Pn -i4tcp -stcp:listen"
 alias g='git'
 
 git-find-word() {
@@ -101,8 +87,6 @@ b2d() { for x in "$@"; do echo "obase=10;ibase=2;$x" | bc; done }
 h2d() { for x in "$@"; do echo "obase=10;ibase=16;$x:u" | bc; done }
 d2h() { for x in "$@"; do echo "obase=16;ibase=10;$x:u" | bc; done }
 b2h() { for x in "$@"; do echo "obase=16;ibase=2;$x:u" | bc; done }
-epoch() { date -d @$1; }
-digga() { dig +nocmd "$1" any +multiline +noall +answer }
 fatty () { dpkg-query -Wf '${Installed-Size}\t${Package}\n' | sort -n | awk '{printf "%.3f MB ==> %s\n", $1/(1024), $2}' }
 headers () { curl -I -L $@ ; }
 
@@ -135,14 +119,6 @@ any() {
     fi
 }
 
-delete-branches() {
-  git branch |
-    grep --invert-match '\*' |
-    cut -c 3- |
-    fzf --multi --preview="git log {} --" |
-    xargs --no-run-if-empty git branch --delete --force
-}
-
 # show username@host if logged in through SSH
 if [[ $SSH_CLIENT != '' || $SSH_TTY != '' ]]; then
   local username='%n@%m '
@@ -155,20 +131,18 @@ PROMPT="%(!.%F{red}.%F{magenta});%f "
 export DIRSTACKSIZE=5
 export EDITOR=vim
 export HISTFILE=~/.histfile
-export HISTSIZE=99999
 export HISTFILESIZE=$HISTSIZE
-export SAVEHIST=$HISTSIZE
 export HISTIGNORE="ls:cd:cd -:pwd:exit:date:* --help:* -h"
+export HISTSIZE=99999
 export KEYTIMEOUT=1
 export LANG="en_GB.UTF-8"
 export LC_ALL="en_GB.UTF-8"
 export LOCALE="en_GB.UTF-8"
-export PATH="$HOME/Library/Python/3.10/bin"
-export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"
+export PATH="/opt/homebrew/bin:/opt/homebrew/sbin"
 export PATH="$PATH:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin/:/usr/local/sbin/"
 export PATH="$PATH:$HOME/.bin:$HOME/.local/bin"
-export PATH="$PATH:/Library/TeX/texbin/"
 export REPORTTIME=5
+export SAVEHIST=$HISTSIZE
 export TIMEFMT="%*Es total, %U user, %S system, %P cpu"
 export VISUAL=vim
 
