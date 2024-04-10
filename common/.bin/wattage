@@ -1,0 +1,8 @@
+#!/bin/zsh
+
+info=$(ioreg -w 0 -f -r -c AppleSmartBattery)
+vol=$(echo $info | grep '"Voltage" = ' | grep -oE '\d+')
+amp=$(echo $info | grep '"Amperage" = ' | grep -oE '\d+')
+amp=$(bc <<< "if ($amp >= 2^63) $amp - 2^64 else $amp")
+wat="$(( (vol / 1000.0) * (amp / 1000.0) ))"
+printf "%.3f\n" $wat
