@@ -3,9 +3,5 @@
 *.sw[nop]
 *.netrwhist
 *.pyc
-mutt/.mutt/cache/
-ssh/
-common/.bin/s
-common/.bin/weather
-.gitconfig_sendemail
-tmux/.tmux/resurrect/*
+common/dot-ssh/
+tmux/dot-tmux/resurrect/*

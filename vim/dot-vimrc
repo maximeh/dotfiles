@@ -32,6 +32,9 @@ set timeoutlen=300
 set wildmenu
 set wildmode=list:longest,list:full
 
+set t_TI=^[[4?h
+set t_TE=^[[4?l
+
 syntax on
 filetype plugin indent on
 colorscheme darknight

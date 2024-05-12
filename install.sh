@@ -12,14 +12,12 @@ git submodule init
 git submodule update
 git submodule foreach git pull origin master
 
+mkdir -p "$HOME/.ssh/tmp"
 # Create symlink for dotfiles
 for dir in */; do
 	[ "${dir}" = ".git" ] && continue
-	stow "${dir}"
+	stow --dotfiles --target=~ "${dir}"
 done
-
-mkdir -p "$HOME/.ssh/tmp"
-cp "$DOTFILES_DIR/ssh/config" "$HOME/.ssh"
 
 ### Setup TouchID for sudo
 

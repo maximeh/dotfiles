@@ -1,36 +1,36 @@
 [submodule "vim/.vim/pack/p/start/tcomment"]
-	path = vim/.vim/pack/p/start/tcomment
+	path = vim/dot-vim/pack/p/start/tcomment
 	url = git@github.com:tomtom/tcomment_vim.git
 [submodule "vim/.vim/pack/p/start/vim-gitgutter"]
-	path = vim/.vim/pack/p/start/vim-gitgutter
+	path = vim/dot-vim/pack/p/start/vim-gitgutter
 	url = git@github.com:airblade/vim-gitgutter.git
 [submodule "vim/.vim/pack/p/start/vim-polyglot"]
-	path = vim/.vim/pack/p/start/vim-polyglot
+	path = vim/dot-vim/pack/p/start/vim-polyglot
 	url = git@github.com:sheerun/vim-polyglot.git
 [submodule "vim/.vim/pack/p/start/darknight"]
-	path = vim/.vim/pack/p/start/darknight
+	path = vim/dot-vim/pack/p/start/darknight
 	url = git@github.com:maximeh/darknight.git
 [submodule "vim/.vim/pack/p/start/localindent.vim"]
-	path = vim/.vim/pack/p/start/localindent.vim
+	path = vim/dot-vim/pack/p/start/localindent.vim
 	url = git@github.com:maximeh/localindent.vim.git
 [submodule "vim/.vim/pack/p/start/ale"]
-	path = vim/.vim/pack/p/start/ale
+	path = vim/dot-vim/pack/p/start/ale
 	url = git@github.com:w0rp/ale.git
 [submodule "vim/.vim/pack/p/start/lightline"]
-	path = vim/.vim/pack/p/start/lightline
+	path = vim/dot-vim/pack/p/start/lightline
 	url = git@github.com:itchyny/lightline.vim
 [submodule "vim/.vim/pack/p/start/vim-autoclose"]
-	path = vim/.vim/pack/p/start/vim-autoclose
+	path = vim/dot-vim/pack/p/start/vim-autoclose
 	url = git@github.com:Townk/vim-autoclose.git
 [submodule "tmux/.tmux/plugins/tmux-continuum"]
-	path = tmux/.tmux/plugins/tmux-continuum
+	path = tmux/dot-tmux/plugins/tmux-continuum
 	url = git@github.com:tmux-plugins/tmux-continuum
 [submodule "tmux/.tmux/plugins/tmux-resurrect"]
-	path = tmux/.tmux/plugins/tmux-resurrect
+	path = tmux/dot-tmux/plugins/tmux-resurrect
 	url = git@github.com:tmux-plugins/tmux-resurrect
 [submodule "tmux/.tmux/plugins/tmux-sensible"]
-	path = tmux/.tmux/plugins/tmux-sensible
+	path = tmux/dot-tmux/plugins/tmux-sensible
 	url = git@github.com:tmux-plugins/tmux-sensible
 [submodule "tmux/.tmux/plugins/tpm"]
-	path = tmux/.tmux/plugins/tpm
+	path = tmux/dot-tmux/plugins/tpm
 	url = git@github.com:tmux-plugins/tpm
