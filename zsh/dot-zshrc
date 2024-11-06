@@ -8,6 +8,10 @@ zle -N edit-command-line
 # Make completion usable on NFS directories
 # https://unix.stackexchange.com/questions/162078/stop-zsh-from-completing-parent-directories
 zstyle ':completion:*' accept-exact-dirs true
+zstyle ':completion:*' ignore-parents parent
+zstyle ':completion:*' list-dirs-first true
+zstyle ':completion:*' select-all true
+
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
 zstyle ':completion:*' menu select=2
 
